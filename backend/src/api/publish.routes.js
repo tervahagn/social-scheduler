@@ -4,7 +4,7 @@ import { publishAllPosts } from '../services/publisher.service.js';
 const router = express.Router();
 
 /**
- * POST /api/publish/brief/:briefId - Опубликовать все одобренные посты брифа
+ * POST /api/publish/brief/:briefId - Publish all approved posts of brief
  */
 router.post('/brief/:briefId', async (req, res) => {
     try {

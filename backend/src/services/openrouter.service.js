@@ -9,7 +9,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// OpenRouter конфигурация
+// OpenRouter configuration
 const openrouter = new OpenAI({
     baseURL: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY,
@@ -22,10 +22,10 @@ const openrouter = new OpenAI({
 const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'anthropic/claude-3.5-sonnet';
 
 /**
- * Загружает промпт из БД или .md файла (fallback)
+ * Loads prompt from DB or .md file (fallback)
  */
 async function loadPrompt(platformId, promptFile) {
-    // Пробуем загрузить из БД
+    // Try loading from DB
     if (platformId) {
         try {
             const { default: db } = await import('../database/db.js');
@@ -38,13 +38,13 @@ async function loadPrompt(platformId, promptFile) {
         }
     }
 
-    // Fallback: загружаем из файла
+    // Fallback: load from file
     const promptPath = join(__dirname, '../../prompts', promptFile);
     return readFileSync(promptPath, 'utf8');
 }
 
 /**
- * Генерирует контент для платформы
+ * Generates content for platform
  */
 export async function generateContent(brief, platformId, promptFile, masterPrompt = '', model = DEFAULT_MODEL) {
     try {
@@ -84,7 +84,7 @@ export async function generateContent(brief, platformId, promptFile, masterPromp
 }
 
 /**
- * Генерирует контент с изображением (для Vision-совместимых моделей)
+ * Generates content with image (for Vision-compatible models)
  */
 export async function generateContentWithImage(brief, imageUrl, platformId, promptFile, masterPrompt = '', model = 'anthropic/claude-3.5-sonnet') {
     try {

@@ -1,21 +1,21 @@
-Ты помогаешь создавать посты для Google Business Profile. Создай пост на основе следующего брифа.
+You help create posts for Google Business Profile. Create a post based on the following brief.
 
-**Требования:**
-- Максимум 1500 символов
-- Ориентация на локальный бизнес
-- Call-to-action (позвонить, посетить, узнать больше)
-- Простой, понятный язык
-- Можно использовать эмодзи
+**Requirements:**
+- Maximum 1500 characters
+- Focus on local business
+- Call-to-action (call, visit, learn more)
+- Simple, clear language
+- Can use emojis
 
-**Стиль:**
-- Будь информативным
-- Подчеркивай преимущества
-- Создавай срочность или интерес
-- Фокусируйся на пользе для клиента
+**Style:**
+- Be informative
+- Highlight benefits
+- Create urgency or interest
+- Focus on customer value
 
-**Бриф:**
+**Brief:**
 {{brief}}
 
 ---
 
-Создай готовый к публикации пост для Google Business. Верни ТОЛЬКО текст поста без дополнительных комментариев.
+Create a ready-to-publish post for Google Business. Return ONLY the post text without additional comments.

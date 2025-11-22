@@ -2,7 +2,7 @@ import db from '../database/db.js';
 import axios from 'axios';
 
 /**
- * Добавляет пост в очередь публикации
+ * Adds post to the publishing queue
  */
 export async function queuePost(postId) {
     const result = await db.prepare(`
@@ -14,10 +14,10 @@ export async function queuePost(postId) {
 }
 
 /**
- * Публикует пост через Make.com webhook
+ * Publishes post via Make.com webhook
  */
 export async function publishPost(postId) {
-    // Получаем пост с данными платформы
+    // Get post with platform data
     const post = await db.prepare(`
     SELECT 
       posts.*,
@@ -59,7 +59,7 @@ export async function publishPost(postId) {
     };
 
     try {
-        // Отправляем на Make.com
+        // Send to Make.com
         const response = await axios.post(post.webhook_url, payload, {
             timeout: 10000,
             headers: {
@@ -67,14 +67,14 @@ export async function publishPost(postId) {
             }
         });
 
-        // Обновляем статус поста
+        // Update post status
         await db.prepare(`
       UPDATE posts 
       SET status = 'published', published_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(postId);
 
-        // Обновляем очередь
+        // Update queue
         await db.prepare(`
       UPDATE publish_queue 
       SET status = 'completed', completed_at = CURRENT_TIMESTAMP
@@ -86,7 +86,7 @@ export async function publishPost(postId) {
     } catch (error) {
         console.error(`❌ Failed to publish to ${post.display_name}:`, error.message);
 
-        // Обновляем очередь с ошибкой
+        // Update queue with error
         const queue = await db.prepare(`
       SELECT * FROM publish_queue 
       WHERE post_id = ? AND status = 'pending'
@@ -103,7 +103,7 @@ export async function publishPost(postId) {
         WHERE id = ?
       `).run(attempts, status, error.message, queue.id);
 
-            // Обновляем пост
+            // Update post
             if (status === 'failed') {
                 await db.prepare(`
           UPDATE posts 
@@ -118,7 +118,7 @@ export async function publishPost(postId) {
 }
 
 /**
- * Публикует все одобренные посты брифа
+ * Publishes all approved posts of a brief
  */
 export async function publishAllPosts(briefId) {
     const posts = await db.prepare(`

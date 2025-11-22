@@ -2,7 +2,7 @@ import db from '../database/db.js';
 import { generateContent, generateContentWithImage } from './openrouter.service.js';
 
 /**
- * Генерирует посты для всех активных платформ
+ * Generates posts for all active platforms
  */
 export async function generatePostsForBrief(briefId) {
     // Get brief
@@ -27,7 +27,7 @@ export async function generatePostsForBrief(briefId) {
 
     const posts = [];
 
-    // Генерируем контент для каждой платформы
+    // Generate content for each platform
     for (const platform of platforms) {
         try {
             let content;
@@ -60,7 +60,7 @@ export async function generatePostsForBrief(briefId) {
             console.log(`✅ Generated post for ${platform.display_name}`);
         } catch (error) {
             console.error(`❌ Failed to generate for ${platform.display_name}:`, error.message);
-            // Продолжаем с другими платформами
+            // Continue with other platforms
         }
     }
 
@@ -68,7 +68,7 @@ export async function generatePostsForBrief(briefId) {
 }
 
 /**
- * Получает все посты для брифа
+ * Gets all posts for brief
  */
 export async function getPostsForBrief(briefId) {
     return await db.prepare(`
@@ -84,7 +84,7 @@ export async function getPostsForBrief(briefId) {
 }
 
 /**
- * Обновляет контент поста (редактирование)
+ * Updates post content (editing)
  */
 export async function updatePostContent(postId, editedContent) {
     await db.prepare(`
@@ -97,7 +97,7 @@ export async function updatePostContent(postId, editedContent) {
 }
 
 /**
- * Одобряет пост
+ * Approves post
  */
 export async function approvePost(postId) {
     await db.prepare(`

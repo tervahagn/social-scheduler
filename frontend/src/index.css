@@ -1,49 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-:root {
+/* Light Theme (Default) */
+[data-theme="light"] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #e9ecef;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6c757d;
+    --border: #dee2e6;
+    --accent: #6366f1;
+    --accent-hover: #4f46e5;
+    --success: #10b981;
+    --danger: #ef4444;
+    --radius: 8px;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
     --bg-primary: #0f0f0f;
     --bg-secondary: #1a1a1a;
     --bg-tertiary: #252525;
     --text-primary: #ffffff;
     --text-secondary: #a0a0a0;
+    --border: #333;
     --accent: #6366f1;
     --accent-hover: #4f46e5;
     --success: #10b981;
     --danger: #ef4444;
-    --border: #333;
     --radius: 8px;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.6;
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-. button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: var(--radius);
+/* Navigation */
+nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.nav-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--accent);
+}
+
+.nav-links {
+    display: flex;
+    gap: 8px;
+    list-style: none;
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.2s;
     font-size: 14px;
     font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: var(--accent);
-    color: white;
 }
 
-.button:hover {
+.nav-links a:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.theme-toggle:hover {
+    background: var(--bg-primary);
+    border-color: var(--accent);
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+/* Cards */
+.card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Buttons */
+.button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.button:hover:not(:disabled) {
     background: var(--accent-hover);
     transform: translateY(-1px);
 }
 
-.button:active {
-    transform: translateY(0);
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .button-secondary {
@@ -51,29 +163,26 @@ body {
     color: var(--text-primary);
 }
 
-.button-secondary:hover {
-    background: #303030;
-}
-
-.button-danger {
-    background: var(--danger);
+.button-secondary:hover:not(:disabled) {
+    background: var(--border);
 }
 
 .button-success {
     background: var(--success);
 }
 
+/* Forms */
 .input,
 .textarea {
     width: 100%;
-    padding: 12px;
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
     color: var(--text-primary);
-    font-size: 14px;
+    padding: 10px 14px;
+    border-radius: 6px;
     font-family: inherit;
-    transition: border-color 0.2s;
+    font-size: 14px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .input:focus,
@@ -84,45 +193,19 @@ body {
 
 .textarea {
     resize: vertical;
-    min-height: 100px;
 }
 
-.card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
+/* Utility Classes */
+.mb-4 {
+    margin-bottom: 16px;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+.text-sm {
+    font-size: 13px;
 }
 
-.nav {
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 20px;
-    margin-bottom: 30px;
-}
-
-.nav-links {
-    display: flex;
-    gap: 20px;
-    list-style: none;
-}
-
-.nav-links a {
+.text-secondary {
     color: var(--text-secondary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
-}
-
-.nav-links a:hover,
-.nav-links a.active {
-    color: var(--accent);
 }
 
 .loading {
@@ -135,45 +218,18 @@ body {
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid var(--danger);
     color: var(--danger);
-    padding: 12px;
-    border-radius: var(--radius);
-    margin-bottom: 20px;
-}
-
-.success {
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid var(--success);
-    color: var(--success);
-    padding: 12px;
-    border-radius: var(--radius);
-    margin-bottom: 20px;
-}
-
-/* Utility classes */
-.flex {
-    display: flex;
-}
-
-.gap-2 {
-    gap: 8px;
-}
-
-.gap-4 {
-    gap: 16px;
-}
-
-.mb-4 {
+    padding: 12px 16px;
+    border-radius: 6px;
     margin-bottom: 16px;
 }
 
-.mt-4 {
-    margin-top: 16px;
-}
+/* Animations */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
 
-.text-secondary {
-    color: var(--text-secondary);
-}
-
-.text-sm {
-    font-size: 12px;
+    to {
+        transform: rotate(360deg);
+    }
 }

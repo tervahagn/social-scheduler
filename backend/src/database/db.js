@@ -7,10 +7,10 @@ dotenv.config();
 
 const dbPath = process.env.DATABASE_PATH || './data/scheduler.db';
 
-// Создаём директорию если не существует
+// Create directory if it doesn't exist
 mkdirSync(dirname(dbPath), { recursive: true });
 
-// Создаем подключение
+// Create connection
 const dbRaw = new sqlite3.Database(dbPath);
 
 // Enable foreign keys

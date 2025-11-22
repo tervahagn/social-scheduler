@@ -9,7 +9,7 @@ const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Multer конфигурация для загрузки файлов
+// Multer configuration for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadsDir = process.env.UPLOADS_DIR || './uploads';
@@ -72,7 +72,7 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * GET /api/briefs/:id - Получить бриф по ID
+ * GET /api/briefs/:id - Get brief by ID
  */
 router.get('/:id', async (req, res) => {
     try {
@@ -90,7 +90,7 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
- * POST /api/briefs/:id/generate - Генерировать посты
+ * POST /api/briefs/:id/generate - Generate posts
  */
 router.post('/:id/generate', async (req, res) => {
     try {
@@ -108,7 +108,7 @@ router.post('/:id/generate', async (req, res) => {
 });
 
 /**
- * GET /api/briefs/:id/posts - Получить посты брифа
+ * GET /api/briefs/:id/posts - Get brief posts
  */
 router.get('/:id/posts', async (req, res) => {
     try {
@@ -121,7 +121,7 @@ router.get('/:id/posts', async (req, res) => {
 });
 
 /**
- * DELETE /api/briefs/:id - Удалить бриф
+ * DELETE /api/briefs/:id - Delete brief
  */
 router.delete('/:id', async (req, res) => {
     try {

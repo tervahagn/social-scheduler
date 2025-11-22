@@ -21,7 +21,7 @@ const __dirname = dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Создаем необходимые директории
+// Create necessary directories
 const uploadsDir = process.env.UPLOADS_DIR || './uploads';
 const dataDir = join(dirname(process.env.DATABASE_PATH || './data/scheduler.db'), '../');
 mkdirSync(uploadsDir, { recursive: true });
@@ -32,7 +32,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Статические файлы (uploads)
+// Static files (uploads)
 app.use('/uploads', express.static(uploadsDir));
 
 // Health check

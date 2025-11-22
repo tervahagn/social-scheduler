@@ -1,34 +1,38 @@
 # Social Scheduler
 
-**Автоматизация контент-дистрибуции** — собственная система генерации и публикации постов в социальные сети с полным контролем.
+**Content Distribution Automation** — a proprietary system for generating and publishing posts to social networks with full control.
 
-## Возможности
+## Features
 
-- 📝 **Единый бриф** → посты для всех платформ (LinkedIn, Facebook, Instagram, X, Google Business)
-- 🤖 **OpenRouter генерация** — используй любую LLM модель (GPT-4, Claude, Gemini, Llama)
-- ✏️ **Предпросмотр и редактирование** — полный контроль перед публикацией
-- 🚀 **Автопубликация** через Make.com webhooks
-- 🔧 **Расширяемость** — легко добавляй новые платформы через промпты в .md файлах
+- 📝 **Single Brief** → posts for all platforms (LinkedIn, Facebook, Instagram, X, Google Business)
+- 🤖 **OpenRouter Generation** — use any LLM model (GPT-4, Claude, Gemini, Llama)
+- ✏️ **Preview and Editing** — full control before publishing
+- 🚀 **Auto-publishing** via Make.com webhooks
+- 🔧 **Extensibility** — easily add new platforms via prompts in .md files
 
-## Архитектура
+## 🏗️ Architecture
+
+**Self-hosted, local-first application** running on your machine. All data stored in SQLite database in project folder.
+
+👉 **See [ARCHITECTURE.md](./ARCHITECTURE.md)** for detailed architecture documentation.
 
 ```
 social-scheduler/
 ├── backend/           # Express.js + SQLite + OpenRouter
 │   ├── src/
 │   │   ├── api/       # REST endpoints
-│   │   ├── services/  # Генерация и публикация
-│   │   └── database/  # SQLite схема
-│   └── prompts/       # .md промпты для платформ
+│   │   ├── services/  # Generation and publishing
+│   │   └── database/  # SQLite schema
+│   └── prompts/       # .md prompts for platforms
 └── frontend/          # React + Vite
     └── src/
         ├── pages/     # NewBrief, Preview, History, Platforms
         └── services/  # API client
 ```
 
-## Быстрый старт
+## Quick Start
 
-### 1. Установка
+### 1. Installation
 
 ```bash
 # Backend
@@ -40,9 +44,9 @@ cd frontend
 npm install
 ```
 
-### 2. Конфигурация
+### 2. Configuration
 
-Создай `.env` файл в корне проекта:
+Create a `.env` file in the project root:
 
 ```env
 OPENROUTER_API_KEY=sk-or-v1-...
@@ -52,44 +56,44 @@ DATABASE_PATH=./data/scheduler.db
 UPLOADS_DIR=./uploads
 ```
 
-Получи API ключ на [openrouter.ai](https://openrouter.ai/)
+Get your API key at [openrouter.ai](https://openrouter.ai/)
 
-### 3. Инициализация БД
+### 3. Database Initialization
 
 ```bash
 cd backend
 npm run init-db
 ```
 
-### 4. Запуск
+### 4. Launch
 
 ```bash
-# Backend (терминал 1)
+# Backend (terminal 1)
 cd backend
 npm run dev
 
-# Frontend (терминал 2)
+# Frontend (terminal 2)
 cd frontend
 npm run dev
 ```
 
-Открой http://localhost:3000
+Open http://localhost:3000
 
-## Настройка Make.com
+## Make.com Setup
 
-Для каждой платформы создай сценарий:
+Create a scenario for each platform:
 
 1. **Webhook → Watch for incoming data**
-2. Получи URL вебхука (например: `https://hook.eu1.make.com/xxxxx`)
-3. В Social Scheduler: **Платформы** → выбери платформу → **Настроить** → вставь webhook URL
-4. В Make.com настрой публикацию (LinkedIn API, Facebook API и т.д.)
+2. Get the webhook URL (e.g.: `https://hook.eu1.make.com/xxxxx`)
+3. In Social Scheduler: **Platforms** → select platform → **Configure** → paste webhook URL
+4. In Make.com configure publishing (LinkedIn API, Facebook API, etc.)
 
-**Структура payload от Social Scheduler:**
+**Payload structure from Social Scheduler:**
 
 ```json
 {
   "platform": "linkedin",
-  "content": "Готовый пост...",
+  "content": "Ready post...",
   "media_url": "/uploads/image.jpg",
   "media_type": "image/jpeg",
   "link_url": "https://example.com",
@@ -100,43 +104,43 @@ npm run dev
 
 ## Workflow
 
-1. **Создай бриф** — текст, ссылка, медиа
-2. **Генерация** — автоматически создаются посты для всех активных платформ
-3. **Редактируй** — исправь контент при необходимости
-4. **Одобри** — отметь готовые посты
-5. **Опубликуй** — нажми "Опубликовать все" → посты уходят в Make.com → публикация
+1. **Create Brief** — text, link, media
+2. **Generation** — posts are automatically created for all active platforms
+3. **Edit** — modify content if needed
+4. **Approve** — mark ready posts
+5. **Publish** — click "Publish All" → posts go to Make.com → publication
 
-## Добавление новой платформы
+## Adding a New Platform
 
-### 1. Создай промпт
+### 1. Create Prompt
 
-Создай файл `backend/prompts/youtube.md`:
+Create file `backend/prompts/youtube.md`:
 
 ```markdown
-Ты создаешь описание для YouTube видео...
+You are creating a description for a YouTube video...
 
-**Требования:**
-- До 5000 символов
-- SEO-оптимизированное
+**Requirements:**
+- Up to 5000 characters
+- SEO-optimized
 
-**Бриф:**
+**Brief:**
 {{brief}}
 ```
 
-### 2. Добавь в БД
+### 2. Add to Database
 
 ```sql
 INSERT INTO platforms (name, display_name, prompt_file, is_active) 
 VALUES ('youtube', 'YouTube', 'youtube.md', 1);
 ```
 
-Или через UI: **Платформы** → **Добавить** (если реализуешь)
+Or via UI: **Platforms** → **Add** (if implemented)
 
-### 3. Настрой Make.com webhook
+### 3. Configure Make.com webhook
 
-## Редактирование промптов
+## Editing Prompts
 
-Просто отредактируй `.md` файлы в `backend/prompts/`:
+Simply edit the `.md` files in `backend/prompts/`:
 
 - `linkedin.md`
 - `facebook.md`
@@ -144,54 +148,54 @@ VALUES ('youtube', 'YouTube', 'youtube.md', 1);
 - `twitter.md`
 - `google-business.md`
 
-Изменения применяются сразу при следующей генерации.
+Changes apply immediately on the next generation.
 
 ## API Endpoints
 
 ### Briefs
 
-- `POST /api/briefs` — создать бриф
-- `GET /api/briefs` — список брифов
-- `POST /api/briefs/:id/generate` — генерировать посты
+- `POST /api/briefs` — create brief
+- `GET /api/briefs` — list briefs
+- `POST /api/briefs/:id/generate` — generate posts
 
 ### Posts
 
-- `PUT /api/posts/:id` — редактировать
-- `POST /api/posts/:id/approve` — одобрить
-- `POST /api/posts/:id/publish` — опубликовать
+- `PUT /api/posts/:id` — edit
+- `POST /api/posts/:id/approve` — approve
+- `POST /api/posts/:id/publish` — publish
 
 ### Publishing
 
-- `POST /api/publish/brief/:id` — опубликовать все одобренные
+- `POST /api/publish/brief/:id` — publish all approved
 
 ### Platforms
 
-- `GET /api/platforms` — список
-- `PUT /api/platforms/:id` — обновить настройки
+- `GET /api/platforms` — list
+- `PUT /api/platforms/:id` — update settings
 
 ## Troubleshooting
 
-**Ошибка OpenRouter генерации:**
-- Проверь `OPENROUTER_API_KEY` в `.env`
-- Проверь баланс на openrouter.ai
-- Попробуй другую модель в `OPENROUTER_MODEL`
+**OpenRouter generation error:**
+- Check `OPENROUTER_API_KEY` in `.env`
+- Check balance at openrouter.ai
+- Try a different model in `OPENROUTER_MODEL`
 
-**Публикация не работает:**
-- Проверь webhook URL в настройках платформы
-- Проверь логи Make.com сценария
-- Убедись что пост одобрен (status = 'approved')
+**Publishing not working:**
+- Check webhook URL in platform settings
+- Check Make.com scenario logs
+- Ensure post is approved (status = 'approved')
 
-**База данных:**
-- Переинициализируй: `npm run init-db`
-- Файл БД: `./data/scheduler.db`
+**Database:**
+- Reinitialize: `npm run init-db`
+- Database file: `./data/scheduler.db`
 
-## Технологии
+## Technologies
 
 - **Backend:** Express.js, SQLite (better-sqlite3), OpenRouter (OpenAI SDK)
 - **Frontend:** React, Vite, React Router, Lucide Icons
-- **Генерация:** OpenRouter API (GPT-4, Claude, Gemini, etc.)
-- **Публикация:** Make.com webhooks
+- **Generation:** OpenRouter API (GPT-4, Claude, Gemini, etc.)
+- **Publishing:** Make.com webhooks
 
-## Лицензия
+## License
 
-MIT — делай что хочешь 🚀
+MIT — do whatever you want 🚀

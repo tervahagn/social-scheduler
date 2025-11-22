@@ -4,7 +4,7 @@ import db from '../database/db.js';
 const router = express.Router();
 
 /**
- * GET /api/platforms - Получить все платформы
+ * GET /api/platforms - Get all platforms
  */
 router.get('/', async (req, res) => {
     try {
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * GET /api/platforms/:id - Получить платформу
+ * GET /api/platforms/:id - Get platform
  */
 router.get('/:id', async (req, res) => {
     try {
@@ -35,7 +35,7 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
- * POST /api/platforms - Добавить новую платформу
+ * POST /api/platforms - Add new platform
  */
 router.post('/', async (req, res) => {
     try {
@@ -59,7 +59,7 @@ router.post('/', async (req, res) => {
 });
 
 /**
- * PUT /api/platforms/:id - Обновить платформу
+ * PUT /api/platforms/:id - Update platform
  */
 router.put('/:id', async (req, res) => {
     try {
@@ -83,7 +83,7 @@ router.put('/:id', async (req, res) => {
 });
 
 /**
- * DELETE /api/platforms/:id - Удалить платформу
+ * DELETE /api/platforms/:id - Delete platform
  */
 router.delete('/:id', async (req, res) => {
     try {

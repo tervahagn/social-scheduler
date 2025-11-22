@@ -6,7 +6,7 @@ import db from '../database/db.js';
 const router = express.Router();
 
 /**
- * GET /api/posts/:id - Получить пост
+ * GET /api/posts/:id - Get post
  */
 router.get('/:id', async (req, res) => {
     try {
@@ -32,7 +32,7 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
- * PUT /api/posts/:id - Редактировать пост
+ * PUT /api/posts/:id - Edit post
  */
 router.put('/:id', async (req, res) => {
     try {
@@ -81,7 +81,7 @@ router.put('/:id', async (req, res) => {
 });
 
 /**
- * POST /api/posts/:id/approve - Одобрить пост
+ * POST /api/posts/:id/approve - Approve post
  */
 router.post('/:id/approve', async (req, res) => {
     try {
@@ -94,7 +94,7 @@ router.post('/:id/approve', async (req, res) => {
 });
 
 /**
- * POST /api/posts/:id/publish - Опубликовать пост
+ * POST /api/posts/:id/publish - Publish post
  */
 router.post('/:id/publish', async (req, res) => {
     try {

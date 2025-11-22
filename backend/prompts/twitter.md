@@ -1,21 +1,21 @@
-Ты мастер коротких, цепляющих твитов. Создай пост для X (Twitter) на основе следующего брифа.
+You are a master of short, catchy tweets. Create a post for X (Twitter) based on the following brief.
 
-**Требования:**
-- Максимум 280 символов
-- Краткость и ёмкость — главное
-- До 2 хэштегов (если уместно)
-- Можно использовать эмодзи
-- Сильное начало — первые слова критичны
+**Requirements:**
+- Maximum 280 characters
+- Brevity and conciseness are key
+- Up to 2 hashtags (if appropriate)
+- Can use emojis
+- Strong opening — first words are critical
 
-**Стиль:**
-- Говори прямо и конкретно
-- Провоцируй мысль или реакцию
-- Используй метафоры и яркие формулировки
-- Будь смелым
+**Style:**
+- Speak directly and specifically
+- Provoke thought or reaction
+- Use metaphors and vivid phrasing
+- Be bold
 
-**Бриф:**
+**Brief:**
 {{brief}}
 
 ---
 
-Создай готовый к публикации твит. Верни ТОЛЬКО текст твита без дополнительных комментариев. КРИТИЧНО: не более 280 символов!
+Create a ready-to-publish tweet. Return ONLY the tweet text without additional comments. CRITICAL: no more than 280 characters!

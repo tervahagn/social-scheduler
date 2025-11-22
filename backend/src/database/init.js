@@ -15,12 +15,12 @@ const schemaPath = join(__dirname, 'schema.sql');
 console.log('Initializing database...');
 console.log('Database path:', dbPath);
 
-// Создаем директорию data если не существует
+// Create data directory if it doesn't exist
 mkdirSync(dirname(dbPath), { recursive: true });
 
 const db = new sqlite3.Database(dbPath);
 
-// Читаем и выполняем схему
+// Read and execute schema
 const schema = readFileSync(schemaPath, 'utf8');
 
 db.exec(schema, (err) => {

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { Zap, FileText, Clock, Settings as SettingsIcon, CalendarDays, Sliders } from 'lucide-react';
+import { Zap, FileText, Clock, Settings as SettingsIcon, CalendarDays, Sliders, Sun, Moon } from 'lucide-react';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import NewBrief from './pages/NewBrief';
 import Preview from './pages/Preview';
 import History from './pages/History';
@@ -9,45 +10,52 @@ import Settings from './pages/Settings';
 import './index.css';
 
 function Navigation() {
+    const { theme, toggleTheme } = useTheme();
+
     return (
-        <nav className="nav">
-            <div className="container" style={{ padding: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Zap size={24} color="var(--accent)" />
-                        <h2 style={{ fontSize: '18px', fontWeight: '700' }}>Social Scheduler</h2>
+        <nav>
+            <div className="nav-container">
+                <div className="nav-content">
+                    <div className="logo">
+                        <Zap size={24} />
+                        Social Scheduler
                     </div>
 
                     <ul className="nav-links">
                         <li>
-                            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Link to="/">
                                 <FileText size={16} />
                                 New Brief
                             </Link>
                         </li>
                         <li>
-                            <Link to="/calendar" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Link to="/calendar">
                                 <CalendarDays size={16} />
                                 Calendar
                             </Link>
                         </li>
                         <li>
-                            <Link to="/history" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Link to="/history">
                                 <Clock size={16} />
                                 History
                             </Link>
                         </li>
                         <li>
-                            <Link to="/platforms" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Link to="/platforms">
                                 <SettingsIcon size={16} />
                                 Platforms
                             </Link>
                         </li>
                         <li>
-                            <Link to="/settings" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Link to="/settings">
                                 <Sliders size={16} />
                                 Settings
                             </Link>
+                        </li>
+                        <li>
+                            <button onClick={toggleTheme} className="theme-toggle">
+                                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                            </button>
                         </li>
                     </ul>
                 </div>
@@ -56,21 +64,21 @@ function Navigation() {
     );
 }
 
-function App() {
+export default function App() {
     return (
-        <BrowserRouter>
-            <Navigation />
-            <Routes>
-                <Route path="/" element={<NewBrief />} />
-                <Route path="/preview/:briefId" element={<Preview />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/history" element={<History />} />
-                <Route path="/platforms" element={<Platforms />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-        </BrowserRouter>
+        <ThemeProvider>
+            <BrowserRouter>
+                <Navigation />
+                <Routes>
+                    <Route path="/" element={<NewBrief />} />
+                    <Route path="/preview/:briefId" element={<Preview />} />
+                    <Route path="/calendar" element={<Calendar />} />
+                    <Route path="/history" element={<History />} />
+                    <Route path="/platforms" element={<Platforms />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </BrowserRouter>
+        </ThemeProvider>
     );
 }
-
-export default App;
