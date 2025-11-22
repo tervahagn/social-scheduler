@@ -107,9 +107,9 @@ export async function publishPost(postId) {
             if (status === 'failed') {
                 await db.prepare(`
           UPDATE posts 
-          SET status = 'failed', error_message = ?
+          SET status = 'failed', error_message = ?, publish_error = ?
           WHERE id = ?
-        `).run(error.message, postId);
+        `).run(error.message, error.message, postId);
             }
         }
 

@@ -1,12 +1,14 @@
 import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { Zap, FileText, Clock, Settings as SettingsIcon, CalendarDays, Sliders, Sun, Moon } from 'lucide-react';
+import { Zap, FileText, Clock, Settings as SettingsIcon, CalendarDays, Sliders, Sun, Moon, BarChart2 } from 'lucide-react';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import NewBrief from './pages/NewBrief';
+import MasterDraft from './pages/MasterDraft';
 import Preview from './pages/Preview';
 import History from './pages/History';
 import Platforms from './pages/Platforms';
 import Calendar from './pages/Calendar';
 import Settings from './pages/Settings';
+import Analytics from './pages/Analytics';
 import './index.css';
 
 function Navigation() {
@@ -32,6 +34,12 @@ function Navigation() {
                             <Link to="/calendar">
                                 <CalendarDays size={16} />
                                 Calendar
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/analytics">
+                                <BarChart2 size={16} />
+                                Analytics
                             </Link>
                         </li>
                         <li>
@@ -71,8 +79,10 @@ export default function App() {
                 <Navigation />
                 <Routes>
                     <Route path="/" element={<NewBrief />} />
+                    <Route path="/master/:briefId" element={<MasterDraft />} />
                     <Route path="/preview/:briefId" element={<Preview />} />
                     <Route path="/calendar" element={<Calendar />} />
+                    <Route path="/analytics" element={<Analytics />} />
                     <Route path="/history" element={<History />} />
                     <Route path="/platforms" element={<Platforms />} />
                     <Route path="/settings" element={<Settings />} />

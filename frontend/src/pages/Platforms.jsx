@@ -8,6 +8,7 @@ function PlatformCard({ platform, onUpdate }) {
     const [webhookUrl, setWebhookUrl] = useState(platform.webhook_url || '');
     const [isActive, setIsActive] = useState(platform.is_active === 1);
     const [promptContent, setPromptContent] = useState(platform.prompt_content || '');
+    const [ultraShortPrompt, setUltraShortPrompt] = useState(platform.ultra_short_prompt || '');
     const [loading, setLoading] = useState(false);
 
     const handleSave = async () => {
@@ -29,7 +30,8 @@ function PlatformCard({ platform, onUpdate }) {
         setLoading(true);
         try {
             await updatePlatform(platform.id, {
-                prompt_content: promptContent
+                prompt_content: promptContent,
+                ultra_short_prompt: ultraShortPrompt
             });
             setEditingPrompt(false);
             onUpdate();
@@ -127,27 +129,43 @@ function PlatformCard({ platform, onUpdate }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <h4 style={{ fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <FileText size={16} />
-                        Prompt
+                        Prompt Settings
                     </h4>
                 </div>
 
                 {editingPrompt ? (
                     <div>
-                        <textarea
-                            className="textarea"
-                            value={promptContent}
-                            onChange={(e) => setPromptContent(e.target.value)}
-                            placeholder="Enter platform-specific prompt..."
-                            style={{ minHeight: '300px', fontFamily: 'monospace', fontSize: '12px' }}
-                        />
+                        <div style={{ marginBottom: '12px' }}>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '500' }}>Main Prompt</label>
+                            <textarea
+                                className="textarea"
+                                value={promptContent}
+                                onChange={(e) => setPromptContent(e.target.value)}
+                                placeholder="Enter platform-specific prompt..."
+                                style={{ minHeight: '200px', fontFamily: 'monospace', fontSize: '12px' }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '12px' }}>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '500' }}>Ultra-Short Prompt (for quick updates)</label>
+                            <textarea
+                                className="textarea"
+                                value={ultraShortPrompt}
+                                onChange={(e) => setUltraShortPrompt(e.target.value)}
+                                placeholder="Enter ultra-short prompt..."
+                                style={{ minHeight: '80px', fontFamily: 'monospace', fontSize: '12px' }}
+                            />
+                        </div>
+
                         <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                             <button onClick={handleSavePrompt} className="button" disabled={loading}>
-                                {loading ? 'Saving...' : 'Save Prompt'}
+                                {loading ? 'Saving...' : 'Save Prompts'}
                             </button>
                             <button
                                 onClick={() => {
                                     setEditingPrompt(false);
                                     setPromptContent(platform.prompt_content || '');
+                                    setUltraShortPrompt(platform.ultra_short_prompt || '');
                                 }}
                                 className="button button-secondary"
                             >
@@ -157,27 +175,47 @@ function PlatformCard({ platform, onUpdate }) {
                     </div>
                 ) : (
                     <div>
-                        <div style={{
-                            maxHeight: '150px',
-                            overflow: 'auto',
-                            background: 'var(--bg-tertiary)',
-                            padding: '12px',
-                            borderRadius: '6px',
-                            marginBottom: '12px',
-                            fontFamily: 'monospace',
-                            fontSize: '11px',
-                            lineHeight: '1.5',
-                            whiteSpace: 'pre-wrap'
-                        }}>
-                            {platform.prompt_content || platform.prompt_file || <span style={{ color: 'var(--text-secondary)' }}>No prompt set</span>}
+                        <div style={{ marginBottom: '12px' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>Main Prompt</label>
+                            <div style={{
+                                maxHeight: '100px',
+                                overflow: 'auto',
+                                background: 'var(--bg-tertiary)',
+                                padding: '8px',
+                                borderRadius: '4px',
+                                fontFamily: 'monospace',
+                                fontSize: '11px',
+                                lineHeight: '1.4',
+                                whiteSpace: 'pre-wrap'
+                            }}>
+                                {platform.prompt_content || platform.prompt_file || <span style={{ color: 'var(--text-secondary)' }}>No prompt set</span>}
+                            </div>
                         </div>
+
+                        <div style={{ marginBottom: '12px' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>Ultra-Short Prompt</label>
+                            <div style={{
+                                maxHeight: '60px',
+                                overflow: 'auto',
+                                background: 'var(--bg-tertiary)',
+                                padding: '8px',
+                                borderRadius: '4px',
+                                fontFamily: 'monospace',
+                                fontSize: '11px',
+                                lineHeight: '1.4',
+                                whiteSpace: 'pre-wrap'
+                            }}>
+                                {platform.ultra_short_prompt || <span style={{ color: 'var(--text-secondary)' }}>No ultra-short prompt set</span>}
+                            </div>
+                        </div>
+
                         <button
                             onClick={() => setEditingPrompt(true)}
                             className="button button-secondary"
                             style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                             <FileText size={14} />
-                            Edit Prompt
+                            Edit Prompts
                         </button>
                     </div>
                 )}

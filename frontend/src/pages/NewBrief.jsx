@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createBrief, generatePosts, getPlatforms } from '../services/api';
 import { Send, Loader } from 'lucide-react';
+import FileUploader from '../components/FileUploader';
 
 export default function NewBrief() {
     const navigate = useNavigate();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [linkUrl, setLinkUrl] = useState('');
-    const [mediaFile, setMediaFile] = useState(null);
+    const [mediaFiles, setMediaFiles] = useState([]);
+    const [docFiles, setDocFiles] = useState([]);
     const [platforms, setPlatforms] = useState([]);
     const [selectedPlatforms, setSelectedPlatforms] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -53,17 +54,22 @@ export default function NewBrief() {
             formData.append('title', title || 'Untitled');
             formData.append('content', content);
             formData.append('selected_platforms', JSON.stringify(selectedPlatforms));
-            if (linkUrl) formData.append('link_url', linkUrl);
-            if (mediaFile) formData.append('media', mediaFile);
+
+            // Append media files
+            mediaFiles.forEach(file => {
+                formData.append('media', file);
+            });
+
+            // Append document files
+            docFiles.forEach(file => {
+                formData.append('documents', file);
+            });
 
             // Create brief
             const brief = await createBrief(formData);
 
-            // Generate posts
-            await generatePosts(brief.id);
-
-            // Navigate to preview
-            navigate(`/preview/${brief.id}`);
+            // Navigate to master draft page
+            navigate(`/master/${brief.id}`);
         } catch (err) {
             setError(err.response?.data?.error || err.message);
             setLoading(false);
@@ -108,36 +114,29 @@ export default function NewBrief() {
                         />
                     </div>
 
-                    {/* Link */}
-                    <div className="mb-4">
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>
-                            Link (optional)
-                        </label>
-                        <input
-                            type="url"
-                            className="input"
-                            value={linkUrl}
-                            onChange={(e) => setLinkUrl(e.target.value)}
-                            placeholder="https://example.com/article"
-                        />
-                    </div>
+                    {/* Files Grid */}
+                    <div className="mb-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        {/* Brief Files (Documents) */}
+                        <div>
+                            <FileUploader
+                                files={docFiles}
+                                setFiles={setDocFiles}
+                                label="Brief Files (Context for LLM)"
+                                accept=".pdf,.doc,.docx,.txt,.md,.csv,.xls,.xlsx"
+                                infoText="Upload documents for the LLM to study (PDF, Word, Excel, Markdown, etc.). Max 5 files."
+                            />
+                        </div>
 
-                    {/* Media */}
-                    <div className="mb-4">
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>
-                            Media (image/video)
-                        </label>
-                        <input
-                            type="file"
-                            className="input"
-                            accept="image/*,video/*"
-                            onChange={(e) => setMediaFile(e.target.files[0])}
-                        />
-                        {mediaFile && (
-                            <p className="text-sm text-secondary mt-4">
-                                Selected: {mediaFile.name}
-                            </p>
-                        )}
+                        {/* Media (Images/Videos) */}
+                        <div>
+                            <FileUploader
+                                files={mediaFiles}
+                                setFiles={setMediaFiles}
+                                label="Media (Images/Videos for Posts)"
+                                accept="image/*,video/*"
+                                infoText="Upload images or videos to be included in the posts. Max 5 files."
+                            />
+                        </div>
                     </div>
 
                     {/* Platform Selection */}
@@ -199,13 +198,13 @@ export default function NewBrief() {
                     >
                         {loading ? (
                             <>
-                                <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                                Generating posts...
+                                <Loader size={18} className="animate-spin" />
+                                Creating brief...
                             </>
                         ) : (
                             <>
                                 <Send size={18} />
-                                Create & Generate
+                                Create & Start Draft
                             </>
                         )}
                     </button>

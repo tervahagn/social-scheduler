@@ -23,13 +23,18 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage,
-    limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+    limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit per file (checked individually in logic if needed, but multer checks this)
 });
+
+const uploadFields = upload.fields([
+    { name: 'media', maxCount: 5 },
+    { name: 'documents', maxCount: 5 }
+]);
 
 /**
  * POST /api/briefs - Create a brief
  */
-router.post('/', upload.single('media'), async (req, res) => {
+router.post('/', uploadFields, async (req, res) => {
     try {
         const { title, content, link_url, selected_platforms } = req.body;
 
@@ -37,15 +42,50 @@ router.post('/', upload.single('media'), async (req, res) => {
             return res.status(400).json({ error: 'Content is required' });
         }
 
-        const mediaUrl = req.file ? `/uploads/${req.file.filename}` : null;
-        const mediaType = req.file ? req.file.mimetype : null;
+        // Validate file counts and sizes manually if needed, though multer limits help.
+        // We'll iterate over uploaded files to prepare for insertion.
+
+        const mediaFiles = req.files['media'] || [];
+        const docFiles = req.files['documents'] || [];
+
+        // Check limits (redundant if multer handles it, but good for custom error messages)
+        if (mediaFiles.length > 5) return res.status(400).json({ error: 'Too many media files (max 5)' });
+        if (docFiles.length > 5) return res.status(400).json({ error: 'Too many document files (max 5)' });
+
+        // Insert Brief
+        // We still keep media_url/type for backward compatibility if a single media file is uploaded, 
+        // or just leave them null and rely on brief_files. 
+        // Let's populate them with the first media file for compatibility.
+        const firstMedia = mediaFiles[0];
+        const mediaUrl = firstMedia ? `/uploads/${firstMedia.filename}` : null;
+        const mediaType = firstMedia ? firstMedia.mimetype : null;
 
         const result = await db.prepare(`
       INSERT INTO briefs (title, content, media_url, media_type, link_url, selected_platforms)
       VALUES (?, ?, ?, ?, ?, ?)
     `).run(title || 'Untitled', content, mediaUrl, mediaType, link_url, selected_platforms);
 
-        const brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(result.lastInsertRowid);
+        const briefId = result.lastInsertRowid;
+
+        // Insert Files
+        const insertFile = db.prepare(`
+            INSERT INTO brief_files (brief_id, file_path, original_name, mime_type, file_size, category)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `);
+
+        for (const file of mediaFiles) {
+            await insertFile.run(briefId, `/uploads/${file.filename}`, file.originalname, file.mimetype, file.size, 'media');
+        }
+
+        for (const file of docFiles) {
+            await insertFile.run(briefId, `/uploads/${file.filename}`, file.originalname, file.mimetype, file.size, 'document');
+        }
+
+        const brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(briefId);
+
+        // Fetch files to return with brief
+        const files = await db.prepare('SELECT * FROM brief_files WHERE brief_id = ?').all(briefId);
+        brief.files = files;
 
         res.json(brief);
     } catch (error) {
@@ -81,6 +121,9 @@ router.get('/:id', async (req, res) => {
         if (!brief) {
             return res.status(404).json({ error: 'Brief not found' });
         }
+
+        const files = await db.prepare('SELECT * FROM brief_files WHERE brief_id = ?').all(req.params.id);
+        brief.files = files;
 
         res.json(brief);
     } catch (error) {

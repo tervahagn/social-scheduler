@@ -4,6 +4,24 @@ import db from '../database/db.js';
 const router = express.Router();
 
 /**
+ * GET /api/settings - Get all settings
+ */
+router.get('/', async (req, res) => {
+    try {
+        const settings = await db.prepare('SELECT * FROM settings').all();
+        // Convert array to object { key: value }
+        const settingsMap = settings.reduce((acc, curr) => {
+            acc[curr.key] = curr.value;
+            return acc;
+        }, {});
+        res.json(settingsMap);
+    } catch (error) {
+        console.error('Error fetching settings:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * GET /api/settings/:key - Get setting by key
  */
 router.get('/:key', async (req, res) => {

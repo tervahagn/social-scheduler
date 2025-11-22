@@ -282,7 +282,17 @@ export default function Preview() {
                 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
                 <ArrowLeft size={16} />
+                <ArrowLeft size={16} />
                 Back
+            </button>
+
+            <button
+                onClick={() => navigate(`/master/${briefId}`)}
+                className="button button-secondary mb-4 ml-2"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+                <Edit2 size={16} />
+                View Master Draft
             </button>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>

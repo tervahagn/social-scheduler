@@ -1,7 +1,5 @@
--- Add column to store prompt directly in DB
-ALTER TABLE platforms ADD COLUMN prompt_content TEXT;
+-- Update all prompts to English
 
--- Load initial prompts from files into DB
 -- LinkedIn
 UPDATE platforms SET prompt_content = 'You are a professional copywriter for LinkedIn. Create a post based on the following brief.
 

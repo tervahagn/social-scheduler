@@ -9,17 +9,46 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// OpenRouter configuration
-const openrouter = new OpenAI({
-    baseURL: 'https://openrouter.ai/api/v1',
-    apiKey: process.env.OPENROUTER_API_KEY,
-    defaultHeaders: {
-        'HTTP-Referer': 'http://localhost:3001',
-        'X-Title': 'Social Scheduler'
-    }
-});
+// OpenRouter configuration helper
+async function getOpenRouterConfig() {
+    let apiKey = process.env.OPENROUTER_API_KEY;
+    let model = process.env.OPENROUTER_MODEL || 'anthropic/claude-3.5-sonnet';
 
-const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'anthropic/claude-3.5-sonnet';
+    try {
+        // Dynamic import to avoid circular dependencies if any
+        const { default: db } = await import('../database/db.js');
+
+        const settings = await db.prepare('SELECT * FROM settings WHERE key IN (?, ?)').all('openrouter_api_key', 'openrouter_model');
+
+        const keySetting = settings.find(s => s.key === 'openrouter_api_key');
+        const modelSetting = settings.find(s => s.key === 'openrouter_model');
+
+        if (keySetting && keySetting.value) {
+            apiKey = keySetting.value;
+        }
+
+        if (modelSetting && modelSetting.value) {
+            model = modelSetting.value;
+        }
+    } catch (error) {
+        console.warn('Failed to fetch settings from DB, using env vars:', error.message);
+    }
+
+    if (!apiKey) {
+        throw new Error('OpenRouter API Key is not configured in settings or .env');
+    }
+
+    const client = new OpenAI({
+        baseURL: 'https://openrouter.ai/api/v1',
+        apiKey: apiKey,
+        defaultHeaders: {
+            'HTTP-Referer': 'http://localhost:3001',
+            'X-Title': 'Social Scheduler'
+        }
+    });
+
+    return { client, model };
+}
 
 /**
  * Loads prompt from DB or .md file (fallback)
@@ -46,8 +75,11 @@ async function loadPrompt(platformId, promptFile) {
 /**
  * Generates content for platform
  */
-export async function generateContent(brief, platformId, promptFile, masterPrompt = '', model = DEFAULT_MODEL) {
+export async function generateContent(brief, platformId, promptFile, masterPrompt = '', modelOverride = null) {
     try {
+        const { client, model: configModel } = await getOpenRouterConfig();
+        const model = modelOverride || configModel;
+
         // Load platform-specific prompt from DB or file
         const platformPromptTemplate = await loadPrompt(platformId, promptFile);
 
@@ -63,7 +95,7 @@ export async function generateContent(brief, platformId, promptFile, masterPromp
         const prompt = fullPrompt.replace(/\{\{brief\}\}/g, brief);
 
         // Call OpenRouter
-        const completion = await openrouter.chat.completions.create({
+        const completion = await client.chat.completions.create({
             model: model,
             messages: [
                 {
@@ -86,8 +118,11 @@ export async function generateContent(brief, platformId, promptFile, masterPromp
 /**
  * Generates content with image (for Vision-compatible models)
  */
-export async function generateContentWithImage(brief, imageUrl, platformId, promptFile, masterPrompt = '', model = 'anthropic/claude-3.5-sonnet') {
+export async function generateContentWithImage(brief, imageUrl, platformId, promptFile, masterPrompt = '', modelOverride = null) {
     try {
+        const { client, model: configModel } = await getOpenRouterConfig();
+        const model = modelOverride || configModel;
+
         const platformPromptTemplate = await loadPrompt(platformId, promptFile);
 
         // Combine master prompt + platform prompt
@@ -100,7 +135,7 @@ export async function generateContentWithImage(brief, imageUrl, platformId, prom
 
         const prompt = fullPrompt.replace(/\{\{brief\}\}/g, brief);
 
-        const completion = await openrouter.chat.completions.create({
+        const completion = await client.chat.completions.create({
             model: model,
             messages: [
                 {

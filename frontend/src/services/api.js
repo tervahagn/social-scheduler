@@ -57,6 +57,37 @@ export const publishAllPosts = async (briefId) => {
     return response.data;
 };
 
+// Master Drafts
+export const generateMasterDraft = async (briefId) => {
+    const response = await api.post('/masters/generate', { briefId });
+    return response.data;
+};
+
+export const getMasterDrafts = async (briefId) => {
+    const response = await api.get(`/masters/brief/${briefId}`);
+    return response.data;
+};
+
+export const getLatestMasterDraft = async (briefId) => {
+    const response = await api.get(`/masters/brief/${briefId}/latest`);
+    return response.data;
+};
+
+export const correctMasterDraft = async (masterId, correctionPrompt) => {
+    const response = await api.post(`/masters/${masterId}/correct`, { correctionPrompt });
+    return response.data;
+};
+
+export const approveMasterDraft = async (masterId) => {
+    const response = await api.post(`/masters/${masterId}/approve`);
+    return response.data;
+};
+
+export const generatePostsFromMaster = async (masterId) => {
+    const response = await api.post(`/masters/${masterId}/generate-posts`);
+    return response.data;
+};
+
 // Platforms
 export const getPlatforms = async () => {
     const response = await api.get('/platforms');
@@ -65,6 +96,12 @@ export const getPlatforms = async () => {
 
 export const updatePlatform = async (platformId, data) => {
     const response = await api.put(`/platforms/${platformId}`, data);
+    return response.data;
+};
+
+// Analytics
+export const getAnalyticsDashboard = async () => {
+    const response = await api.get('/analytics/dashboard');
     return response.data;
 };
 

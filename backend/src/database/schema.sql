@@ -1,4 +1,4 @@
--- Briefs: исходные инфоповоды
+-- Briefs: original newsmakers
 CREATE TABLE IF NOT EXISTS briefs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS briefs (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Platforms: конфигурация платформ
+-- Platforms: platform configuration
 CREATE TABLE IF NOT EXISTS platforms (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS platforms (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Posts: сгенерированные посты
+-- Posts: generated posts
 CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     brief_id INTEGER NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS posts (
     FOREIGN KEY (platform_id) REFERENCES platforms(id) ON DELETE CASCADE
 );
 
--- Publish Queue: очередь публикаций
+-- Publish Queue: publishing queue
 CREATE TABLE IF NOT EXISTS publish_queue (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     post_id INTEGER NOT NULL,
@@ -51,13 +51,13 @@ CREATE TABLE IF NOT EXISTS publish_queue (
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 );
 
--- Indexes для производительности
+-- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_posts_brief_id ON posts(brief_id);
 CREATE INDEX IF NOT EXISTS idx_posts_platform_id ON posts(platform_id);
 CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
 CREATE INDEX IF NOT EXISTS idx_queue_status ON publish_queue(status);
 
--- Начальные платформы
+-- Initial platforms
 INSERT OR IGNORE INTO platforms (name, display_name, prompt_file) VALUES
     ('linkedin', 'LinkedIn', 'linkedin.md'),
     ('facebook', 'Facebook', 'facebook.md'),

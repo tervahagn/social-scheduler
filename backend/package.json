@@ -9,7 +9,8 @@
     "start": "node src/index.js",
     "init-db": "node src/database/init.js",
     "migrate-prompts": "node src/database/migrate-prompts.js",
-    "migrate-features": "node src/database/migrate-features.js"
+    "migrate-features": "node src/database/migrate-features.js",
+    "migrate-master-drafts": "node src/database/migrate-master-drafts.js"
   },
   "keywords": [
     "social",
