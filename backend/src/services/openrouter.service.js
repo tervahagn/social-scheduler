@@ -12,7 +12,7 @@ const __dirname = dirname(__filename);
 // OpenRouter configuration helper
 async function getOpenRouterConfig() {
     let apiKey = process.env.OPENROUTER_API_KEY;
-    let model = process.env.OPENROUTER_MODEL || 'anthropic/claude-3.5-sonnet';
+    let model = process.env.OPENROUTER_MODEL || 'x-ai/grok-4.1-fast:free';
 
     try {
         // Dynamic import to avoid circular dependencies if any
@@ -35,8 +35,17 @@ async function getOpenRouterConfig() {
     }
 
     if (!apiKey) {
+        console.error('OpenRouter Config Error: API Key missing');
         throw new Error('OpenRouter API Key is not configured in settings or .env');
     }
+
+    // Debug logging (masked key)
+    console.log('OpenRouter Config:', {
+        model,
+        keyConfigured: !!apiKey,
+        keyPrefix: apiKey.substring(0, 10) + '...',
+        keyLength: apiKey.length
+    });
 
     const client = new OpenAI({
         baseURL: 'https://openrouter.ai/api/v1',

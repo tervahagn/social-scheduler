@@ -30,7 +30,7 @@ export default function Calendar() {
     const fetchPosts = async () => {
         try {
             // Fetch all posts with scheduling info
-            const response = await axios.get('/api/posts/all');
+            const response = await axios.get('/api/calendar/all');
             const posts = response.data;
 
             const calendarEvents = posts

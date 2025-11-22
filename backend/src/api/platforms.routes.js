@@ -8,7 +8,29 @@ const router = express.Router();
  */
 router.get('/', async (req, res) => {
     try {
-        const platforms = await db.prepare('SELECT * FROM platforms ORDER BY name').all();
+        let platforms = await db.prepare('SELECT * FROM platforms').all();
+
+        // Sort platforms in the preferred sequence
+        const platformSequence = [
+            'blog',
+            'linkedin',
+            'linkedin-personal',
+            'reddit',
+            'google-business',
+            'twitter',
+            'youtube-posts',
+            'facebook',
+            'instagram'
+        ];
+
+        platforms.sort((a, b) => {
+            const indexA = platformSequence.indexOf(a.name);
+            const indexB = platformSequence.indexOf(b.name);
+            const valA = indexA === -1 ? 999 : indexA;
+            const valB = indexB === -1 ? 999 : indexB;
+            return valA - valB;
+        });
+
         res.json(platforms);
     } catch (error) {
         console.error('Error fetching platforms:', error);

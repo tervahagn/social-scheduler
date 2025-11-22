@@ -3,24 +3,27 @@ import axios from 'axios';
 import { Save, Loader, FileCode, Key, Cpu } from 'lucide-react';
 
 const AVAILABLE_MODELS = [
-    { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet (Recommended)' },
+    { id: 'x-ai/grok-4.1-fast:free', name: 'Grok 4.1 Fast (Free - Recommended)' },
+    { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet' },
     { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo' },
     { id: 'openai/gpt-4o', name: 'GPT-4o' },
     { id: 'google/gemini-pro-1.5', name: 'Gemini Pro 1.5' },
     { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B' },
 ];
 
+import { useNotification } from '../contexts/NotificationContext';
+
 export default function Settings() {
+    const { showSuccess, showError } = useNotification();
     const [settings, setSettings] = useState({
         master_prompt: '',
         openrouter_api_key: '',
-        openrouter_model: 'anthropic/claude-3.5-sonnet'
+        openrouter_model: 'x-ai/grok-4.1-fast:free'
     });
     // Separate state for custom model ID input to avoid overwriting the select value while typing
     const [customModel, setCustomModel] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [message, setMessage] = useState('');
     const [showKey, setShowKey] = useState(false);
 
     useEffect(() => {
@@ -31,7 +34,7 @@ export default function Settings() {
         try {
             const response = await axios.get('/api/settings');
             // Determine if stored model is a custom ID
-            const storedModel = response.data.openrouter_model;
+            const storedModel = response.data.openrouter_model || 'x-ai/grok-4.1-fast:free';
             const isPredefined = AVAILABLE_MODELS.some(m => m.id === storedModel);
             setSettings(prev => ({
                 ...prev,
@@ -39,12 +42,13 @@ export default function Settings() {
                 openrouter_model: isPredefined ? storedModel : 'custom'
             }));
             // If custom, keep the actual ID in separate state
-            if (!isPredefined) {
+            if (!isPredefined && storedModel) {
                 setCustomModel(storedModel);
             }
             setLoading(false);
         } catch (err) {
             console.error('Error fetching settings:', err);
+            showError('Failed to load settings');
             setLoading(false);
         }
     };
@@ -59,7 +63,6 @@ export default function Settings() {
 
     const handleSave = async () => {
         setSaving(true);
-        setMessage('');
         try {
             // Determine the model value to save
             const modelToSave = settings.openrouter_model === 'custom' ? customModel : settings.openrouter_model;
@@ -80,10 +83,9 @@ export default function Settings() {
                 setSettings(prev => ({ ...prev, openrouter_model: modelToSave }));
                 setCustomModel('');
             }
-            setMessage('Settings saved successfully!');
-            setTimeout(() => setMessage(''), 3000);
+            showSuccess('Settings saved successfully!');
         } catch (err) {
-            setMessage('Error saving: ' + err.message);
+            showError('Error saving settings: ' + err.message);
         }
         setSaving(false);
     };
@@ -119,7 +121,7 @@ export default function Settings() {
                                     value={settings.openrouter_api_key || ''}
                                     onChange={(e) => handleChange('openrouter_api_key', e.target.value)}
                                     placeholder="sk-or-v1-..."
-                                    style={{ paddingLeft: '36px', width: '100%' }}
+                                    style={{ paddingLeft: '36px', paddingRight: '60px', width: '100%' }}
                                 />
                                 <button
                                     type="button"
@@ -150,7 +152,7 @@ export default function Settings() {
                             </label>
                             <select
                                 className="input"
-                                value={settings.openrouter_model || 'anthropic/claude-3.5-sonnet'}
+                                value={settings.openrouter_model || 'x-ai/grok-4.1-fast:free'}
                                 onChange={(e) => handleChange('openrouter_model', e.target.value)}
                                 style={{ width: '100%' }}
                             >
@@ -176,26 +178,27 @@ export default function Settings() {
                             </p>
                         </div>
                     </div>
-                </div>
-                <div style={{ marginTop: '16px' }}>
-                    <button
-                        onClick={handleSave}
-                        className="button"
-                        disabled={saving}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                    >
-                        {saving ? (
-                            <>
-                                <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                                Saving...
-                            </>
-                        ) : (
-                            <>
-                                <Save size={18} />
-                                Save Settings
-                            </>
-                        )}
-                    </button>
+
+                    <div style={{ marginTop: '24px' }}>
+                        <button
+                            onClick={handleSave}
+                            className="button"
+                            disabled={saving}
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                        >
+                            {saving ? (
+                                <>
+                                    <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save size={18} />
+                                    Save Settings
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Master Prompt */}
@@ -242,18 +245,6 @@ export default function Settings() {
                             </>
                         )}
                     </button>
-                    {message && (
-                        <p style={{
-                            padding: '8px 12px',
-                            background: message.includes('Error') ? 'var(--danger)' : 'var(--success)',
-                            color: 'white',
-                            borderRadius: '4px',
-                            fontSize: '13px',
-                            margin: 0
-                        }}>
-                            {message}
-                        </p>
-                    )}
                 </div>
 
                 <div style={{

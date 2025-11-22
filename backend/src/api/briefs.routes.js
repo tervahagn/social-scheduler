@@ -133,6 +133,44 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
+ * PUT /api/briefs/:id - Update brief
+ */
+router.put('/:id', async (req, res) => {
+    try {
+        const { title, content, link_url, selected_platforms } = req.body;
+        const briefId = req.params.id;
+
+        // Check if brief exists
+        const brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(briefId);
+        if (!brief) {
+            return res.status(404).json({ error: 'Brief not found' });
+        }
+
+        // Validate required fields
+        if (!content) {
+            return res.status(400).json({ error: 'Content is required' });
+        }
+
+        // Update brief
+        await db.prepare(`
+            UPDATE briefs 
+            SET title = ?, content = ?, link_url = ?, selected_platforms = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(title || 'Untitled', content, link_url || null, selected_platforms || null, briefId);
+
+        // Return updated brief
+        const updatedBrief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(briefId);
+        const files = await db.prepare('SELECT * FROM brief_files WHERE brief_id = ?').all(briefId);
+        updatedBrief.files = files;
+
+        res.json(updatedBrief);
+    } catch (error) {
+        console.error('Error updating brief:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * POST /api/briefs/:id/generate - Generate posts
  */
 router.post('/:id/generate', async (req, res) => {

@@ -45,7 +45,7 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/briefs', briefsRoutes);
 app.use('/api/posts', postsRoutes);
-app.use('/api/posts', calendarRoutes);
+app.use('/api/calendar', calendarRoutes);
 app.use('/api/publish', publishRoutes);
 app.use('/api/platforms', platformsRoutes);
 app.use('/api/settings', settingsRoutes);

@@ -1,6 +1,9 @@
-import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import { Zap, FileText, Clock, Settings as SettingsIcon, CalendarDays, Sliders, Sun, Moon, BarChart2 } from 'lucide-react';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { NotificationProvider } from './contexts/NotificationContext';
+import { useEffect } from 'react';
+import Intro from './pages/Intro';
 import NewBrief from './pages/NewBrief';
 import MasterDraft from './pages/MasterDraft';
 import Preview from './pages/Preview';
@@ -18,10 +21,10 @@ function Navigation() {
         <nav>
             <div className="nav-container">
                 <div className="nav-content">
-                    <div className="logo">
+                    <Link to="/intro" className="logo" style={{ textDecoration: 'none' }}>
                         <Zap size={24} />
                         Social Scheduler
-                    </div>
+                    </Link>
 
                     <ul className="nav-links">
                         <li>
@@ -72,23 +75,41 @@ function Navigation() {
     );
 }
 
+function Root() {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const hasVisited = localStorage.getItem('hasVisited');
+        if (!hasVisited) {
+            localStorage.setItem('hasVisited', 'true');
+            navigate('/intro');
+        }
+    }, [navigate]);
+
+    return <NewBrief />;
+}
+
 export default function App() {
     return (
         <ThemeProvider>
-            <BrowserRouter>
-                <Navigation />
-                <Routes>
-                    <Route path="/" element={<NewBrief />} />
-                    <Route path="/master/:briefId" element={<MasterDraft />} />
-                    <Route path="/preview/:briefId" element={<Preview />} />
-                    <Route path="/calendar" element={<Calendar />} />
-                    <Route path="/analytics" element={<Analytics />} />
-                    <Route path="/history" element={<History />} />
-                    <Route path="/platforms" element={<Platforms />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </BrowserRouter>
+            <NotificationProvider>
+                <BrowserRouter>
+                    <Navigation />
+                    <Routes>
+                        <Route path="/" element={<Root />} />
+                        <Route path="/intro" element={<Intro />} />
+                        <Route path="/new" element={<NewBrief />} />
+                        <Route path="/master/:briefId" element={<MasterDraft />} />
+                        <Route path="/preview/:briefId" element={<Preview />} />
+                        <Route path="/calendar" element={<Calendar />} />
+                        <Route path="/analytics" element={<Analytics />} />
+                        <Route path="/history" element={<History />} />
+                        <Route path="/platforms" element={<Platforms />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </BrowserRouter>
+            </NotificationProvider>
         </ThemeProvider>
     );
 }

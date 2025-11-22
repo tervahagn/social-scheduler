@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     getBrief,
+    updateBrief,
     getMasterDrafts,
     correctMasterDraft,
     approveMasterDraft,
@@ -13,23 +14,31 @@ import {
     ArrowLeft,
     CheckCircle,
     MessageSquare,
-    History,
     Send,
-    AlertCircle,
-    Wand2
+    Sparkles,
+    FileEdit,
+    ChevronRight,
+    Edit2,
+    X,
+    Save
 } from 'lucide-react';
+import { useNotification } from '../contexts/NotificationContext';
 
 export default function MasterDraft() {
     const { briefId } = useParams();
     const navigate = useNavigate();
-
+    const { showSuccess, showError } = useNotification();
     const [brief, setBrief] = useState(null);
     const [drafts, setDrafts] = useState([]);
     const [selectedDraft, setSelectedDraft] = useState(null);
     const [correctionPrompt, setCorrectionPrompt] = useState('');
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
-    const [error, setError] = useState(null);
+
+    // Brief editing state
+    const [editingBrief, setEditingBrief] = useState(false);
+    const [briefTitle, setBriefTitle] = useState('');
+    const [briefContent, setBriefContent] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -43,32 +52,36 @@ export default function MasterDraft() {
                 getMasterDrafts(briefId)
             ]);
 
-            setBrief(briefData);
-            setDrafts(draftsData);
+            if (!briefData) {
+                throw new Error('Brief not found');
+            }
 
-            if (draftsData.length > 0) {
+            setBrief(briefData);
+            setBriefTitle(briefData.title || '');
+            setBriefContent(briefData.content || '');
+            setDrafts(Array.isArray(draftsData) ? draftsData : []);
+
+            if (Array.isArray(draftsData) && draftsData.length > 0) {
                 setSelectedDraft(draftsData[0]); // Select latest
-            } else {
-                // No drafts yet, maybe auto-generate? 
-                // For now, let's show a "Generate" button if empty
             }
         } catch (err) {
             console.error('Error fetching data:', err);
-            setError('Failed to load brief data');
+            showError('Failed to load master draft data');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleGenerateFirstDraft = async () => {
+    const handleGenerateDraft = async () => {
         try {
             setProcessing(true);
             const newDraft = await generateMasterDraft(briefId);
             setDrafts([newDraft]);
             setSelectedDraft(newDraft);
+            showSuccess('Master draft generated successfully');
         } catch (err) {
             console.error('Error generating draft:', err);
-            setError(err.response?.data?.error || 'Failed to generate draft');
+            showError(err.response?.data?.error || 'Failed to generate draft');
         } finally {
             setProcessing(false);
         }
@@ -82,14 +95,14 @@ export default function MasterDraft() {
             setProcessing(true);
             const newDraft = await correctMasterDraft(selectedDraft.id, correctionPrompt);
 
-            // Add to list and select it
             const updatedDrafts = [newDraft, ...drafts];
             setDrafts(updatedDrafts);
             setSelectedDraft(newDraft);
             setCorrectionPrompt('');
+            showSuccess('Correction applied successfully');
         } catch (err) {
             console.error('Error correcting draft:', err);
-            setError(err.response?.data?.error || 'Failed to correct draft');
+            showError(err.response?.data?.error || 'Failed to correct draft');
         } finally {
             setProcessing(false);
         }
@@ -100,17 +113,17 @@ export default function MasterDraft() {
 
         try {
             setProcessing(true);
-            const approvedDraft = await approveMasterDraft(selectedDraft.id);
+            const updatedDraft = await approveMasterDraft(selectedDraft.id);
 
-            // Update in list
             const updatedDrafts = drafts.map(d =>
-                d.id === approvedDraft.id ? approvedDraft : d
+                d.id === updatedDraft.id ? updatedDraft : d
             );
             setDrafts(updatedDrafts);
-            setSelectedDraft(approvedDraft);
+            setSelectedDraft(updatedDraft);
+            showSuccess('Draft approved! You can now generate posts.');
         } catch (err) {
             console.error('Error approving draft:', err);
-            setError(err.response?.data?.error || 'Failed to approve draft');
+            showError(err.response?.data?.error || 'Failed to approve draft');
         } finally {
             setProcessing(false);
         }
@@ -122,235 +135,408 @@ export default function MasterDraft() {
         try {
             setProcessing(true);
             await generatePostsFromMaster(selectedDraft.id);
+            showSuccess('Posts generated successfully');
             navigate(`/preview/${briefId}`);
         } catch (err) {
             console.error('Error generating posts:', err);
-            setError(err.response?.data?.error || 'Failed to generate posts');
+            showError(err.response?.data?.error || 'Failed to generate posts');
         } finally {
             setProcessing(false);
         }
     };
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <Loader className="animate-spin text-blue-500" size={40} />
-            </div>
-        );
-    }
+    const handleSaveBrief = async () => {
+        if (!briefContent.trim()) {
+            showError('Content is required');
+            return;
+        }
 
-    if (!brief) {
-        return <div className="p-8 text-center">Brief not found</div>;
-    }
+        try {
+            setProcessing(true);
+            const updatedBrief = await updateBrief(briefId, {
+                title: briefTitle || 'Untitled',
+                content: briefContent,
+                selected_platforms: brief.selected_platforms
+            });
+            setBrief(updatedBrief);
+            setEditingBrief(false);
+            showSuccess('Brief updated successfully');
+        } catch (err) {
+            console.error('Error updating brief:', err);
+            showError(err.response?.data?.error || 'Failed to update brief');
+        } finally {
+            setProcessing(false);
+        }
+    };
+
+    const handleCancelEdit = () => {
+        // Reset to original brief values
+        setBriefTitle(brief.title || '');
+        setBriefContent(brief.content || '');
+        setEditingBrief(false);
+    };
+
+    if (loading) return <div className="loading">Loading...</div>;
+    if (!brief) return <div className="container"><p>Brief not found</p></div>;
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-            <button
-                onClick={() => navigate('/')}
-                className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
-            >
-                <ArrowLeft size={20} className="mr-2" />
-                Back to Dashboard
-            </button>
+        <div className="container" style={{ maxWidth: '1200px' }}>
+            {/* Header */}
+            <div style={{ marginBottom: '32px' }}>
+                <button
+                    onClick={() => navigate('/')}
+                    className="button button-secondary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}
+                >
+                    <ArrowLeft size={16} />
+                    Back to Briefs
+                </button>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column: Brief & History */}
-                <div className="space-y-6">
-                    {/* Brief Summary */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h2 className="text-lg font-semibold mb-4">Brief Details</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-xs font-medium text-gray-500 uppercase">Title</label>
-                                <p className="font-medium">{brief.title}</p>
-                            </div>
-                            <div>
-                                <label className="text-xs font-medium text-gray-500 uppercase">Original Content</label>
-                                <p className="text-sm text-gray-600 mt-1 line-clamp-6">{brief.content}</p>
-                            </div>
-                            {brief.link_url && (
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500 uppercase">Link</label>
-                                    <a href={brief.link_url} target="_blank" rel="noopener noreferrer" className="block text-sm text-blue-600 hover:underline truncate">
-                                        {brief.link_url}
-                                    </a>
-                                </div>
+                <h1 style={{ marginBottom: '8px' }}>Master Content Draft</h1>
+                <p className="text-secondary">Create and refine your master content before generating platform posts</p>
+            </div>
+
+            {/* Brief Summary - Editable when no drafts or in edit mode */}
+            <div className="card" style={{ marginBottom: '24px', padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '16px', fontWeight: '600' }}>Brief Details</h3>
+                    {!editingBrief && drafts.length > 0 && (
+                        <button
+                            className="button button-secondary"
+                            style={{ fontSize: '13px', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            onClick={() => setEditingBrief(true)}
+                        >
+                            <Edit2 size={14} />
+                            Edit
+                        </button>
+                    )}
+                </div>
+
+                {editingBrief || drafts.length === 0 ? (
+                    /* Editing Mode or No Drafts Yet */
+                    <div>
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500' }}>
+                                Title
+                            </label>
+                            <input
+                                type="text"
+                                className="input"
+                                value={briefTitle}
+                                onChange={(e) => setBriefTitle(e.target.value)}
+                                placeholder="Enter brief title"
+                                style={{ width: '100%' }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500' }}>
+                                Content <span style={{ color: 'var(--danger)' }}>*</span>
+                            </label>
+                            <textarea
+                                className="textarea"
+                                value={briefContent}
+                                onChange={(e) => setBriefContent(e.target.value)}
+                                placeholder="Enter brief content"
+                                style={{ width: '100%', minHeight: '120px' }}
+                            />
+                        </div>
+
+                        {drafts.length === 0 && (
+                            <p className="text-secondary" style={{ fontSize: '13px', marginBottom: '16px', fontStyle: 'italic' }}>
+                                Review and edit your brief before generating master content
+                            </p>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                                onClick={handleSaveBrief}
+                                disabled={processing || !briefContent.trim()}
+                                className="button"
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                            >
+                                {processing ? (
+                                    <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                                ) : (
+                                    <Save size={16} />
+                                )}
+                                Save Brief
+                            </button>
+                            {drafts.length > 0 && (
+                                <button
+                                    onClick={handleCancelEdit}
+                                    disabled={processing}
+                                    className="button button-secondary"
+                                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                    <X size={16} />
+                                    Cancel
+                                </button>
                             )}
                         </div>
                     </div>
+                ) : (
+                    /* View Mode */
+                    <div>
+                        <div style={{ marginBottom: '12px' }}>
+                            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Title</div>
+                            <div style={{ fontSize: '15px', fontWeight: '600' }}>{brief.title}</div>
+                        </div>
+                        <div style={{ marginBottom: '12px' }}>
+                            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Content</div>
+                            <div style={{ fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{brief.content}</div>
+                        </div>
+                    </div>
+                )}
+            </div>
 
-                    {/* Version History */}
-                    {drafts.length > 0 && (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-semibold flex items-center">
-                                    <History size={20} className="mr-2" />
-                                    History
-                                </h2>
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-600">
-                                    {drafts.length} versions
-                                </span>
+            {/* Main Content Area */}
+            {drafts.length === 0 ? (
+                /* Initial Generation State */
+                <div className="card" style={{ textAlign: 'center', padding: '64px 32px' }}>
+                    <div style={{
+                        width: '64px',
+                        height: '64px',
+                        background: 'linear-gradient(135deg, var(--accent), var(--primary))',
+                        borderRadius: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 24px'
+                    }}>
+                        <Sparkles size={32} color="white" />
+                    </div>
+
+                    <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '8px' }}>
+                        Generate Master Content
+                    </h2>
+                    <p className="text-secondary" style={{ maxWidth: '500px', margin: '0 auto 32px', fontSize: '15px', lineHeight: '1.6' }}>
+                        Create a refined master version of your content. You can iterate on it until it's perfect, then generate platform-specific posts.
+                    </p>
+
+                    <button
+                        onClick={handleGenerateDraft}
+                        disabled={processing}
+                        className="button"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '16px', padding: '12px 24px' }}
+                    >
+                        {processing ? (
+                            <>
+                                <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} />
+                                Generating...
+                            </>
+                        ) : (
+                            <>
+                                <Sparkles size={20} />
+                                Generate Master Draft
+                            </>
+                        )}
+                    </button>
+                </div>
+            ) : (
+                /* Draft Editor View */
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
+                    {/* Status & Actions Banner */}
+                    {selectedDraft?.status === 'approved' ? (
+                        <div style={{
+                            padding: '16px 20px',
+                            background: 'var(--success)',
+                            color: 'white',
+                            borderRadius: 'var(--radius)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <CheckCircle size={24} />
+                                <div>
+                                    <div style={{ fontWeight: '600', fontSize: '15px' }}>Master Content Approved</div>
+                                    <div style={{ fontSize: '13px', opacity: 0.9 }}>Ready to generate platform-specific posts</div>
+                                </div>
                             </div>
-                            <div className="space-y-3">
+                            <button
+                                onClick={handleGeneratePosts}
+                                disabled={processing}
+                                className="button"
+                                style={{
+                                    background: 'white',
+                                    color: 'var(--success)',
+                                    border: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    fontWeight: '600'
+                                }}
+                            >
+                                {processing ? (
+                                    <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                                ) : (
+                                    <>
+                                        Generate Posts
+                                        <ChevronRight size={18} />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    ) : (
+                        <div style={{
+                            padding: '16px 20px',
+                            background: 'var(--bg-secondary)',
+                            borderRadius: 'var(--radius)',
+                            border: '1px solid var(--border)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <FileEdit size={24} color="var(--accent)" />
+                                <div>
+                                    <div style={{ fontWeight: '600', fontSize: '15px' }}>Draft in Progress</div>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Review and approve when ready</div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleApprove}
+                                disabled={processing}
+                                className="button"
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                            >
+                                {processing ? (
+                                    <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                                ) : (
+                                    <>
+                                        <CheckCircle size={18} />
+                                        Approve
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Content Display */}
+                    <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                        <div style={{
+                            padding: '16px 20px',
+                            background: 'var(--bg-secondary)',
+                            borderBottom: '1px solid var(--border)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <span style={{ fontWeight: '600', fontSize: '14px' }}>
+                                Version {selectedDraft?.version}
+                            </span>
+                            <button
+                                onClick={() => navigator.clipboard.writeText(selectedDraft?.content)}
+                                className="button button-secondary"
+                                style={{ fontSize: '13px', padding: '6px 12px' }}
+                            >
+                                Copy
+                            </button>
+                        </div>
+                        <div style={{
+                            padding: '24px',
+                            fontSize: '16px',
+                            lineHeight: '1.8',
+                            whiteSpace: 'pre-wrap',
+                            minHeight: '300px',
+                            maxHeight: '600px',
+                            overflow: 'auto'
+                        }}>
+                            {selectedDraft?.content}
+                        </div>
+                    </div>
+
+                    {/* Version History - Compact */}
+                    {drafts.length > 1 && (
+                        <div className="card">
+                            <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px' }}>
+                                Versions ({drafts.length})
+                            </h3>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                 {drafts.map((draft) => (
                                     <button
                                         key={draft.id}
                                         onClick={() => setSelectedDraft(draft)}
-                                        className={`w-full text-left p-3 rounded-lg border transition-all ${selectedDraft?.id === draft.id
-                                                ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
-                                                : 'border-gray-200 hover:bg-gray-50'
-                                            }`}
+                                        style={{
+                                            padding: '8px 16px',
+                                            borderRadius: 'var(--radius)',
+                                            border: selectedDraft?.id === draft.id
+                                                ? '2px solid var(--accent)'
+                                                : '1px solid var(--border)',
+                                            background: selectedDraft?.id === draft.id
+                                                ? 'var(--bg-tertiary)'
+                                                : 'var(--bg-secondary)',
+                                            fontSize: '13px',
+                                            fontWeight: selectedDraft?.id === draft.id ? '600' : '400',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px'
+                                        }}
                                     >
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <span className="font-medium text-sm">Version {draft.version}</span>
-                                                <span className="text-xs text-gray-500 block mt-1">
-                                                    {new Date(draft.created_at).toLocaleTimeString()}
-                                                </span>
-                                            </div>
-                                            {draft.status === 'approved' && (
-                                                <CheckCircle size={16} className="text-green-500" />
-                                            )}
-                                        </div>
-                                        {draft.correction_prompt && (
-                                            <div className="mt-2 text-xs text-gray-600 bg-white p-2 rounded border border-gray-100 italic">
-                                                "{draft.correction_prompt}"
-                                            </div>
+                                        v{draft.version}
+                                        {draft.status === 'approved' && (
+                                            <CheckCircle size={14} color="var(--success)" />
                                         )}
                                     </button>
                                 ))}
                             </div>
                         </div>
                     )}
-                </div>
 
-                {/* Right Column: Master Draft Editor */}
-                <div className="lg:col-span-2">
-                    {drafts.length === 0 ? (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <Wand2 size={32} className="text-blue-600" />
-                            </div>
-                            <h2 className="text-2xl font-bold mb-2">Ready to Generate Master Draft</h2>
-                            <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                                We'll create a master version of your content using the Master Prompt settings. You can then iterate and refine it before generating platform-specific posts.
-                            </p>
-                            <button
-                                onClick={handleGenerateFirstDraft}
-                                disabled={processing}
-                                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center mx-auto font-medium transition-colors"
-                            >
-                                {processing ? (
-                                    <>
-                                        <Loader size={20} className="animate-spin mr-2" />
-                                        Generating...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Wand2 size={20} className="mr-2" />
-                                        Generate Master Draft
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            {/* Status Banner */}
-                            {selectedDraft?.status === 'approved' ? (
-                                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
-                                    <div className="flex items-center text-green-800">
-                                        <CheckCircle size={20} className="mr-2" />
-                                        <span className="font-medium">This version is approved</span>
-                                    </div>
-                                    <button
-                                        onClick={handleGeneratePosts}
+                    {/* Request Changes */}
+                    {selectedDraft?.status !== 'approved' && (
+                        <div className="card">
+                            <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <MessageSquare size={18} />
+                                Request Changes
+                            </h3>
+                            <form onSubmit={handleCorrect}>
+                                <div style={{ position: 'relative' }}>
+                                    <textarea
+                                        value={correctionPrompt}
+                                        onChange={(e) => setCorrectionPrompt(e.target.value)}
+                                        placeholder="e.g., Make it shorter, remove emojis, add more focus on benefits..."
+                                        className="textarea"
+                                        style={{ minHeight: '100px', paddingRight: '60px' }}
                                         disabled={processing}
-                                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center text-sm font-medium"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={!correctionPrompt.trim() || processing}
+                                        style={{
+                                            position: 'absolute',
+                                            bottom: '12px',
+                                            right: '12px',
+                                            background: correctionPrompt.trim() ? 'var(--accent)' : 'var(--bg-tertiary)',
+                                            border: 'none',
+                                            borderRadius: '50%',
+                                            width: '40px',
+                                            height: '40px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            cursor: correctionPrompt.trim() ? 'pointer' : 'not-allowed',
+                                            transition: 'all 0.2s'
+                                        }}
                                     >
                                         {processing ? (
-                                            <Loader size={16} className="animate-spin mr-2" />
+                                            <Loader size={20} color="white" style={{ animation: 'spin 1s linear infinite' }} />
                                         ) : (
-                                            <Send size={16} className="mr-2" />
+                                            <Send size={20} color="white" />
                                         )}
-                                        Generate Platform Posts
                                     </button>
                                 </div>
-                            ) : (
-                                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center justify-between">
-                                    <div className="flex items-center text-blue-800">
-                                        <AlertCircle size={20} className="mr-2" />
-                                        <span className="font-medium">Draft in progress</span>
-                                    </div>
-                                    <button
-                                        onClick={handleApprove}
-                                        disabled={processing}
-                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center text-sm font-medium"
-                                    >
-                                        {processing ? (
-                                            <Loader size={16} className="animate-spin mr-2" />
-                                        ) : (
-                                            <CheckCircle size={16} className="mr-2" />
-                                        )}
-                                        Approve This Version
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* Content Display */}
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                                <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                                    <span className="font-medium text-gray-700">Master Content (v{selectedDraft?.version})</span>
-                                    <button
-                                        onClick={() => navigator.clipboard.writeText(selectedDraft?.content)}
-                                        className="text-xs text-gray-500 hover:text-blue-600"
-                                    >
-                                        Copy to clipboard
-                                    </button>
-                                </div>
-                                <div className="p-6 whitespace-pre-wrap font-sans text-lg leading-relaxed text-gray-800 min-h-[300px]">
-                                    {selectedDraft?.content}
-                                </div>
-                            </div>
-
-                            {/* Correction Input */}
-                            {selectedDraft?.status !== 'approved' && (
-                                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                    <h3 className="font-medium mb-4 flex items-center">
-                                        <MessageSquare size={20} className="mr-2 text-blue-500" />
-                                        Request Changes
-                                    </h3>
-                                    <form onSubmit={handleCorrect}>
-                                        <div className="relative">
-                                            <textarea
-                                                value={correctionPrompt}
-                                                onChange={(e) => setCorrectionPrompt(e.target.value)}
-                                                placeholder="e.g., Make it shorter, remove the emojis, add more focus on the benefits..."
-                                                className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12 min-h-[100px]"
-                                                disabled={processing}
-                                            />
-                                            <button
-                                                type="submit"
-                                                disabled={!correctionPrompt.trim() || processing}
-                                                className="absolute bottom-4 right-4 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:bg-gray-400 transition-colors"
-                                                title="Submit Correction"
-                                            >
-                                                {processing ? (
-                                                    <Loader size={20} className="animate-spin" />
-                                                ) : (
-                                                    <Send size={20} />
-                                                )}
-                                            </button>
-                                        </div>
-                                        <p className="text-xs text-gray-500 mt-2">
-                                            This will generate a new version (v{(selectedDraft?.version || 0) + 1}) based on your feedback.
-                                        </p>
-                                    </form>
-                                </div>
-                            )}
+                                <p className="text-secondary" style={{ fontSize: '12px', marginTop: '8px' }}>
+                                    This will create version {(selectedDraft?.version || 0) + 1} based on your feedback
+                                </p>
+                            </form>
                         </div>
                     )}
                 </div>
-            </div>
+            )}
         </div>
     );
 }

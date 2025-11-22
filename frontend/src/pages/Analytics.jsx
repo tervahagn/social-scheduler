@@ -1,24 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getAnalyticsDashboard } from '../services/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Activity, TrendingUp, Users, FileText, CheckCircle, Send } from 'lucide-react';
-
-const MetricCard = ({ title, value, icon: Icon, color, subtext }) => (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
-            <div className={`p-2 rounded-lg ${color}`}>
-                <Icon className="w-5 h-5 text-white" />
-            </div>
-        </div>
-        <div className="flex items-end justify-between">
-            <div>
-                <span className="text-2xl font-bold text-gray-900">{value}</span>
-                {subtext && <p className="text-xs text-gray-500 mt-1">{subtext}</p>}
-            </div>
-        </div>
-    </div>
-);
+import { BarChart2, TrendingUp, FileText, CheckCircle, Send, Zap } from 'lucide-react';
 
 export default function Analytics() {
     const [data, setData] = useState(null);
@@ -40,107 +22,248 @@ export default function Analytics() {
         }
     };
 
-    if (loading) return <div className="p-8 text-center">Loading analytics...</div>;
-    if (error) return <div className="p-8 text-center text-red-500">Error: {error}</div>;
+    if (loading) return <div className="loading">Loading analytics...</div>;
+    if (error) return <div className="error">{error}</div>;
 
     const { funnel, platforms, topPosts } = data;
 
+    // Calculate rates
+    const approvalRate = funnel.generated > 0 ? ((funnel.approved / funnel.generated) * 100).toFixed(1) : 0;
+    const publishRate = funnel.approved > 0 ? ((funnel.published / funnel.approved) * 100).toFixed(1) : 0;
+
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
-                <p className="text-gray-500">Overview of your content performance</p>
+        <div className="container">
+            <div style={{ marginBottom: '32px' }}>
+                <h1 style={{ marginBottom: '8px' }}>Analytics</h1>
+                <p className="text-secondary">Content performance overview</p>
             </div>
 
             {/* Funnel Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <MetricCard
-                    title="Total Briefs"
-                    value={funnel.briefs}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                gap: '16px',
+                marginBottom: '32px'
+            }}>
+                <StatCard
                     icon={FileText}
-                    color="bg-blue-500"
+                    label="Briefs Created"
+                    value={funnel.briefs}
+                    color="var(--accent)"
                 />
-                <MetricCard
-                    title="Generated Posts"
+                <StatCard
+                    icon={Zap}
+                    label="Posts Generated"
                     value={funnel.generated}
-                    icon={Activity}
-                    color="bg-purple-500"
+                    color="var(--primary)"
                 />
-                <MetricCard
-                    title="Approved"
-                    value={funnel.approved}
+                <StatCard
                     icon={CheckCircle}
-                    color="bg-green-500"
-                    subtext={`${((funnel.approved / funnel.generated) * 100).toFixed(1)}% approval rate`}
+                    label="Approved"
+                    value={funnel.approved}
+                    sublabel={`${approvalRate}% approval rate`}
+                    color="var(--success)"
                 />
-                <MetricCard
-                    title="Published"
-                    value={funnel.published}
+                <StatCard
                     icon={Send}
-                    color="bg-indigo-500"
-                    subtext={`${((funnel.published / funnel.approved) * 100).toFixed(1)}% success rate`}
+                    label="Published"
+                    value={funnel.published}
+                    sublabel={`${publishRate}% publish rate`}
+                    color="var(--purple)"
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                {/* Platform Performance Chart */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h2 className="text-lg font-semibold mb-6">Platform Performance</h2>
-                    <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={platforms}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="platform" />
-                                <YAxis />
-                                <Tooltip />
-                                <Legend />
-                                <Bar dataKey="total_posts" name="Total Posts" fill="#8884d8" />
-                                <Bar dataKey="published_count" name="Published" fill="#82ca9d" />
-                            </BarChart>
-                        </ResponsiveContainer>
+            {/* Platform Performance */}
+            <div className="card" style={{ marginBottom: '32px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <BarChart2 size={20} />
+                    Platform Performance
+                </h2>
+
+                {platforms.length > 0 ? (
+                    <div style={{ display: 'grid', gap: '12px' }}>
+                        {platforms.map((platform, idx) => {
+                            const publishRate = platform.total_posts > 0
+                                ? ((platform.published_count / platform.total_posts) * 100).toFixed(0)
+                                : 0;
+
+                            return (
+                                <div key={idx} style={{
+                                    padding: '16px',
+                                    background: 'var(--bg-secondary)',
+                                    borderRadius: 'var(--radius)',
+                                    border: '1px solid var(--border)'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                        <span style={{ fontWeight: '600', fontSize: '15px' }}>{platform.platform}</span>
+                                        <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                                            <span>{platform.total_posts} posts</span>
+                                            <span>{platform.published_count} published</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Progress bar */}
+                                    <div style={{
+                                        width: '100%',
+                                        height: '6px',
+                                        background: 'var(--bg-tertiary)',
+                                        borderRadius: '3px',
+                                        overflow: 'hidden',
+                                        marginBottom: '8px'
+                                    }}>
+                                        <div style={{
+                                            width: `${publishRate}%`,
+                                            height: '100%',
+                                            background: 'var(--success)',
+                                            transition: 'width 0.3s ease'
+                                        }} />
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '24px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                                        <span>Publish rate: <strong style={{ color: 'var(--text-primary)' }}>{publishRate}%</strong></span>
+                                        {platform.avg_edits > 0 && (
+                                            <span>Avg edits: <strong style={{ color: 'var(--text-primary)' }}>{platform.avg_edits.toFixed(1)}</strong></span>
+                                        )}
+                                        {platform.avg_gen_time && (
+                                            <span>Avg gen time: <strong style={{ color: 'var(--text-primary)' }}>{(platform.avg_gen_time / 1000).toFixed(1)}s</strong></span>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
+                ) : (
+                    <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                        No platform data available yet
+                    </div>
+                )}
+            </div>
+
+            {/* Top Posts */}
+            <div className="card">
+                <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <TrendingUp size={20} />
+                    Top Performing Posts
+                </h2>
+
+                {topPosts.length > 0 ? (
+                    <div style={{ display: 'grid', gap: '12px' }}>
+                        {topPosts.map((post) => (
+                            <div key={post.id} style={{
+                                padding: '16px',
+                                background: 'var(--bg-secondary)',
+                                borderRadius: 'var(--radius)',
+                                border: '1px solid var(--border)'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--accent)', marginBottom: '8px' }}>
+                                            {post.platform}
+                                        </div>
+                                        <div style={{
+                                            fontSize: '14px',
+                                            lineHeight: '1.5',
+                                            color: 'var(--text-primary)',
+                                            maxHeight: '60px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical'
+                                        }}>
+                                            {post.content}
+                                        </div>
+                                    </div>
+
+                                    <div style={{
+                                        marginLeft: '16px',
+                                        padding: '8px 16px',
+                                        background: 'var(--bg-tertiary)',
+                                        borderRadius: 'var(--radius)',
+                                        textAlign: 'center',
+                                        minWidth: '80px'
+                                    }}>
+                                        <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--success)' }}>
+                                            {post.engagement_rate ? post.engagement_rate.toFixed(1) : '0'}%
+                                        </div>
+                                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                                            engagement
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                                    <span>👍 {post.likes || 0}</span>
+                                    <span>💬 {post.comments || 0}</span>
+                                    <span>🔄 {post.shares || 0}</span>
+                                    {post.collected_at && (
+                                        <span style={{ marginLeft: 'auto', fontSize: '12px' }}>
+                                            {new Date(post.collected_at).toLocaleDateString()}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                        <TrendingUp size={48} style={{ margin: '0 auto 16px', opacity: 0.3 }} />
+                        <p>No engagement data collected yet</p>
+                        <p style={{ fontSize: '13px', marginTop: '8px' }}>
+                            Metrics will appear here once posts are published and tracked
+                        </p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+// Minimal stat card component
+function StatCard({ icon: Icon, label, value, sublabel, color }) {
+    return (
+        <div className="card" style={{
+            padding: '20px',
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            {/* Icon background decoration */}
+            <div style={{
+                position: 'absolute',
+                top: '-10px',
+                right: '-10px',
+                opacity: 0.05,
+            }}>
+                <Icon size={80} />
+            </div>
+
+            {/* Content */}
+            <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <div style={{
+                        padding: '8px',
+                        borderRadius: '8px',
+                        background: color,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <Icon size={18} color="white" />
+                    </div>
+                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                        {label}
+                    </span>
                 </div>
 
-                {/* Top Performing Posts */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h2 className="text-lg font-semibold mb-6">Top Performing Posts</h2>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Platform</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Engagement</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {topPosts.map((post) => (
-                                    <tr key={post.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {post.platform}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <div className="flex gap-2">
-                                                <span title="Likes">👍 {post.likes}</span>
-                                                <span title="Comments">💬 {post.comments}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {post.engagement_rate ? `${post.engagement_rate.toFixed(2)}%` : '-'}
-                                        </td>
-                                    </tr>
-                                ))}
-                                {topPosts.length === 0 && (
-                                    <tr>
-                                        <td colSpan="3" className="px-6 py-4 text-center text-sm text-gray-500">
-                                            No engagement data yet
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                <div style={{ fontSize: '32px', fontWeight: '700', lineHeight: '1', marginBottom: '8px' }}>
+                    {value}
                 </div>
+
+                {sublabel && (
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                        {sublabel}
+                    </div>
+                )}
             </div>
         </div>
     );

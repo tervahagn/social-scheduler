@@ -15,6 +15,7 @@
     --text-secondary: #6c757d;
     --border: #dee2e6;
     --accent: #6366f1;
+    --accent-rgb: 99, 102, 241;
     --accent-hover: #4f46e5;
     --success: #10b981;
     --danger: #ef4444;
@@ -30,6 +31,7 @@
     --text-secondary: #a0a0a0;
     --border: #333;
     --accent: #6366f1;
+    --accent-rgb: 99, 102, 241;
     --accent-hover: #4f46e5;
     --success: #10b981;
     --danger: #ef4444;

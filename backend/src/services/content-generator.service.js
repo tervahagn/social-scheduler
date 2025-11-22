@@ -1,16 +1,18 @@
+import { join } from 'path';
 import db from '../database/db.js';
 import { generateContent, generateContentWithImage } from './openrouter.service.js';
 
-/**
- * Generates posts for all active platforms
- * @param {number} briefId
- * @param {number} [masterId] - Optional master draft ID to use as source
- */
 export async function generatePostsForBrief(briefId, masterId = null) {
+    // Fetch brief data
+    const brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(briefId);
+    if (!brief) {
+        throw new Error('Brief not found');
+    }
     // Get brief files
     const files = await db.prepare('SELECT * FROM brief_files WHERE brief_id = ?').all(briefId);
     const mediaFiles = files.filter(f => f.category === 'media');
     const docFiles = files.filter(f => f.category === 'document');
+
 
     // Prepare source content with attached documents
     let sourceContent = brief.content;
@@ -64,16 +66,17 @@ export async function generatePostsForBrief(briefId, masterId = null) {
         platforms = await db.prepare('SELECT * FROM platforms WHERE is_active = 1').all();
     }
 
-    // Define platform sequence
+    // Define platform sequence: blog, linkedin (company), linkedin (personal), reddit, google, x, youtube, fb, ig
     const platformSequence = [
         'blog',
         'linkedin',
-        'google-business',
+        'linkedin-personal',
         'reddit',
+        'google-business',
         'twitter', // X
+        'youtube-posts',
         'facebook',
-        'instagram',
-        'youtube-posts'
+        'instagram'
     ];
 
     // Sort platforms according to sequence

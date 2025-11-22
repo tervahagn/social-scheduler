@@ -1,79 +1,200 @@
 import { useState, useEffect } from 'react';
-import { getBriefs } from '../services/api';
+import { getBriefs, deleteBrief } from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Clock, CheckCircle } from 'lucide-react';
+import { FileText, Clock, Trash2, Copy, ChevronRight, ArrowLeft, Calendar } from 'lucide-react';
+import { useNotification } from '../contexts/NotificationContext';
 
 export default function History() {
     const [briefs, setBriefs] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { showSuccess, showError } = useNotification();
 
     useEffect(() => {
-        const fetchBriefs = async () => {
-            try {
-                const data = await getBriefs();
-                setBriefs(data);
-            } catch (err) {
-                console.error(err);
-            }
-            setLoading(false);
-        };
         fetchBriefs();
     }, []);
+
+    const fetchBriefs = async () => {
+        try {
+            const data = await getBriefs();
+            setBriefs(data);
+        } catch (err) {
+            console.error(err);
+            showError('Failed to load history');
+        }
+        setLoading(false);
+    };
+
+    const handleDelete = async (e, id) => {
+        e.stopPropagation();
+        if (window.confirm('Are you sure you want to delete this brief? This action cannot be undone.')) {
+            try {
+                await deleteBrief(id);
+                setBriefs(prev => prev.filter(b => b.id !== id));
+                showSuccess('Brief deleted successfully');
+            } catch (err) {
+                showError('Failed to delete brief');
+            }
+        }
+    };
+
+    const handleBranch = (e, brief) => {
+        e.stopPropagation();
+        navigate('/new', {
+            state: {
+                title: brief.title,
+                content: brief.content
+            }
+        });
+    };
 
     if (loading) return <div className="loading">Loading history...</div>;
 
     return (
-        <div className="container">
-            <h1 style={{ marginBottom: '24px' }}>Brief History</h1>
+        <div className="container" style={{ maxWidth: '1000px' }}>
+            <div style={{ marginBottom: '32px' }}>
+                <button
+                    onClick={() => navigate('/')}
+                    className="button button-secondary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}
+                >
+                    <ArrowLeft size={16} />
+                    Back to New Brief
+                </button>
+                <h1 style={{ fontSize: '28px', fontWeight: '700' }}>Brief History</h1>
+                <p className="text-secondary">Manage and revisit your past content briefs</p>
+            </div>
 
             {briefs.length === 0 ? (
-                <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
-                    <p className="text-secondary">No briefs created yet</p>
+                <div className="card" style={{ textAlign: 'center', padding: '64px 20px' }}>
+                    <div style={{
+                        width: '64px',
+                        height: '64px',
+                        background: 'var(--bg-tertiary)',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 24px'
+                    }}>
+                        <FileText size={32} color="var(--text-secondary)" />
+                    </div>
+                    <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>No briefs yet</h3>
+                    <p className="text-secondary" style={{ marginBottom: '24px' }}>Create your first brief to get started with AI-powered content generation.</p>
+                    <button onClick={() => navigate('/new')} className="button">
+                        Create New Brief
+                    </button>
                 </div>
             ) : (
-                <div style={{ display: 'grid', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {briefs.map(brief => (
                         <div
                             key={brief.id}
                             className="card"
                             onClick={() => navigate(`/preview/${brief.id}`)}
-                            style={{ cursor: 'pointer', transition: 'border-color 0.2s' }}
-                            onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'}
-                            onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
+                            style={{
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                padding: '24px',
+                                borderLeft: '4px solid transparent',
+                                position: 'relative'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
+                                e.currentTarget.style.borderLeftColor = 'var(--accent)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'none';
+                                e.currentTarget.style.boxShadow = 'none';
+                                e.currentTarget.style.borderLeftColor = 'transparent';
+                            }}
                         >
-                            <div style={{ display: 'flex', gap: '16px' }}>
-                                <div style={{
-                                    width: '48px',
-                                    height: '48px',
-                                    background: 'var(--bg-tertiary)',
-                                    borderRadius: '8px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    <FileText size={24} color="var(--accent)" />
-                                </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
                                 <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
-                                        {brief.title || 'Untitled'}
-                                    </h3>
-                                    <p className="text-secondary text-sm" style={{ marginBottom: '8px' }}>
-                                        {brief.content.substring(0, 120)}
-                                        {brief.content.length > 120 && '...'}
-                                    </p>
-                                    <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <Clock size={14} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                                        <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                                            {brief.title || 'Untitled Brief'}
+                                        </h3>
+                                        <span style={{
+                                            fontSize: '12px',
+                                            padding: '2px 8px',
+                                            borderRadius: '12px',
+                                            background: 'var(--bg-tertiary)',
+                                            color: 'var(--text-secondary)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '4px'
+                                        }}>
+                                            <Calendar size={12} />
                                             {new Date(brief.created_at).toLocaleDateString('en-US', {
                                                 month: 'short',
                                                 day: 'numeric',
                                                 year: 'numeric'
                                             })}
                                         </span>
-                                        {brief.media_url && <span>📎 Media</span>}
-                                        {brief.link_url && <span>🔗 Link</span>}
                                     </div>
+
+                                    <p className="text-secondary" style={{
+                                        fontSize: '14px',
+                                        lineHeight: '1.6',
+                                        marginBottom: '16px',
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: '2',
+                                        WebkitBoxOrient: 'vertical',
+                                        overflow: 'hidden'
+                                    }}>
+                                        {brief.content}
+                                    </p>
+
+                                    <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                                        {brief.media_url && (
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                📎 Has Media
+                                            </span>
+                                        )}
+                                        {brief.link_url && (
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                🔗 Has Link
+                                            </span>
+                                        )}
+                                        {brief.selected_platforms && (
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                📱 {JSON.parse(brief.selected_platforms).length} Platforms
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <button
+                                        onClick={(e) => handleBranch(e, brief)}
+                                        className="button button-secondary"
+                                        style={{ padding: '8px 12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', width: '100%' }}
+                                        title="Create new brief from this one"
+                                    >
+                                        <Copy size={14} />
+                                        Branch
+                                    </button>
+                                    <button
+                                        onClick={(e) => handleDelete(e, brief.id)}
+                                        className="button button-secondary"
+                                        style={{
+                                            padding: '8px 12px',
+                                            fontSize: '13px',
+                                            color: 'var(--danger)',
+                                            borderColor: 'var(--danger)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            width: '100%',
+                                            justifyContent: 'center'
+                                        }}
+                                        title="Delete brief"
+                                    >
+                                        <Trash2 size={14} />
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
                         </div>

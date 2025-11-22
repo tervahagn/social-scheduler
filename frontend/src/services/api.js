@@ -25,6 +25,16 @@ export const getBrief = async (id) => {
     return response.data;
 };
 
+export const updateBrief = async (id, data) => {
+    const response = await api.put(`/briefs/${id}`, data);
+    return response.data;
+};
+
+export const deleteBrief = async (id) => {
+    const response = await api.delete(`/briefs/${id}`);
+    return response.data;
+};
+
 export const generatePosts = async (briefId) => {
     const response = await api.post(`/briefs/${briefId}/generate`);
     return response.data;

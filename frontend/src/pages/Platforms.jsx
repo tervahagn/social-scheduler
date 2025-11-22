@@ -1,8 +1,39 @@
 import { useState, useEffect } from 'react';
 import { getPlatforms, updatePlatform } from '../services/api';
-import { Settings, Link as LinkIcon, CheckCircle, XCircle, FileText } from 'lucide-react';
+import {
+    Save,
+    Loader,
+    Globe,
+    Linkedin,
+    Twitter,
+    Instagram,
+    Facebook,
+    Youtube,
+    MessageSquare,
+    Search,
+    Share2,
+    CheckCircle,
+    XCircle,
+    Settings,
+    Link as LinkIcon,
+    FileText
+} from 'lucide-react';
+import { useNotification } from '../contexts/NotificationContext';
+
+const PLATFORM_ICONS = {
+    'blog': Globe,
+    'linkedin': Linkedin,
+    'linkedin-personal': Linkedin,
+    'twitter': Twitter,
+    'instagram': Instagram,
+    'facebook': Facebook,
+    'youtube-posts': Youtube,
+    'reddit': MessageSquare,
+    'google-business': Search
+};
 
 function PlatformCard({ platform, onUpdate }) {
+    const { showSuccess, showError } = useNotification();
     const [editing, setEditing] = useState(false);
     const [editingPrompt, setEditingPrompt] = useState(false);
     const [webhookUrl, setWebhookUrl] = useState(platform.webhook_url || '');
@@ -10,6 +41,8 @@ function PlatformCard({ platform, onUpdate }) {
     const [promptContent, setPromptContent] = useState(platform.prompt_content || '');
     const [ultraShortPrompt, setUltraShortPrompt] = useState(platform.ultra_short_prompt || '');
     const [loading, setLoading] = useState(false);
+
+    const Icon = PLATFORM_ICONS[platform.id] || Share2;
 
     const handleSave = async () => {
         setLoading(true);
@@ -20,8 +53,9 @@ function PlatformCard({ platform, onUpdate }) {
             });
             setEditing(false);
             onUpdate();
+            showSuccess('Platform settings updated');
         } catch (err) {
-            alert('Failed to update: ' + err.message);
+            showError('Failed to update: ' + err.message);
         }
         setLoading(false);
     };
@@ -35,99 +69,132 @@ function PlatformCard({ platform, onUpdate }) {
             });
             setEditingPrompt(false);
             onUpdate();
-            alert('✅ Prompt updated!');
+            showSuccess('Prompts updated successfully');
         } catch (err) {
-            alert('Failed to update prompt: ' + err.message);
+            showError('Failed to update prompt: ' + err.message);
         }
         setLoading(false);
     };
 
+    const handleToggleActive = async () => {
+        try {
+            await updatePlatform(platform.id, { is_active: !platform.is_active });
+            onUpdate();
+            showSuccess(`Platform ${!platform.is_active ? 'enabled' : 'disabled'}`);
+        } catch (err) {
+            showError('Failed to update status');
+        }
+    };
+
     return (
-        <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: '600' }}>{platform.display_name}</h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {platform.is_active ? (
-                        <CheckCircle size={18} color="var(--success)" />
-                    ) : (
-                        <XCircle size={18} color="var(--text-secondary)" />
-                    )}
-                </div>
+        <div className="card" style={{ position: 'relative', overflow: 'hidden' }}>
+            {/* Transparent Icon in Top Right */}
+            <div style={{
+                position: 'absolute',
+                top: '-10px',
+                right: '-10px',
+                opacity: 0.05,
+                transform: 'rotate(15deg)',
+                pointerEvents: 'none'
+            }}>
+                <Icon size={120} color="var(--text-primary)" />
             </div>
 
-            {/* Webhook Settings */}
-            {editing ? (
-                <div style={{ marginBottom: '16px' }}>
-                    <div className="mb-4">
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px' }}>
-                            <LinkIcon size={14} style={{ display: 'inline', marginRight: '4px' }} />
-                            Make.com Webhook URL
-                        </label>
-                        <input
-                            type="url"
-                            className="input"
-                            value={webhookUrl}
-                            onChange={(e) => setWebhookUrl(e.target.value)}
-                            placeholder="https://hook.eu1.make.com/..."
-                        />
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', position: 'relative' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '10px',
+                        background: 'var(--bg-secondary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--accent)'
+                    }}>
+                        <Icon size={24} />
                     </div>
+                    <div>
+                        <h3 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>{platform.display_name}</h3>
+                    </div>
+                </div>
+                <label className="switch">
+                    <input
+                        type="checkbox"
+                        checked={platform.is_active}
+                        onChange={handleToggleActive}
+                    />
+                    <span className="slider round"></span>
+                </label>
+            </div>
 
-                    <div className="mb-4">
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            {/* Webhook Section */}
+            <div style={{ position: 'relative', marginBottom: '24px' }}>
+                {editing ? (
+                    <div style={{ marginBottom: '16px' }}>
+                        <div className="mb-4">
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px' }}>
+                                <LinkIcon size={14} style={{ display: 'inline', marginRight: '4px' }} />
+                                Webhook URL
+                            </label>
                             <input
-                                type="checkbox"
-                                checked={isActive}
-                                onChange={(e) => setIsActive(e.target.checked)}
+                                type="url"
+                                className="input"
+                                value={webhookUrl}
+                                onChange={(e) => setWebhookUrl(e.target.value)}
+                                placeholder="https://hooks.zapier.com/..."
+                                style={{ width: '100%' }}
                             />
-                            <span style={{ fontSize: '13px' }}>Active</span>
-                        </label>
-                    </div>
+                        </div>
 
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={handleSave} className="button" disabled={loading}>
-                            {loading ? 'Saving...' : 'Save'}
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button onClick={handleSave} className="button" disabled={loading}>
+                                {loading ? <Loader size={16} className="animate-spin" /> : 'Save'}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setEditing(false);
+                                    setWebhookUrl(platform.webhook_url || '');
+                                }}
+                                className="button button-secondary"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div>
+                        <div style={{ marginBottom: '12px' }}>
+                            <p className="text-sm text-secondary" style={{ marginBottom: '4px', fontSize: '12px' }}>Webhook URL</p>
+                            <div style={{
+                                wordBreak: 'break-all',
+                                fontFamily: 'monospace',
+                                background: 'var(--bg-tertiary)',
+                                padding: '8px',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                color: platform.webhook_url ? 'var(--text-primary)' : 'var(--text-secondary)'
+                            }}>
+                                {platform.webhook_url || 'Not configured'}
+                            </div>
+                        </div>
                         <button
-                            onClick={() => {
-                                setEditing(false);
-                                setWebhookUrl(platform.webhook_url || '');
-                                setIsActive(platform.is_active === 1);
-                            }}
+                            onClick={() => setEditing(true)}
                             className="button button-secondary"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '4px 8px' }}
                         >
-                            Cancel
+                            <Settings size={12} />
+                            Configure
                         </button>
                     </div>
-                </div>
-            ) : (
-                <div style={{ marginBottom: '16px' }}>
-                    <div style={{ marginBottom: '12px' }}>
-                        <p className="text-sm text-secondary" style={{ marginBottom: '4px' }}>Webhook URL:</p>
-                        <p className="text-sm" style={{
-                            wordBreak: 'break-all',
-                            fontFamily: 'monospace',
-                            background: 'var(--bg-tertiary)',
-                            padding: '8px',
-                            borderRadius: '4px'
-                        }}>
-                            {platform.webhook_url || <span style={{ color: 'var(--text-secondary)' }}>Not configured</span>}
-                        </p>
-                    </div>
-                    <button
-                        onClick={() => setEditing(true)}
-                        className="button button-secondary"
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                    >
-                        <Settings size={14} />
-                        Configure Webhook
-                    </button>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* Prompt Editor */}
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px', position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <h4 style={{ fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <FileText size={16} />
                         Prompt Settings
                     </h4>
@@ -142,24 +209,24 @@ function PlatformCard({ platform, onUpdate }) {
                                 value={promptContent}
                                 onChange={(e) => setPromptContent(e.target.value)}
                                 placeholder="Enter platform-specific prompt..."
-                                style={{ minHeight: '200px', fontFamily: 'monospace', fontSize: '12px' }}
+                                style={{ minHeight: '150px', fontFamily: 'monospace', fontSize: '12px', width: '100%' }}
                             />
                         </div>
 
                         <div style={{ marginBottom: '12px' }}>
-                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '500' }}>Ultra-Short Prompt (for quick updates)</label>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '500' }}>Technical Prompt</label>
                             <textarea
                                 className="textarea"
                                 value={ultraShortPrompt}
                                 onChange={(e) => setUltraShortPrompt(e.target.value)}
-                                placeholder="Enter ultra-short prompt..."
-                                style={{ minHeight: '80px', fontFamily: 'monospace', fontSize: '12px' }}
+                                placeholder="Enter technical constraints (e.g. max characters)..."
+                                style={{ minHeight: '60px', fontFamily: 'monospace', fontSize: '12px', width: '100%' }}
                             />
                         </div>
 
                         <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                             <button onClick={handleSavePrompt} className="button" disabled={loading}>
-                                {loading ? 'Saving...' : 'Save Prompts'}
+                                {loading ? <Loader size={16} className="animate-spin" /> : 'Save Prompts'}
                             </button>
                             <button
                                 onClick={() => {
@@ -178,43 +245,47 @@ function PlatformCard({ platform, onUpdate }) {
                         <div style={{ marginBottom: '12px' }}>
                             <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>Main Prompt</label>
                             <div style={{
-                                maxHeight: '100px',
-                                overflow: 'auto',
+                                maxHeight: '80px',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
                                 background: 'var(--bg-tertiary)',
                                 padding: '8px',
                                 borderRadius: '4px',
                                 fontFamily: 'monospace',
                                 fontSize: '11px',
                                 lineHeight: '1.4',
-                                whiteSpace: 'pre-wrap'
+                                whiteSpace: 'pre-wrap',
+                                color: platform.prompt_content ? 'var(--text-primary)' : 'var(--text-secondary)'
                             }}>
-                                {platform.prompt_content || platform.prompt_file || <span style={{ color: 'var(--text-secondary)' }}>No prompt set</span>}
+                                {platform.prompt_content || 'No prompt set'}
                             </div>
                         </div>
 
                         <div style={{ marginBottom: '12px' }}>
-                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>Ultra-Short Prompt</label>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>Technical Prompt</label>
                             <div style={{
-                                maxHeight: '60px',
-                                overflow: 'auto',
+                                maxHeight: '40px',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
                                 background: 'var(--bg-tertiary)',
                                 padding: '8px',
                                 borderRadius: '4px',
                                 fontFamily: 'monospace',
                                 fontSize: '11px',
                                 lineHeight: '1.4',
-                                whiteSpace: 'pre-wrap'
+                                whiteSpace: 'pre-wrap',
+                                color: platform.ultra_short_prompt ? 'var(--text-primary)' : 'var(--text-secondary)'
                             }}>
-                                {platform.ultra_short_prompt || <span style={{ color: 'var(--text-secondary)' }}>No ultra-short prompt set</span>}
+                                {platform.ultra_short_prompt || 'No technical prompt set'}
                             </div>
                         </div>
 
                         <button
                             onClick={() => setEditingPrompt(true)}
                             className="button button-secondary"
-                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '4px 8px' }}
                         >
-                            <FileText size={14} />
+                            <FileText size={12} />
                             Edit Prompts
                         </button>
                     </div>
@@ -225,33 +296,34 @@ function PlatformCard({ platform, onUpdate }) {
 }
 
 export default function Platforms() {
+    const { showError } = useNotification();
     const [platforms, setPlatforms] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchPlatforms();
+    }, []);
 
     const fetchPlatforms = async () => {
         try {
             const data = await getPlatforms();
             setPlatforms(data);
+            setLoading(false);
         } catch (err) {
-            console.error(err);
+            console.error('Error fetching platforms:', err);
+            showError('Failed to load platforms');
+            setLoading(false);
         }
-        setLoading(false);
     };
-
-    useEffect(() => {
-        fetchPlatforms();
-    }, []);
 
     if (loading) return <div className="loading">Loading platforms...</div>;
 
     return (
         <div className="container">
             <h1 style={{ marginBottom: '8px' }}>Platforms</h1>
-            <p className="text-secondary mb-4">
-                Configure Make.com webhooks and prompts for each platform
-            </p>
+            <p className="text-secondary mb-4">Configure your social media platforms, prompts, and integrations</p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '24px' }}>
                 {platforms.map(platform => (
                     <PlatformCard key={platform.id} platform={platform} onUpdate={fetchPlatforms} />
                 ))}
