@@ -16,6 +16,8 @@ export default function Settings() {
         openrouter_api_key: '',
         openrouter_model: 'anthropic/claude-3.5-sonnet'
     });
+    // Separate state for custom model ID input to avoid overwriting the select value while typing
+    const [customModel, setCustomModel] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
@@ -40,6 +42,10 @@ export default function Settings() {
     };
 
     const handleChange = (key, value) => {
+        if (key === 'openrouter_model' && value !== 'custom') {
+            // When selecting a predefined model, clear any custom model value
+            setCustomModel('');
+        }
         setSettings(prev => ({ ...prev, [key]: value }));
     };
 
@@ -47,11 +53,13 @@ export default function Settings() {
         setSaving(true);
         setMessage('');
         try {
+            // Determine the model value to save
+            const modelToSave = settings.openrouter_model === 'custom' ? customModel : settings.openrouter_model;
             // Save all settings
             await Promise.all([
                 axios.put('/api/settings/master_prompt', { value: settings.master_prompt }),
                 axios.put('/api/settings/openrouter_api_key', { value: settings.openrouter_api_key }),
-                axios.put('/api/settings/openrouter_model', { value: settings.openrouter_model })
+                axios.put('/api/settings/openrouter_model', { value: modelToSave })
             ]);
 
             setMessage('Settings saved successfully!');
@@ -141,7 +149,8 @@ export default function Settings() {
                                     className="input"
                                     style={{ marginTop: '8px', width: '100%' }}
                                     placeholder="Enter model ID (e.g. google/gemini-flash-1.5)"
-                                    onChange={(e) => handleChange('openrouter_model', e.target.value)}
+                                    value={customModel}
+                                    onChange={(e) => setCustomModel(e.target.value)}
                                 />
                             )}
                             <p className="text-secondary text-sm" style={{ marginTop: '6px' }}>
