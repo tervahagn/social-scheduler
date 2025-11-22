@@ -1,0 +1,22 @@
+node_modules/
+.env
+dist/
+build/
+*.log
+.DS_Store
+
+# Database
+*.db
+*.db-journal
+
+# Uploads
+uploads/
+!uploads/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# Data
+data/
+!data/.gitkeep
