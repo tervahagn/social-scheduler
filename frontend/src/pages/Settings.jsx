@@ -30,10 +30,18 @@ export default function Settings() {
     const fetchSettings = async () => {
         try {
             const response = await axios.get('/api/settings');
+            // Determine if stored model is a custom ID
+            const storedModel = response.data.openrouter_model;
+            const isPredefined = AVAILABLE_MODELS.some(m => m.id === storedModel);
             setSettings(prev => ({
                 ...prev,
-                ...response.data
+                ...response.data,
+                openrouter_model: isPredefined ? storedModel : 'custom'
             }));
+            // If custom, keep the actual ID in separate state
+            if (!isPredefined) {
+                setCustomModel(storedModel);
+            }
             setLoading(false);
         } catch (err) {
             console.error('Error fetching settings:', err);
@@ -62,6 +70,16 @@ export default function Settings() {
                 axios.put('/api/settings/openrouter_model', { value: modelToSave })
             ]);
 
+            // Update local state after saving
+            if (settings.openrouter_model === 'custom') {
+                // Keep 'custom' selected and store actual ID in customModel state
+                setSettings(prev => ({ ...prev, openrouter_model: 'custom' }));
+                setCustomModel(modelToSave);
+            } else {
+                // Predefined model selected
+                setSettings(prev => ({ ...prev, openrouter_model: modelToSave }));
+                setCustomModel('');
+            }
             setMessage('Settings saved successfully!');
             setTimeout(() => setMessage(''), 3000);
         } catch (err) {
@@ -158,6 +176,26 @@ export default function Settings() {
                             </p>
                         </div>
                     </div>
+                </div>
+                <div style={{ marginTop: '16px' }}>
+                    <button
+                        onClick={handleSave}
+                        className="button"
+                        disabled={saving}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                        {saving ? (
+                            <>
+                                <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <Save size={18} />
+                                Save Settings
+                            </>
+                        )}
+                    </button>
                 </div>
 
                 {/* Master Prompt */}
