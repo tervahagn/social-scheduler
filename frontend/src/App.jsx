@@ -35,6 +35,12 @@ function Navigation() {
                             </Link>
                         </li>
                         <li>
+                            <Link to="/history">
+                                <Clock size={16} />
+                                History
+                            </Link>
+                        </li>
+                        <li>
                             <Link to="/calendar">
                                 <CalendarDays size={16} />
                                 Calendar
@@ -44,12 +50,6 @@ function Navigation() {
                             <Link to="/analytics">
                                 <BarChart2 size={16} />
                                 Analytics
-                            </Link>
-                        </li>
-                        <li>
-                            <Link to="/history">
-                                <Clock size={16} />
-                                History
                             </Link>
                         </li>
                         <li>
