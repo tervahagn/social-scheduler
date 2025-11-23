@@ -36,9 +36,21 @@ export async function generateMasterDraft(briefId) {
         const prompt = masterPrompt.replace('{{brief}}', fullBrief);
         // Call OpenRouter directly with just the master prompt
         const { default: OpenAI } = await import('openai');
+
+        // Get API key and model from database (with fallback to env)
+        const apiKeySetting = await db.prepare("SELECT value FROM settings WHERE key = 'openrouter_api_key'").get();
+        const modelSetting = await db.prepare("SELECT value FROM settings WHERE key = 'openrouter_model'").get();
+
+        const apiKey = apiKeySetting?.value || process.env.OPENROUTER_API_KEY;
+        const model = modelSetting?.value || process.env.OPENROUTER_MODEL || 'x-ai/grok-4.1-fast:free';
+
+        if (!apiKey) {
+            throw new Error('OpenRouter API Key is not configured in settings or .env');
+        }
+
         const openrouter = new OpenAI({
             baseURL: 'https://openrouter.ai/api/v1',
-            apiKey: process.env.OPENROUTER_API_KEY,
+            apiKey: apiKey,
             defaultHeaders: {
                 'HTTP-Referer': 'http://localhost:3001',
                 'X-Title': 'Social Scheduler'
@@ -46,7 +58,7 @@ export async function generateMasterDraft(briefId) {
         });
 
         const completion = await openrouter.chat.completions.create({
-            model: process.env.OPENROUTER_MODEL || 'anthropic/claude-3.5-sonnet',
+            model: model,
             messages: [{ role: 'user', content: prompt }],
             temperature: 0.7,
             max_tokens: 2000
@@ -95,11 +107,22 @@ ${correctionPrompt}
 
 Provide the complete corrected version.`;
 
+    // Get API key and model from database (with fallback to env)
+    const apiKeySetting = await db.prepare("SELECT value FROM settings WHERE key = 'openrouter_api_key'").get();
+    const modelSetting = await db.prepare("SELECT value FROM settings WHERE key = 'openrouter_model'").get();
+
+    const apiKey = apiKeySetting?.value || process.env.OPENROUTER_API_KEY;
+    const model = modelSetting?.value || process.env.OPENROUTER_MODEL || 'x-ai/grok-4.1-fast:free';
+
+    if (!apiKey) {
+        throw new Error('OpenRouter API Key is not configured in settings or .env');
+    }
+
     // Call LLM
     const { default: OpenAI } = await import('openai');
     const openrouter = new OpenAI({
         baseURL: 'https://openrouter.ai/api/v1',
-        apiKey: process.env.OPENROUTER_API_KEY,
+        apiKey: apiKey,
         defaultHeaders: {
             'HTTP-Referer': 'http://localhost:3001',
             'X-Title': 'Social Scheduler'
@@ -107,7 +130,7 @@ Provide the complete corrected version.`;
     });
 
     const completion = await openrouter.chat.completions.create({
-        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-3.5-sonnet',
+        model: model,
         messages: [{ role: 'user', content: fullPrompt }],
         temperature: 0.7,
         max_tokens: 2000
