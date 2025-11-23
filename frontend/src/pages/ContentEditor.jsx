@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Sparkles, Share2, Copy, CheckCircle, Circle, AlertCircle, Loader, RefreshCw, Calendar, Edit2, LayoutGrid, List, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Save, Sparkles, Share2, Copy, CheckCircle, Circle, AlertCircle, Loader, RefreshCw, Calendar, Edit2, LayoutGrid, List, RotateCcw, Check, X } from 'lucide-react';
 import axios from 'axios';
 import { useNotification } from '../contexts/NotificationContext';
 import { getPlatformConfig } from '../config/platforms';
