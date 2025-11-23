@@ -114,16 +114,23 @@ export default function ContentEditor() {
             return;
         }
 
-        setProcessing(true);
+        const postId = post.id;
+        setLoadingPosts(prev => new Set([...prev, postId]));
+
         try {
-            const response = await axios.post(`/api/content/post/${post.id}/regenerate`);
-            setPosts(prev => prev.map(p => p.id === post.id ? response.data : p));
+            const response = await axios.post(`/api/content/post/${postId}/regenerate`);
+            setPosts(prev => prev.map(p => p.id === postId ? response.data : p));
             showSuccess(`Regenerated ${post.platform_display_name}`);
         } catch (err) {
             console.error('Error regenerating post:', err);
             showError('Failed to regenerate post');
+        } finally {
+            setLoadingPosts(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(postId);
+                return newSet;
+            });
         }
-        setProcessing(false);
     };
 
     const handleApproveAll = async () => {
@@ -178,6 +185,7 @@ export default function ContentEditor() {
     };
 
     const hasDrafts = posts.some(p => p.status === 'draft');
+    const hasApproved = posts.some(p => p.status === 'approved');
 
     return (
         <div className="container" style={{ maxWidth: '1200px' }}>
@@ -369,6 +377,27 @@ export default function ContentEditor() {
                 </div>
             ) : (
                 <>
+                    {/* Publish Button */}
+                    {hasApproved && (
+                        <div className="card" style={{ padding: '16px 20px', marginBottom: '24px', background: 'var(--success)', color: 'white' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>Ready to Publish</div>
+                                    <div style={{ fontSize: '13px', opacity: 0.9 }}>
+                                        {posts.filter(p => p.status === 'approved').length} platform{posts.filter(p => p.status === 'approved').length !== 1 ? 's' : ''} approved
+                                    </div>
+                                </div>
+                                <button
+                                    className="button"
+                                    style={{ background: 'white', color: 'var(--success)', fontWeight: '600' }}
+                                >
+                                    Publish Now
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Bulk Actions */}
                     {/* Bulk Actions */}
                     {hasDrafts && (
                         <div className="card" style={{ padding: '16px 20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -519,21 +548,54 @@ export default function ContentEditor() {
                                             // Normal Actions
                                             <>
                                                 <button
-                                                    onClick={() => handleEdit(post)}
+                                                    onClick={() => handleRegenerate(post)}
+                                                    disabled={isApproved}
                                                     className="button button-secondary"
-                                                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        fontSize: '13px',
+                                                        opacity: isApproved ? 0.5 : 1,
+                                                        cursor: isApproved ? 'not-allowed' : 'pointer'
+                                                    }}
                                                 >
-                                                    <Edit2 size={14} />
-                                                    Edit
+                                                    <RotateCcw size={14} />
+                                                    Regenerate
                                                 </button>
 
                                                 <button
                                                     onClick={() => handleCorrect(post)}
+                                                    disabled={isApproved}
                                                     className="button button-secondary"
-                                                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        fontSize: '13px',
+                                                        opacity: isApproved ? 0.5 : 1,
+                                                        cursor: isApproved ? 'not-allowed' : 'pointer'
+                                                    }}
                                                 >
                                                     <Sparkles size={14} />
                                                     Request Changes
+                                                </button>
+
+                                                <button
+                                                    onClick={() => handleEdit(post)}
+                                                    disabled={isApproved}
+                                                    className="button button-secondary"
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        fontSize: '13px',
+                                                        opacity: isApproved ? 0.5 : 1,
+                                                        cursor: isApproved ? 'not-allowed' : 'pointer'
+                                                    }}
+                                                >
+                                                    <Edit2 size={14} />
+                                                    Edit
                                                 </button>
 
                                                 <button
@@ -551,15 +613,6 @@ export default function ContentEditor() {
                                                 >
                                                     {isApproved ? <X size={14} /> : <Check size={14} />}
                                                     {isApproved ? 'Un-approve' : 'Approve'}
-                                                </button>
-
-                                                <button
-                                                    onClick={() => handleRegenerate(post)}
-                                                    className="button button-secondary"
-                                                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
-                                                >
-                                                    <RotateCcw size={14} />
-                                                    Regenerate
                                                 </button>
                                             </>
                                         )}
