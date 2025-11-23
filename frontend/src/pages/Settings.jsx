@@ -203,23 +203,76 @@ export default function Settings() {
                 </div>
 
                 {/* Master Prompt */}
-                        onClick={handleSave}
-                        className="button"
-                        disabled={saving}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                    >
-                        {saving ? (
-                            <>
-                                <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                                Saving...
-                            </>
-                        ) : (
-                            <>
-                                <Save size={18} />
-                                Save Settings
-                            </>
+                <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <h2 style={{ fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FileCode size={20} />
+                            Master Prompt
+                        </h2>
+                        {!editingPrompt && (
+                            <button
+                                onClick={() => setEditingPrompt(true)}
+                                className="button button-secondary"
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                            >
+                                Edit Prompt
+                            </button>
                         )}
-                    </button>
+                    </div>
+                    <p className="text-secondary" style={{ fontSize: '14px', marginBottom: '16px', lineHeight: '1.6' }}>
+                        This is the system prompt used to guide content generation across all platforms.
+                    </p>
+
+                    {editingPrompt ? (
+                        <>
+                            <textarea
+                                className="textarea"
+                                value={settings.master_prompt || ''}
+                                onChange={(e) => handleChange('master_prompt', e.target.value)}
+                                placeholder="Enter your master prompt for content generation..."
+                                style={{ minHeight: '300px', fontFamily: 'monospace', fontSize: '13px' }}
+                            />
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                                <button
+                                    onClick={() => {
+                                        handleSave();
+                                        setEditingPrompt(false);
+                                    }}
+                                    disabled={saving}
+                                    className="button"
+                                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                    {saving ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={16} />}
+                                    Save Changes
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        fetchSettings();
+                                        setEditingPrompt(false);
+                                    }}
+                                    className="button button-secondary"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <div style={{
+                            padding: '16px',
+                            background: 'var(--bg-secondary)',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border)',
+                            fontSize: '13px',
+                            lineHeight: '1.6',
+                            fontFamily: 'monospace',
+                            whiteSpace: 'pre-wrap',
+                            maxHeight: '300px',
+                            overflowY: 'auto',
+                            color: 'var(--text-secondary)'
+                        }}>
+                            {settings.master_prompt || 'No master prompt set'}
+                        </div>
+                    )}
                 </div>
 
                 <div style={{
