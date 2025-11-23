@@ -13,11 +13,13 @@ export const useNotification = () => {
 
 export const NotificationProvider = ({ children }) => {
     const [toasts, setToasts] = useState([]);
+    const [counter, setCounter] = useState(0);
 
     const addToast = useCallback((message, type = 'info', duration = 3000) => {
-        const id = Date.now();
+        const id = `${Date.now()}-${counter}`;
+        setCounter(prev => prev + 1);
         setToasts(prev => [...prev, { id, message, type, duration }]);
-    }, []);
+    }, [counter]);
 
     const removeToast = useCallback((id) => {
         setToasts(prev => prev.filter(toast => toast.id !== id));
