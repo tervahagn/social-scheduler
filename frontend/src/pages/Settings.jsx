@@ -328,33 +328,33 @@ export default function Settings() {
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
                                     }}>2</div>
                                     <div>
-                                        <strong style={{ color: 'var(--text-primary)' } > Add Credits</strong>
-                                    <p style={{ fontSize: '13px', marginTop: '4px' }}>Ensure your OpenRouter account has credits (min $5). Free models don't need credits.</p>
+                                        <strong style={{ color: 'var(--text-primary)' }}>Add Credits</strong>
+                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>Ensure your OpenRouter account has credits (min $5). Free models don't need credits.</p>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <div style={{
+                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                    }}>3</div>
+                                    <div>
+                                        <strong style={{ color: 'var(--text-primary)' }}>Select Model</strong>
+                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>Choose a model on the right. <strong>Grok 4.1 Fast</strong> is currently free and very fast.</p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                                <div style={{
-                                    width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
-                                }}>3</div>
-                                <div>
-                                    <strong style={{ color: 'var(--text-primary)' }}>Select Model</strong>
-                                    <p style={{ fontSize: '13px', marginTop: '4px' }}>Choose a model on the right. <strong>Grok 4.1 Fast</strong> is currently free and very fast.</p>
-                                </div>
+                            <div style={{ marginTop: '24px', padding: '12px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                                <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--accent)', fontSize: '13px' }}>💡 Recommendation</strong>
+                                <p style={{ fontSize: '12px', margin: 0 }}>
+                                    For best quality, use <strong>Claude 3.5 Sonnet</strong>. For speed and free testing, use <strong>Grok 4.1</strong>.
+                                </p>
                             </div>
-                        </div>
-
-                        <div style={{ marginTop: '24px', padding: '12px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-                            <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--accent)', fontSize: '13px' }}>💡 Recommendation</strong>
-                            <p style={{ fontSize: '12px', margin: 0 }}>
-                                For best quality, use <strong>Claude 3.5 Sonnet</strong>. For speed and free testing, use <strong>Grok 4.1</strong>.
-                            </p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
         </div >
     );
 }
