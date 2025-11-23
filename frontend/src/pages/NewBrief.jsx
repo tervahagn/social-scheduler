@@ -116,10 +116,27 @@ export default function NewBrief() {
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
-        // Check for pre-filled data from navigation state (Branching)
+        // Check for pre-filled data from navigation state
         if (location.state) {
+            // Branching feature
             if (location.state.title) setTitle(location.state.title + ' (Copy)');
             if (location.state.content) setContent(location.state.content);
+
+            // Edit brief feature
+            if (location.state.editBrief) {
+                const { editBrief } = location.state;
+                setTitle(editBrief.title || '');
+                setContent(editBrief.content || '');
+                setLinkUrl(editBrief.link_url || '');
+
+                // Parse selected platforms
+                if (editBrief.selected_platforms) {
+                    setSelectedPlatforms(JSON.parse(editBrief.selected_platforms));
+                }
+
+                // Note: Files cannot be pre-filled in file inputs for security reasons
+                // User would need to re-upload them if they want to change
+            }
         }
 
         const fetchPlatforms = async () => {

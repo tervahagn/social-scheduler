@@ -157,12 +157,137 @@ export default function ContentEditor() {
                     Back to History
                 </button>
 
-                <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
-                    {brief?.title || 'Content Editor'}
-                </h1>
-                <p className="text-secondary">
-                    {brief?.content?.substring(0, 150)}{brief?.content?.length > 150 ? '...' : ''}
-                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    <h1 style={{ fontSize: '28px', fontWeight: '700' }}>
+                        {brief?.title || 'Content Editor'}
+                    </h1>
+
+                    {posts.length === 0 && (
+                        <button
+                            onClick={() => navigate(`/new`, { state: { editBrief: brief } })}
+                            className="button button-secondary"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                            <Edit2 size={16} />
+                            Edit Brief
+                        </button>
+                    )}
+                </div>
+
+                {/* Brief Details Card */}
+                <div className="card" style={{ padding: '20px', marginTop: '16px' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: 'var(--text-secondary)' }}>
+                        Brief Content
+                    </h3>
+                    <p style={{ fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap', marginBottom: '16px' }}>
+                        {brief?.content}
+                    </p>
+
+                    {/* Attached Files */}
+                    {brief?.files && brief.files.length > 0 && (
+                        <div style={{ marginTop: '16px' }}>
+                            <h4 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-secondary)' }}>
+                                Attached Files
+                            </h4>
+                            <div style={{ display: 'grid', gap: '8px' }}>
+                                {brief.files.filter(f => f.category === 'media').map((file, idx) => (
+                                    <div key={idx} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        padding: '8px 12px',
+                                        background: 'var(--bg-secondary)',
+                                        borderRadius: '6px',
+                                        fontSize: '13px'
+                                    }}>
+                                        {file.mime_type?.startsWith('image/') && (
+                                            <img
+                                                src={file.file_path}
+                                                alt={file.original_name}
+                                                style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }}
+                                            />
+                                        )}
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: '500' }}>{file.original_name}</div>
+                                            <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                                                Media • {(file.file_size / 1024).toFixed(1)} KB
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {brief.files.filter(f => f.category === 'document').map((file, idx) => (
+                                    <div key={idx} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        padding: '8px 12px',
+                                        background: 'var(--bg-secondary)',
+                                        borderRadius: '6px',
+                                        fontSize: '13px'
+                                    }}>
+                                        <div style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            background: 'var(--primary)',
+                                            borderRadius: '4px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '10px',
+                                            fontWeight: '600'
+                                        }}>
+                                            {file.original_name.split('.').pop().toUpperCase()}
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: '500' }}>{file.original_name}</div>
+                                            <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                                                Document • {(file.file_size / 1024).toFixed(1)} KB
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Link */}
+                    {brief?.link_url && (
+                        <div style={{ marginTop: '16px' }}>
+                            <h4 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-secondary)' }}>
+                                Link
+                            </h4>
+                            <a
+                                href={brief.link_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    display: 'inline-block',
+                                    padding: '8px 12px',
+                                    background: 'var(--bg-secondary)',
+                                    borderRadius: '6px',
+                                    fontSize: '13px',
+                                    color: 'var(--primary)',
+                                    textDecoration: 'none'
+                                }}
+                            >
+                                {brief.link_url}
+                            </a>
+                        </div>
+                    )}
+
+                    {/* Selected Platforms */}
+                    {brief?.selected_platforms && (
+                        <div style={{ marginTop: '16px' }}>
+                            <h4 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-secondary)' }}>
+                                Selected Platforms
+                            </h4>
+                            <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
+                                {JSON.parse(brief.selected_platforms).length} platform{JSON.parse(brief.selected_platforms).length !== 1 ? 's' : ''} selected
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Generate or Edit */}
