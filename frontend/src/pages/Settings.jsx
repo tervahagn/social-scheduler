@@ -25,6 +25,7 @@ export default function Settings() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [showKey, setShowKey] = useState(false);
+    const [editingPrompt, setEditingPrompt] = useState(false);
 
     useEffect(() => {
         fetchSettings();
@@ -202,32 +203,6 @@ export default function Settings() {
                 </div>
 
                 {/* Master Prompt */}
-                <div style={{ marginBottom: '16px' }}>
-                    <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FileCode size={20} />
-                        Master Prompt
-                    </h2>
-                    <p className="text-secondary text-sm">
-                        This prompt is combined with platform-specific prompts for all content generation.
-                        Use it to define your brand voice, core principles, and general instructions.
-                    </p>
-                </div>
-
-                <textarea
-                    className="textarea"
-                    value={settings.master_prompt || ''}
-                    onChange={(e) => handleChange('master_prompt', e.target.value)}
-                    placeholder="Enter your master prompt..."
-                    style={{
-                        minHeight: '300px',
-                        fontFamily: 'monospace',
-                        fontSize: '13px',
-                        lineHeight: '1.6'
-                    }}
-                />
-
-                <div style={{ marginTop: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <button
                         onClick={handleSave}
                         className="button"
                         disabled={saving}
@@ -262,7 +237,7 @@ export default function Settings() {
                         <li>Changes apply immediately to new content generation.</li>
                     </ul>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
