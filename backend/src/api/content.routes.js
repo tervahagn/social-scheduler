@@ -5,12 +5,28 @@ import { generatePlatformContentDirect, correctPost, regeneratePost, getPostVers
 const router = express.Router();
 
 /**
+ * Helper: Get brief by ID or slug
+ */
+async function getBriefByIdOrSlug(identifier) {
+    let brief = await db.prepare('SELECT * FROM briefs WHERE slug = ?').get(identifier);
+    if (!brief && !isNaN(identifier)) {
+        brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(parseInt(identifier));
+    }
+    return brief;
+}
+
+/**
  * POST /api/content/brief/:briefId/generate - Generate platform-specific content directly from brief
- * Skips master draft step
+ * Accepts brief ID or slug
  */
 router.post('/brief/:briefId/generate', async (req, res) => {
     try {
-        const posts = await generatePlatformContentDirect(req.params.briefId);
+        const brief = await getBriefByIdOrSlug(req.params.briefId);
+        if (!brief) {
+            return res.status(404).json({ error: 'Brief not found' });
+        }
+
+        const posts = await generatePlatformContentDirect(brief.id);
         res.json(posts);
     } catch (error) {
         console.error('Error generating platform content:', error);
@@ -65,10 +81,16 @@ router.get('/post/:postId/versions', async (req, res) => {
 
 /**
  * POST /api/content/brief/:briefId/approve-all - Approve all posts for a brief
+ * Accepts brief ID or slug
  */
 router.post('/brief/:briefId/approve-all', async (req, res) => {
     try {
-        const posts = await db.prepare('SELECT * FROM posts WHERE brief_id = ? AND status = ?').all(req.params.briefId, 'draft');
+        const brief = await getBriefByIdOrSlug(req.params.briefId);
+        if (!brief) {
+            return res.status(404).json({ error: 'Brief not found' });
+        }
+
+        const posts = await db.prepare('SELECT * FROM posts WHERE brief_id = ? AND status = ?').all(brief.id, 'draft');
 
         const updateStmt = db.prepare('UPDATE posts SET status = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?');
 
@@ -76,7 +98,7 @@ router.post('/brief/:briefId/approve-all', async (req, res) => {
             await updateStmt.run('approved', post.id);
         }
 
-        const updatedPosts = await db.prepare('SELECT * FROM posts WHERE brief_id = ?').all(req.params.briefId);
+        const updatedPosts = await db.prepare('SELECT * FROM posts WHERE brief_id = ?').all(brief.id);
         res.json(updatedPosts);
     } catch (error) {
         console.error('Error approving all posts:', error);

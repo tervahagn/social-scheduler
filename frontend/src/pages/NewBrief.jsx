@@ -191,7 +191,7 @@ export default function NewBrief() {
             files.documents.forEach(file => formData.append('documents', file));
 
             const brief = await createBrief(formData);
-            navigate(`/brief/${brief.id}/edit`);
+            navigate(`/brief/${brief.slug}/edit`);
         } catch (err) {
             console.error(err);
             showError(err.response?.data?.error || 'Failed to create brief');

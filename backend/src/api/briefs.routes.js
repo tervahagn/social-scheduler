@@ -32,6 +32,19 @@ const uploadFields = upload.fields([
 ]);
 
 /**
+ * Helper: Get brief by ID or slug
+ */
+async function getBriefByIdOrSlug(identifier) {
+    // Try as slug first (more common in new workflow)
+    let brief = await db.prepare('SELECT * FROM briefs WHERE slug = ?').get(identifier);
+    // Fall back to numeric ID for backward compatibility
+    if (!brief && !isNaN(identifier)) {
+        brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(parseInt(identifier));
+    }
+    return brief;
+}
+
+/**
  * POST /api/briefs - Create a brief
  */
 router.post('/', uploadFields, async (req, res) => {
@@ -53,17 +66,17 @@ router.post('/', uploadFields, async (req, res) => {
         if (docFiles.length > 5) return res.status(400).json({ error: 'Too many document files (max 5)' });
 
         // Insert Brief
-        // We still keep media_url/type for backward compatibility if a single media file is uploaded, 
-        // or just leave them null and rely on brief_files. 
-        // Let's populate them with the first media file for compatibility.
         const firstMedia = mediaFiles[0];
         const mediaUrl = firstMedia ? `/uploads/${firstMedia.filename}` : null;
         const mediaType = firstMedia ? firstMedia.mimetype : null;
 
+        // Generate slug from title (date-time format)
+        const slug = title || `${Date.now()}`;
+
         const result = await db.prepare(`
-      INSERT INTO briefs (title, content, media_url, media_type, link_url, selected_platforms)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(title || 'Untitled', content, mediaUrl, mediaType, link_url, selected_platforms);
+      INSERT INTO briefs (title, content, media_url, media_type, link_url, selected_platforms, slug)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(title || 'Untitled', content, mediaUrl, mediaType, link_url, selected_platforms, slug);
 
         const briefId = result.lastInsertRowid;
 
@@ -112,17 +125,17 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * GET /api/briefs/:id - Get brief by ID
+ * GET /api/briefs/:id - Get brief by ID or slug
  */
 router.get('/:id', async (req, res) => {
     try {
-        const brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(req.params.id);
+        const brief = await getBriefByIdOrSlug(req.params.id);
 
         if (!brief) {
             return res.status(404).json({ error: 'Brief not found' });
         }
 
-        const files = await db.prepare('SELECT * FROM brief_files WHERE brief_id = ?').all(req.params.id);
+        const files = await db.prepare('SELECT * FROM brief_files WHERE brief_id = ?').all(brief.id);
         brief.files = files;
 
         res.json(brief);
@@ -138,10 +151,9 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { title, content, link_url, selected_platforms } = req.body;
-        const briefId = req.params.id;
 
-        // Check if brief exists
-        const brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(briefId);
+        // Get brief by ID or slug
+        const brief = await getBriefByIdOrSlug(req.params.id);
         if (!brief) {
             return res.status(404).json({ error: 'Brief not found' });
         }
@@ -156,10 +168,10 @@ router.put('/:id', async (req, res) => {
             UPDATE briefs 
             SET title = ?, content = ?, link_url = ?, selected_platforms = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
-        `).run(title || 'Untitled', content, link_url || null, selected_platforms || null, briefId);
+        `).run(title || 'Untitled', content, link_url || null, selected_platforms || null, brief.id);
 
         // Return updated brief
-        const updatedBrief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(briefId);
+        const updatedBrief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(brief.id);
         const files = await db.prepare('SELECT * FROM brief_files WHERE brief_id = ?').all(briefId);
         updatedBrief.files = files;
 
@@ -189,11 +201,16 @@ router.post('/:id/generate', async (req, res) => {
 });
 
 /**
- * GET /api/briefs/:id/posts - Get brief posts
+ * GET /api/briefs/:id/posts - Get all posts for a brief
  */
 router.get('/:id/posts', async (req, res) => {
     try {
-        const posts = await getPostsForBrief(req.params.id);
+        const brief = await getBriefByIdOrSlug(req.params.id);
+        if (!brief) {
+            return res.status(404).json({ error: 'Brief not found' });
+        }
+
+        const posts = await getPostsForBrief(brief.id);
         res.json(posts);
     } catch (error) {
         console.error('Error fetching posts:', error);
