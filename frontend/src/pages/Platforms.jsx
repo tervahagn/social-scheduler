@@ -22,7 +22,7 @@ function PlatformCard({ platform, onUpdate }) {
     const [ultraShortPrompt, setUltraShortPrompt] = useState(platform.ultra_short_prompt || '');
     const [loading, setLoading] = useState(false);
 
-    const config = getPlatformConfig(platform.id);
+    const config = getPlatformConfig(platform.name);
     const Icon = config.icon;
 
     const handleSave = async () => {
@@ -300,15 +300,92 @@ export default function Platforms() {
     if (loading) return <div className="loading">Loading platforms...</div>;
 
     return (
-        <div className="container">
-            <h1 style={{ marginBottom: '8px' }}>Platforms</h1>
-            <p className="text-secondary mb-4">Configure your social media platforms, prompts, and integrations</p>
+        <div className="container" style={{ maxWidth: '1400px' }}>
+            <h1 style={{ marginBottom: '8px' }}>Platform Configuration</h1>
+            <p className="text-secondary mb-4">Manage your social media platforms and automation settings</p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '24px' }}>
-                {platforms.map(platform => (
-                    <PlatformCard key={platform.id} platform={platform} onUpdate={fetchPlatforms} />
-                ))}
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '32px', alignItems: 'start' }}>
+                {/* Left Column: Platforms List */}
+                <div style={{ display: 'grid', gap: '20px' }}>
+                    {platforms.map(platform => (
+                        <PlatformCard
+                            key={platform.id}
+                            platform={platform}
+                            onUpdate={fetchPlatforms}
+                        />
+                    ))}
+                </div>
+
+                {/* Right Column: Sticky Webhook Guide */}
+                <div style={{ position: 'sticky', top: '24px' }}>
+                    <div className="card" style={{ padding: '24px', background: 'linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary))' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <LinkIcon size={20} className="text-accent" />
+                            Webhook Setup Guide
+                        </h3>
+
+                        <div style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                            <p style={{ marginBottom: '16px' }}>
+                                Connect Social Scheduler to <strong>Make.com</strong> (formerly Integromat) to automate posting to all your social accounts.
+                            </p>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <div style={{
+                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                    }}>1</div>
+                                    <div>
+                                        <strong style={{ color: 'var(--text-primary)' }}>Create Scenario</strong>
+                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>Create a new scenario in Make.com and add a <strong>Custom Webhook</strong> trigger.</p>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <div style={{
+                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                    }}>2</div>
+                                    <div>
+                                        <strong style={{ color: 'var(--text-primary)' }}>Copy URL</strong>
+                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>Copy the generated webhook URL from Make.com.</p>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <div style={{
+                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                    }}>3</div>
+                                    <div>
+                                        <strong style={{ color: 'var(--text-primary)' }}>Paste & Save</strong>
+                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>Enable the platform switch here, paste the URL into the <strong>Webhook URL</strong> field, and click Save.</p>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <div style={{
+                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                    }}>4</div>
+                                    <div>
+                                        <strong style={{ color: 'var(--text-primary)' }}>Connect Platform</strong>
+                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>In Make.com, add the social media module (e.g., LinkedIn, Instagram) after the webhook to create the post.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ marginTop: '24px', padding: '12px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                                <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--accent)', fontSize: '13px' }}>💡 Pro Tip</strong>
+                                <p style={{ fontSize: '12px', margin: 0 }}>
+                                    You can use the same webhook URL for multiple platforms if you route them in Make.com using a Router module based on the <code>platform</code> field.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
 }
+```
