@@ -98,69 +98,9 @@ export default function Settings() {
             <h1 style={{ marginBottom: '8px' }}>Settings</h1>
             <p className="text-secondary mb-4">Configure global content generation settings</p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '300px minmax(0, 1fr)', gap: '32px', alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: '32px', alignItems: 'start' }}>
 
-                {/* Left Column: Sticky OpenRouter Guide */}
-                <div style={{ position: 'sticky', top: '24px' }}>
-                    <div className="card" style={{ padding: '24px', background: 'linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary))' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Cpu size={20} className="text-accent" />
-                            OpenRouter Guide
-                        </h3>
-
-                        <div style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            <p style={{ marginBottom: '16px' }}>
-                                <strong>OpenRouter</strong> connects Social Scheduler to top AI models like GPT-4, Claude 3.5, and Llama 3.
-                            </p>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <div style={{
-                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
-                                    }}>1</div>
-                                    <div>
-                                        <strong style={{ color: 'var(--text-primary)' }}>Get API Key</strong>
-                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>
-                                            Go to <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>openrouter.ai/keys</a> and create a new key.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <div style={{
-                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
-                                    }}>2</div>
-                                    <div>
-                                        <strong style={{ color: 'var(--text-primary)' }}>Add Credits</strong>
-                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>Ensure your OpenRouter account has credits (min $5). Free models don't need credits.</p>
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <div style={{
-                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
-                                    }}>3</div>
-                                    <div>
-                                        <strong style={{ color: 'var(--text-primary)' }}>Select Model</strong>
-                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>Choose a model on the right. <strong>Grok 4.1 Fast</strong> is currently free and very fast.</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style={{ marginTop: '24px', padding: '12px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-                                <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--accent)', fontSize: '13px' }}>💡 Recommendation</strong>
-                                <p style={{ fontSize: '12px', margin: 0 }}>
-                                    For best quality, use <strong>Claude 3.5 Sonnet</strong>. For speed and free testing, use <strong>Grok 4.1</strong>.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Column: Settings Form */}
+                {/* Left Column: Settings Form */}
                 <div className="card">
 
                     {/* OpenRouter Configuration */}
@@ -354,7 +294,67 @@ export default function Settings() {
                         </ul>
                     </div>
                 </div>
+
+                {/* Right Column: Sticky OpenRouter Guide */}
+                <div style={{ position: 'sticky', top: '24px' }}>
+                    <div className="card" style={{ padding: '24px', background: 'linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary))' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Cpu size={20} className="text-accent" />
+                            OpenRouter Guide
+                        </h3>
+
+                        <div style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                            <p style={{ marginBottom: '16px' }}>
+                                <strong>OpenRouter</strong> connects Social Scheduler to top AI models like GPT-4, Claude 3.5, and Llama 3.
+                            </p>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <div style={{
+                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                    }}>1</div>
+                                    <div>
+                                        <strong style={{ color: 'var(--text-primary)' }}>Get API Key</strong>
+                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>
+                                            Go to <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>openrouter.ai/keys</a> and create a new key.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <div style={{
+                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                    }}>2</div>
+                                    <div>
+                                        <strong style={{ color: 'var(--text-primary)' } > Add Credits</strong>
+                                    <p style={{ fontSize: '13px', marginTop: '4px' }}>Ensure your OpenRouter account has credits (min $5). Free models don't need credits.</p>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <div style={{
+                                    width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                }}>3</div>
+                                <div>
+                                    <strong style={{ color: 'var(--text-primary)' }}>Select Model</strong>
+                                    <p style={{ fontSize: '13px', marginTop: '4px' }}>Choose a model on the right. <strong>Grok 4.1 Fast</strong> is currently free and very fast.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ marginTop: '24px', padding: '12px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                            <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--accent)', fontSize: '13px' }}>💡 Recommendation</strong>
+                            <p style={{ fontSize: '12px', margin: 0 }}>
+                                For best quality, use <strong>Claude 3.5 Sonnet</strong>. For speed and free testing, use <strong>Grok 4.1</strong>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+        </div >
     );
 }
