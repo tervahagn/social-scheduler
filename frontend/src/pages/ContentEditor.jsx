@@ -170,6 +170,26 @@ export default function ContentEditor() {
         setEditingPost(null);
     };
 
+    const handlePublish = async () => {
+        if (!window.confirm('Publish all approved posts? This will send them to your configured platforms.')) {
+            return;
+        }
+
+        setProcessing(true);
+        try {
+            const response = await axios.post(`/api/publish/brief/${briefId}`);
+            // Refresh posts to show published status
+            const postsRes = await axios.get(`/api/briefs/${briefId}/posts`);
+            setPosts(postsRes.data);
+
+            showSuccess(response.data.message || 'Posts published successfully!');
+        } catch (err) {
+            console.error('Error publishing:', err);
+            showError(err.response?.data?.error || 'Failed to publish posts');
+        }
+        setProcessing(false);
+    };
+
     if (loading) return <div className="loading">Loading...</div>;
 
     const platformColors = {
@@ -414,6 +434,8 @@ export default function ContentEditor() {
                                     {hasApproved && (
                                         <>
                                             <button
+                                                onClick={handlePublish}
+                                                disabled={processing}
                                                 className="button"
                                                 style={{
                                                     background: 'white',
@@ -424,7 +446,7 @@ export default function ContentEditor() {
                                                     gap: '6px'
                                                 }}
                                             >
-                                                <Sparkles size={16} />
+                                                {processing ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={16} />}
                                                 Publish Now
                                             </button>
                                             <button

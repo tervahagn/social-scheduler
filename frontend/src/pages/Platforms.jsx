@@ -3,15 +3,6 @@ import { getPlatforms, updatePlatform } from '../services/api';
 import {
     Save,
     Loader,
-    Globe,
-    Linkedin,
-    Twitter,
-    Instagram,
-    Facebook,
-    Youtube,
-    MessageSquare,
-    Search,
-    Share2,
     CheckCircle,
     XCircle,
     Settings,
@@ -19,18 +10,7 @@ import {
     FileText
 } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
-
-const PLATFORM_ICONS = {
-    'blog': Globe,
-    'linkedin': Linkedin,
-    'linkedin-personal': Linkedin,
-    'twitter': Twitter,
-    'instagram': Instagram,
-    'facebook': Facebook,
-    'youtube-posts': Youtube,
-    'reddit': MessageSquare,
-    'google-business': Search
-};
+import { getPlatformConfig } from '../config/platforms';
 
 function PlatformCard({ platform, onUpdate }) {
     const { showSuccess, showError } = useNotification();
@@ -42,7 +22,8 @@ function PlatformCard({ platform, onUpdate }) {
     const [ultraShortPrompt, setUltraShortPrompt] = useState(platform.ultra_short_prompt || '');
     const [loading, setLoading] = useState(false);
 
-    const Icon = PLATFORM_ICONS[platform.id] || Share2;
+    const config = getPlatformConfig(platform.id);
+    const Icon = config.icon;
 
     const handleSave = async () => {
         setLoading(true);
@@ -107,16 +88,16 @@ function PlatformCard({ platform, onUpdate }) {
                         width: '40px',
                         height: '40px',
                         borderRadius: '10px',
-                        background: 'var(--bg-secondary)',
+                        background: config.color + '15', // 15% opacity
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: 'var(--accent)'
+                        color: config.color
                     }}>
                         <Icon size={24} />
                     </div>
                     <div>
-                        <h3 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>{platform.display_name}</h3>
+                        <h3 style={{ fontSize: '18px', fontWeight: '600', margin: 0, color: config.color }}>{config.name}</h3>
                     </div>
                 </div>
                 <label className="switch">

@@ -8,6 +8,7 @@ import { mkdirSync } from 'fs';
 // Routes
 import briefsRoutes from './api/briefs.routes.js';
 import postsRoutes from './api/posts.routes.js';
+import contentRoutes from './api/content.routes.js';
 import publishRoutes from './api/publish.routes.js';
 import platformsRoutes from './api/platforms.routes.js';
 import calendarRoutes from './api/calendar.routes.js';
@@ -53,6 +54,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/masters', mastersRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/content', contentRoutes);
+app.use('/api/publish', publishRoutes);
 
 // 404 handler
 app.use((req, res) => {

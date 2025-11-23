@@ -121,19 +121,95 @@ export async function publishPost(postId) {
  * Publishes all approved posts of a brief
  */
 export async function publishAllPosts(briefId) {
-    const posts = await db.prepare(`
-    SELECT id FROM posts 
-    WHERE brief_id = ? AND status = 'approved'
-  `).all(briefId);
+    const posts = await db.prepare('SELECT * FROM posts WHERE brief_id = ? AND status = ?').all(briefId, 'approved');
+
+    if (posts.length === 0) {
+        return [];
+    }
+
+    // Get webhook URL from settings (optional)
+    const webhookSetting = await db.prepare("SELECT value FROM settings WHERE key = 'publish_webhook_url'").get();
+    const webhookUrl = webhookSetting?.value;
 
     const results = [];
 
     for (const post of posts) {
         try {
-            const result = await publishPost(post.id);
-            results.push({ postId: post.id, ...result });
+            // Mark as published in database
+            await db.prepare(`
+                UPDATE posts 
+                SET status = 'published', published_at = CURRENT_TIMESTAMP 
+                WHERE id = ?
+            `).run(post.id);
+
+            // If webhook configured, send data to Make.com / Zapier
+            if (webhookUrl) {
+                try {
+                    // Get brief and platform details
+                    const brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(post.brief_id);
+                    const platform = await db.prepare('SELECT * FROM platforms WHERE id = ?').get(post.platform_id);
+
+                    // Send webhook
+                    await axios.post(webhookUrl, {
+                        post_id: post.id,
+                        platform: platform?.id,
+                        platform_name: platform?.display_name,
+                        content: post.content,
+                        brief: {
+                            id: brief?.id,
+                            title: brief?.title,
+                            content: brief?.content,
+                            link_url: brief?.link_url
+                        },
+                        scheduled_at: post.scheduled_at,
+                        published_at: new Date().toISOString()
+                    }, {
+                        timeout: 10000, // 10 second timeout
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    results.push({
+                        success: true,
+                        post_id: post.id,
+                        platform: platform?.display_name,
+                        webhook_sent: true
+                    });
+                } catch (webhookError) {
+                    console.error(`Webhook error for post ${post.id}:`, webhookError.message);
+                    // Mark as published but note webhook error
+                    await db.prepare(`
+                        UPDATE posts 
+                        SET publish_error = ? 
+                        WHERE id = ?
+                    `).run(`Webhook failed: ${webhookError.message}`, post.id);
+
+                    results.push({
+                        success: true, // Still published locally
+                        post_id: post.id,
+                        platform: platform?.display_name,
+                        webhook_sent: false,
+                        webhook_error: webhookError.message
+                    });
+                }
+            } else {
+                // No webhook configured - just mark as published
+                const platform = await db.prepare('SELECT * FROM platforms WHERE id = ?').get(post.platform_id);
+                results.push({
+                    success: true,
+                    post_id: post.id,
+                    platform: platform?.display_name,
+                    webhook_sent: false
+                });
+            }
         } catch (error) {
-            results.push({ postId: post.id, success: false, error: error.message });
+            console.error(`Error publishing post ${post.id}:`, error);
+            results.push({
+                success: false,
+                post_id: post.id,
+                error: error.message
+            });
         }
     }
 
