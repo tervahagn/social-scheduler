@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { getBriefs, deleteBrief } from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Clock, Trash2, Copy, ChevronRight, ArrowLeft, Calendar } from 'lucide-react';
+import { FileText, Clock, Trash2, Copy, ChevronRight, ArrowLeft, Calendar, LayoutGrid, List } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
 
 export default function History() {
     const [briefs, setBriefs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState('list');
     const navigate = useNavigate();
     const { showSuccess, showError } = useNotification();
 
@@ -51,18 +52,57 @@ export default function History() {
     if (loading) return <div className="loading">Loading history...</div>;
 
     return (
-        <div className="container" style={{ maxWidth: '1000px' }}>
-            <div style={{ marginBottom: '32px' }}>
-                <button
-                    onClick={() => navigate('/')}
-                    className="button button-secondary"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}
-                >
-                    <ArrowLeft size={16} />
-                    Back to New Brief
-                </button>
-                <h1 style={{ fontSize: '28px', fontWeight: '700' }}>Brief History</h1>
-                <p className="text-secondary">Manage and revisit your past content briefs</p>
+        <div className="container" style={{ maxWidth: '1200px' }}>
+            <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <div>
+                    <button
+                        onClick={() => navigate('/')}
+                        className="button button-secondary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}
+                    >
+                        <ArrowLeft size={16} />
+                        Back to New Brief
+                    </button>
+                    <h1 style={{ fontSize: '28px', fontWeight: '700' }}>Brief History</h1>
+                    <p className="text-secondary">Manage and revisit your past content briefs</p>
+                </div>
+
+                <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        title="Grid View"
+                        style={{
+                            padding: '8px',
+                            borderRadius: '6px',
+                            background: viewMode === 'grid' ? 'var(--bg-tertiary)' : 'transparent',
+                            color: viewMode === 'grid' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <LayoutGrid size={20} />
+                    </button>
+                    <button
+                        onClick={() => setViewMode('list')}
+                        title="List View"
+                        style={{
+                            padding: '8px',
+                            borderRadius: '6px',
+                            background: viewMode === 'list' ? 'var(--bg-tertiary)' : 'transparent',
+                            color: viewMode === 'list' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <List size={20} />
+                    </button>
+                </div>
             </div>
 
             {briefs.length === 0 ? (
@@ -86,7 +126,11 @@ export default function History() {
                     </button>
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(350px, 1fr))' : '1fr',
+                    gap: '24px'
+                }}>
                     {briefs.map(brief => (
                         <div
                             key={brief.id}
@@ -97,7 +141,10 @@ export default function History() {
                                 transition: 'all 0.2s',
                                 padding: '24px',
                                 borderLeft: '4px solid transparent',
-                                position: 'relative'
+                                position: 'relative',
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column'
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.transform = 'translateY(-2px)';
@@ -110,9 +157,9 @@ export default function History() {
                                 e.currentTarget.style.borderLeftColor = 'transparent';
                             }}
                         >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
+                            <div style={{ display: 'flex', flexDirection: viewMode === 'grid' ? 'column' : 'row', justifyContent: 'space-between', alignItems: viewMode === 'grid' ? 'stretch' : 'flex-start', gap: '24px', flex: 1 }}>
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', flexWrap: 'wrap' }}>
                                         <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-primary)' }}>
                                             {brief.title || 'Untitled Brief'}
                                         </h3>
@@ -140,14 +187,14 @@ export default function History() {
                                         lineHeight: '1.6',
                                         marginBottom: '16px',
                                         display: '-webkit-box',
-                                        WebkitLineClamp: '2',
+                                        WebkitLineClamp: viewMode === 'grid' ? '3' : '2',
                                         WebkitBoxOrient: 'vertical',
                                         overflow: 'hidden'
                                     }}>
                                         {brief.content}
                                     </p>
 
-                                    <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                                    <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
                                         {brief.media_url && (
                                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                 📎 Has Media
@@ -166,11 +213,11 @@ export default function History() {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ display: 'flex', flexDirection: viewMode === 'grid' ? 'row' : 'column', gap: '8px', marginTop: viewMode === 'grid' ? '16px' : '0' }}>
                                     <button
                                         onClick={(e) => handleBranch(e, brief)}
                                         className="button button-secondary"
-                                        style={{ padding: '8px 12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', width: '100%' }}
+                                        style={{ padding: '8px 12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', width: '100%', justifyContent: 'center' }}
                                         title="Create new brief from this one"
                                     >
                                         <Copy size={14} />
