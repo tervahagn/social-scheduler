@@ -172,7 +172,7 @@ router.put('/:id', async (req, res) => {
 
         // Return updated brief
         const updatedBrief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(brief.id);
-        const files = await db.prepare('SELECT * FROM brief_files WHERE brief_id = ?').all(briefId);
+        const files = await db.prepare('SELECT * FROM brief_files WHERE brief_id = ?').all(brief.id);
         updatedBrief.files = files;
 
         res.json(updatedBrief);
