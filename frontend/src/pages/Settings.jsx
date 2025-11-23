@@ -353,7 +353,8 @@ export default function Settings() {
                             <li>Changes apply immediately to new content generation.</li>
                         </ul>
                     </div>
-                </div >
-            </div >
-            );
+                </div>
+            </div>
+        </div>
+    );
 }
