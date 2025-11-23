@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Loader, Edit2, Check, X, RotateCcw, CheckCircle, Circle, Clock, MoreVertical } from 'lucide-react';
 import axios from 'axios';
 import { useNotification } from '../contexts/NotificationContext';
+import { getPlatformConfig } from '../config/platforms';
 
 export default function ContentEditor() {
     const { briefId } = useParams();
@@ -191,18 +192,6 @@ export default function ContentEditor() {
     };
 
     if (loading) return <div className="loading">Loading...</div>;
-
-    const platformColors = {
-        'linkedin': '#0077B5',
-        'linkedin-personal': '#0077B5',
-        'facebook': '#1877F2',
-        'instagram': '#E4405F',
-        'twitter': '#1DA1F2',
-        'google-business': '#4285F4',
-        'blog': '#FF6B6B',
-        'reddit': '#FF4500',
-        'youtube-posts': '#FF0000'
-    };
 
     const hasDrafts = posts.some(p => p.status === 'draft');
     const hasApproved = posts.some(p => p.status === 'approved');
@@ -497,11 +486,12 @@ export default function ContentEditor() {
                             </div>
                         </div>
                     )}
-                    {/* Platform Cards */}
                     <div style={{ display: 'grid', gap: '20px' }}>
                         {posts.map(post => {
-                            const platformColor = platformColors[post.platform_name] || '#6366f1';
+                            const config = getPlatformConfig(post.platform_name);
+                            const platformColor = config.color;
                             const isApproved = post.status === 'approved';
+                            const PlatformIcon = config.icon;
 
                             return (
                                 <div
