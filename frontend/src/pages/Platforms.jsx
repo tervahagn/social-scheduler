@@ -7,7 +7,9 @@ import {
     XCircle,
     Settings,
     Link as LinkIcon,
-    FileText
+    FileText,
+    LayoutGrid,
+    List
 } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
 import { getPlatformConfig } from '../config/platforms';
@@ -280,6 +282,7 @@ export default function Platforms() {
     const { showError } = useNotification();
     const [platforms, setPlatforms] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState('grid');
 
     useEffect(() => {
         fetchPlatforms();
@@ -301,12 +304,56 @@ export default function Platforms() {
 
     return (
         <div className="container" style={{ maxWidth: '1400px' }}>
-            <h1 style={{ marginBottom: '8px' }}>Platform Configuration</h1>
-            <p className="text-secondary mb-4">Manage your social media platforms and automation settings</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <div>
+                    <h1 style={{ marginBottom: '8px' }}>Platform Configuration</h1>
+                    <p className="text-secondary">Manage your social media platforms and automation settings</p>
+                </div>
+                <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        title="Grid View"
+                        style={{
+                            padding: '8px',
+                            borderRadius: '6px',
+                            background: viewMode === 'grid' ? 'var(--bg-tertiary)' : 'transparent',
+                            color: viewMode === 'grid' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <LayoutGrid size={20} />
+                    </button>
+                    <button
+                        onClick={() => setViewMode('list')}
+                        title="List View"
+                        style={{
+                            padding: '8px',
+                            borderRadius: '6px',
+                            background: viewMode === 'list' ? 'var(--bg-tertiary)' : 'transparent',
+                            color: viewMode === 'list' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <List size={20} />
+                    </button>
+                </div>
+            </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '32px', alignItems: 'start' }}>
                 {/* Left Column: Platforms List */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '24px' }}>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(350px, 1fr))' : '1fr',
+                    gap: '24px'
+                }}>
                     {platforms.map(platform => (
                         <PlatformCard
                             key={platform.id}
