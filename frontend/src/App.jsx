@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Zap, FileText, Clock, Settings as SettingsIcon, CalendarDays, Sliders, Sun, Moon, BarChart2, Share2, MessageCircle, Calendar } from 'lucide-react';
+import { Zap, FileText, Clock, Settings as SettingsIcon, CalendarDays, Sliders, Sun, Moon, BarChart2, Share2, MessageCircle, Calendar as CalendarIcon } from 'lucide-react';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { useEffect, useState } from 'react';
@@ -15,12 +15,9 @@ import Settings from './pages/Settings';
 import Analytics from './pages/Analytics';
 import './index.css';
 
-import { useLocation } from 'react-router-dom';
-import { Zap, FileText, Clock, Settings as SettingsIcon, CalendarDays, Sliders, Sun, Moon, BarChart2, Share2, MessageCircle, Calendar } from 'lucide-react';
-
 function AnimatedLogo() {
     const [iconIndex, setIconIndex] = useState(0);
-    const icons = [Zap, Calendar, Share2, MessageCircle];
+    const icons = [Zap, CalendarIcon, Share2, MessageCircle];
     const CurrentIcon = icons[iconIndex];
 
     useEffect(() => {
