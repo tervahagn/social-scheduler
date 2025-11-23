@@ -199,6 +199,21 @@ export default function ContentEditor() {
     const hasDrafts = posts.some(p => p.status === 'draft');
     const hasApproved = posts.some(p => p.status === 'approved');
 
+    const handleBulkApprove = async () => {
+        if (!window.confirm('Approve all generated posts?')) return;
+
+        try {
+            await Promise.all(posts.map(post =>
+                axios.put(`/api/content/${post.id}/status`, { status: 'approved' })
+            ));
+
+            setPosts(prev => prev.map(p => ({ ...p, status: 'approved', approved_at: new Date().toISOString() })));
+            showSuccess('All posts approved');
+        } catch (err) {
+            showError('Failed to approve posts');
+        }
+    };
+
     return (
         <div className="container" style={{ maxWidth: '1200px' }}>
             {/* Header */}
