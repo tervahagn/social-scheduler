@@ -549,7 +549,7 @@ export default function ContentEditor() {
                         gap: '24px'
                     }}>
                         {posts.map(post => {
-                            const platformColor = getPlatformColor(post.platform);
+                            const platformColor = getPlatformConfig(post.platform).color;
                             const isApproved = post.status === 'approved';
 
                             return (
