@@ -13,9 +13,11 @@ export default function ContentEditor() {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState(false);
-    const [correctionModal, setCorrectionModal] = useState(null); // { postId, platformName, currentContent }
+    const [correctionModal, setCorrectionModal] = useState(null);
     const [correctionPrompt, setCorrectionPrompt] = useState('');
     const [processing, setProcessing] = useState(false);
+    const [editingPost, setEditingPost] = useState(null); // { postId, content }
+    const [loadingPosts, setLoadingPosts] = useState(new Set()); // Track which posts are generating
 
     useEffect(() => {
         fetchData();
@@ -64,22 +66,31 @@ export default function ContentEditor() {
     const handleSubmitCorrection = async () => {
         if (!correctionPrompt.trim()) return;
 
-        setProcessing(true);
+        const postId = correctionModal.postId;
+
+        // Close modal immediately and show loading state
+        setCorrectionModal(null);
+        setCorrectionPrompt('');
+        setLoadingPosts(prev => new Set([...prev, postId]));
+
         try {
-            const response = await axios.post(`/api/content/post/${correctionModal.postId}/correct`, {
+            const response = await axios.post(`/api/content/post/${postId}/correct`, {
                 correctionPrompt
             });
 
             // Update posts list
-            setPosts(prev => prev.map(p => p.id === correctionModal.postId ? response.data : p));
-            showSuccess(`Created v${response.data.version} for ${correctionModal.platformName}`);
-            setCorrectionModal(null);
-            setCorrectionPrompt('');
+            setPosts(prev => prev.map(p => p.id === postId ? response.data : p));
+            showSuccess(`Created v${response.data.version} for ${response.data.platform_display_name}`);
         } catch (err) {
             console.error('Error correcting post:', err);
             showError(err.response?.data?.error || 'Failed to correct post');
+        } finally {
+            setLoadingPosts(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(postId);
+                return newSet;
+            });
         }
-        setProcessing(false);
     };
 
     const handleApprove = async (post) => {
@@ -126,6 +137,30 @@ export default function ContentEditor() {
             showError('Failed to approve all posts');
         }
         setProcessing(false);
+    };
+
+    const handleEdit = (post) => {
+        setEditingPost({ postId: post.id, content: post.content });
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingPost) return;
+
+        try {
+            const response = await axios.put(`/api/posts/${editingPost.postId}`, {
+                edited_content: editingPost.content
+            });
+            setPosts(prev => prev.map(p => p.id === editingPost.postId ? response.data : p));
+            showSuccess('Post updated');
+            setEditingPost(null);
+        } catch (err) {
+            console.error('Error saving edit:', err);
+            showError('Failed to save changes');
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingPost(null);
     };
 
     if (loading) return <div className="loading">Loading...</div>;
@@ -410,56 +445,124 @@ export default function ContentEditor() {
                                     </div>
 
                                     {/* Content */}
-                                    <div style={{
-                                        padding: '16px',
-                                        background: 'var(--bg-secondary)',
-                                        borderRadius: '8px',
-                                        marginBottom: '16px',
-                                        whiteSpace: 'pre-wrap',
-                                        fontSize: '14px',
-                                        lineHeight: '1.6',
-                                        maxHeight: '300px',
-                                        overflowY: 'auto'
-                                    }}>
-                                        {post.content}
-                                    </div>
+                                    {loadingPosts.has(post.id) ? (
+                                        // Loading State
+                                        <div style={{
+                                            padding: '40px',
+                                            background: 'var(--bg-secondary)',
+                                            borderRadius: '8px',
+                                            marginBottom: '16px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            gap: '12px'
+                                        }}>
+                                            <Loader size={32} style={{ animation: 'spin 1s linear infinite', color: platformColor }} />
+                                            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                                                Generating new version...
+                                            </div>
+                                        </div>
+                                    ) : editingPost?.postId === post.id ? (
+                                        // Edit Mode
+                                        <textarea
+                                            className="textarea"
+                                            value={editingPost.content}
+                                            onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
+                                            style={{
+                                                minHeight: '200px',
+                                                marginBottom: '16px',
+                                                fontSize: '14px',
+                                                lineHeight: '1.6',
+                                                fontFamily: 'inherit'
+                                            }}
+                                        />
+                                    ) : (
+                                        // View Mode
+                                        <div style={{
+                                            padding: '16px',
+                                            background: 'var(--bg-secondary)',
+                                            borderRadius: '8px',
+                                            marginBottom: '16px',
+                                            whiteSpace: 'pre-wrap',
+                                            fontSize: '14px',
+                                            lineHeight: '1.6',
+                                            maxHeight: '300px',
+                                            overflowY: 'auto'
+                                        }}>
+                                            {post.content}
+                                        </div>
+                                    )}
 
                                     {/* Actions */}
                                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                        <button
-                                            onClick={() => handleCorrect(post)}
-                                            className="button button-secondary"
-                                            style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
-                                        >
-                                            <Edit2 size={14} />
-                                            Request Changes
-                                        </button>
+                                        {editingPost?.postId === post.id ? (
+                                            // Edit Mode Actions
+                                            <>
+                                                <button
+                                                    onClick={handleSaveEdit}
+                                                    className="button"
+                                                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                                                >
+                                                    <Check size={14} />
+                                                    Save Changes
+                                                </button>
+                                                <button
+                                                    onClick={handleCancelEdit}
+                                                    className="button button-secondary"
+                                                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                                                >
+                                                    <X size={14} />
+                                                    Cancel
+                                                </button>
+                                            </>
+                                        ) : !loadingPosts.has(post.id) && (
+                                            // Normal Actions
+                                            <>
+                                                <button
+                                                    onClick={() => handleEdit(post)}
+                                                    className="button button-secondary"
+                                                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                                                >
+                                                    <Edit2 size={14} />
+                                                    Edit
+                                                </button>
 
-                                        <button
-                                            onClick={() => handleApprove(post)}
-                                            className="button"
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '6px',
-                                                fontSize: '13px',
-                                                background: isApproved ? 'var(--bg-secondary)' : 'var(--success)',
-                                                color: isApproved ? 'var(--text-primary)' : 'white',
-                                                border: isApproved ? '1px solid var(--border)' : 'none'
-                                            }}
-                                        >
-                                            {isApproved ? <X size={14} /> : <Check size={14} />}
-                                            {isApproved ? 'Un-approve' : 'Approve'}
-                                        </button>
+                                                <button
+                                                    onClick={() => handleCorrect(post)}
+                                                    className="button button-secondary"
+                                                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                                                >
+                                                    <Sparkles size={14} />
+                                                    Request Changes
+                                                </button>
 
-                                        <button
-                                            onClick={() => handleRegenerate(post)}
-                                            className="button button-secondary"
-                                            style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
-                                        >
-                                            <RotateCcw size={14} />
-                                            Regenerate
-                                        </button>
+                                                <button
+                                                    onClick={() => handleApprove(post)}
+                                                    className="button"
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        fontSize: '13px',
+                                                        background: isApproved ? 'var(--bg-secondary)' : 'var(--success)',
+                                                        color: isApproved ? 'var(--text-primary)' : 'white',
+                                                        border: isApproved ? '1px solid var(--border)' : 'none'
+                                                    }}
+                                                >
+                                                    {isApproved ? <X size={14} /> : <Check size={14} />}
+                                                    {isApproved ? 'Un-approve' : 'Approve'}
+                                                </button>
+
+                                                <button
+                                                    onClick={() => handleRegenerate(post)}
+                                                    className="button button-secondary"
+                                                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                                                >
+                                                    <RotateCcw size={14} />
+                                                    Regenerate
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             );
