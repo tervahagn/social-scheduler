@@ -306,7 +306,7 @@ export default function Platforms() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '32px', alignItems: 'start' }}>
                 {/* Left Column: Platforms List */}
-                <div style={{ display: 'grid', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '24px' }}>
                     {platforms.map(platform => (
                         <PlatformCard
                             key={platform.id}
