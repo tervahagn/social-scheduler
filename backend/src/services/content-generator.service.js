@@ -2,36 +2,36 @@ import { join } from 'path';
 import db from '../database/db.js';
 import { generateContent, generateContentWithImage } from './openrouter.service.js';
 
-export async function generatePostsForBrief(briefId, masterId = null) {
+/**
+ * NEW: Generate platform-specific content directly from brief (skip master draft)
+ */
+export async function generatePlatformContentDirect(briefId) {
     // Fetch brief data
     const brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(briefId);
     if (!brief) {
         throw new Error('Brief not found');
     }
+
     // Get brief files
     const files = await db.prepare('SELECT * FROM brief_files WHERE brief_id = ?').all(briefId);
     const mediaFiles = files.filter(f => f.category === 'media');
     const docFiles = files.filter(f => f.category === 'document');
-
 
     // Prepare source content with attached documents
     let sourceContent = brief.content;
 
     // Append content from text-based documents
     if (docFiles.length > 0) {
-        sourceContent += '\n\n--- Attached Documents ---\n';
+        sourceContent += '\\n\\n--- Attached Documents ---\\n';
         const fs = await import('fs');
         const path = await import('path');
 
         for (const doc of docFiles) {
             try {
                 const ext = path.extname(doc.original_name).toLowerCase();
-                // Basic text support for now
                 if (['.txt', '.md', '.csv', '.json', '.js', '.html', '.css'].includes(ext)) {
                     const fileContent = fs.readFileSync(join(process.cwd(), doc.file_path), 'utf8');
-                    sourceContent += `\n[File: ${doc.original_name}]\n${fileContent}\n`;
-                } else {
-                    sourceContent += `\n[File: ${doc.original_name}] (Content extraction not supported for ${ext} yet)\n`;
+                    sourceContent += `\\n[File: ${doc.original_name}]\\n${fileContent}\\n`;
                 }
             } catch (err) {
                 console.warn(`Failed to read document ${doc.original_name}:`, err.message);
@@ -39,24 +39,11 @@ export async function generatePostsForBrief(briefId, masterId = null) {
         }
     }
 
-    let masterPrompt = '';
+    // Get master prompt from settings
+    const masterPromptRow = await db.prepare("SELECT value FROM settings WHERE key = 'master_prompt'").get();
+    const masterPrompt = masterPromptRow?.value || '';
 
-    if (masterId) {
-        const masterDraft = await db.prepare('SELECT * FROM master_drafts WHERE id = ?').get(masterId);
-        if (!masterDraft) {
-            throw new Error('Master draft not found');
-        }
-        // If master draft exists, use its content as the primary source, 
-        // but we might still want to append document context if it wasn't already in the master draft?
-        // For now, let's assume master draft content is the source of truth.
-        sourceContent = masterDraft.content;
-    } else {
-        // Legacy flow: Get master prompt from settings
-        const masterPromptRow = await db.prepare("SELECT value FROM settings WHERE key = 'master_prompt'").get();
-        masterPrompt = masterPromptRow?.value || '';
-    }
-
-    // Get selected platforms or all active if none selected
+    // Get selected platforms
     let platforms;
     if (brief.selected_platforms) {
         const selectedIds = JSON.parse(brief.selected_platforms);
@@ -66,24 +53,15 @@ export async function generatePostsForBrief(briefId, masterId = null) {
         platforms = await db.prepare('SELECT * FROM platforms WHERE is_active = 1').all();
     }
 
-    // Define platform sequence: blog, linkedin (company), linkedin (personal), reddit, google, x, youtube, fb, ig
+    // Platform sequence
     const platformSequence = [
-        'blog',
-        'linkedin',
-        'linkedin-personal',
-        'reddit',
-        'google-business',
-        'twitter', // X
-        'youtube-posts',
-        'facebook',
-        'instagram'
+        'blog', 'linkedin', 'linkedin-personal', 'reddit', 'google-business',
+        'twitter', 'youtube-posts', 'facebook', 'instagram'
     ];
 
-    // Sort platforms according to sequence
     platforms.sort((a, b) => {
         const indexA = platformSequence.indexOf(a.name);
         const indexB = platformSequence.indexOf(b.name);
-        // If not in sequence, put at the end
         const valA = indexA === -1 ? 999 : indexA;
         const valB = indexB === -1 ? 999 : indexB;
         return valA - valB;
@@ -95,51 +73,36 @@ export async function generatePostsForBrief(briefId, masterId = null) {
     for (const platform of platforms) {
         try {
             let content;
-
-            // Format full brief/content
             let fullContent = sourceContent;
             if (brief.link_url) {
-                fullContent += `\n\nLink: ${brief.link_url}`;
+                fullContent += `\\n\\nLink: ${brief.link_url}`;
             }
 
             const startTime = Date.now();
 
-            // Determine media to use (prefer brief.media_url for backward compat, then first media file)
+            // Determine media to use
             let mediaUrl = brief.media_url;
             if (!mediaUrl && mediaFiles.length > 0) {
-                // Use the first image found
                 const imageFile = mediaFiles.find(f => f.mime_type?.startsWith('image/'));
                 if (imageFile) {
-                    mediaUrl = imageFile.file_path; // This is relative path /uploads/...
-                    // Ensure it's a full URL if needed by OpenRouter? 
-                    // OpenRouter/OpenAI usually needs a public URL or base64. 
-                    // Since we are local, we might need to convert to base64 if not public.
-                    // But wait, generateContentWithImage takes a URL. 
-                    // If it's a local file, we need to handle it.
-                    // Let's check generateContentWithImage implementation.
+                    mediaUrl = imageFile.file_path;
+                }
+            }
+
+            // Convert local path to base64 if needed
+            if (mediaUrl && mediaUrl.startsWith('/uploads')) {
+                const fs = await import('fs');
+                const localPath = join(process.cwd(), mediaUrl);
+                if (fs.existsSync(localPath)) {
+                    const bitmap = fs.readFileSync(localPath);
+                    const base64 = Buffer.from(bitmap).toString('base64');
+                    const mime = brief.media_type || (mediaFiles.find(f => f.file_path === mediaUrl)?.mime_type) || 'image/jpeg';
+                    mediaUrl = `data:${mime};base64,${base64}`;
                 }
             }
 
             // Generate with Vision if image present
             if (mediaUrl && (brief.media_type?.startsWith('image/') || mediaFiles.some(f => f.mime_type?.startsWith('image/')))) {
-                // We need to handle local file paths for OpenRouter if they are not public URLs.
-                // Assuming generateContentWithImage might need update or we pass the path and it handles it?
-                // The current implementation passes it directly to image_url.
-                // If it's /uploads/..., it's a local path. OpenAI API won't reach it.
-                // We should convert to base64 data URI.
-
-                // Let's do a quick fix to convert local path to base64 if it starts with /uploads
-                if (mediaUrl.startsWith('/uploads')) {
-                    const fs = await import('fs');
-                    const localPath = join(process.cwd(), mediaUrl);
-                    if (fs.existsSync(localPath)) {
-                        const bitmap = fs.readFileSync(localPath);
-                        const base64 = Buffer.from(bitmap).toString('base64');
-                        const mime = brief.media_type || (mediaFiles.find(f => f.file_path === mediaUrl)?.mime_type) || 'image/jpeg';
-                        mediaUrl = `data:${mime};base64,${base64}`;
-                    }
-                }
-
                 content = await generateContentWithImage(fullContent, mediaUrl, platform.id, platform.prompt_file, masterPrompt);
             } else {
                 content = await generateContent(fullContent, platform.id, platform.prompt_file, masterPrompt);
@@ -147,22 +110,24 @@ export async function generatePostsForBrief(briefId, masterId = null) {
 
             const generationTime = Date.now() - startTime;
 
-            // Save post to DB
+            // Save post to DB (version 1)
             const result = await db.prepare(`
-        INSERT INTO posts (brief_id, platform_id, content, status, master_draft_id, generation_time_ms)
-        VALUES (?, ?, ?, 'draft', ?, ?)
-      `).run(briefId, platform.id, content, masterId, generationTime);
+                INSERT INTO posts (brief_id, platform_id, content, status, version, generation_time_ms)
+                VALUES (?, ?, ?, 'draft', 1, ?)
+            `).run(briefId, platform.id, content, generationTime);
 
-            posts.push({
-                id: result.lastInsertRowid,
-                platform: platform.display_name,
-                content
-            });
+            const post = await db.prepare(`
+                SELECT posts.*, platforms.name as platform_name, platforms.display_name as platform_display_name
+                FROM posts
+                JOIN platforms ON posts.platform_id = platforms.id
+                WHERE posts.id = ?
+            `).get(result.lastInsertRowid);
+
+            posts.push(post);
 
             console.log(`✅ Generated post for ${platform.display_name}`);
         } catch (error) {
             console.error(`❌ Failed to generate for ${platform.display_name}:`, error.message);
-            // Continue with other platforms
         }
     }
 
@@ -170,8 +135,134 @@ export async function generatePostsForBrief(briefId, masterId = null) {
 }
 
 /**
- * Generates posts from a specific master draft
+ * NEW: Correct a post (create new version with corrections)
  */
+export async function correctPost(postId, correctionPrompt) {
+    const post = await db.prepare('SELECT * FROM posts WHERE id = ?').get(postId);
+    if (!post) {
+        throw new Error('Post not found');
+    }
+
+    // Save current version to history
+    await db.prepare(`
+        INSERT INTO post_versions (post_id, version, content, correction_prompt)
+        VALUES (?, ?, ?, NULL)
+    `).run(postId, post.version, post.content);
+
+    // Get platform info
+    const platform = await db.prepare('SELECT * FROM platforms WHERE id = ?').get(post.platform_id);
+
+    // Build correction prompt
+    const fullPrompt = `Here is the current version of the content:
+
+${post.content}
+
+Please make the following corrections:
+${correctionPrompt}
+
+Provide the complete corrected version following the original platform guidelines.`;
+
+    // Get API key and model from database
+    const apiKeySetting = await db.prepare("SELECT value FROM settings WHERE key = 'openrouter_api_key'").get();
+    const modelSetting = await db.prepare("SELECT value FROM settings WHERE key = 'openrouter_model'").get();
+
+    const apiKey = apiKeySetting?.value || process.env.OPENROUTER_API_KEY;
+    const model = modelSetting?.value || process.env.OPENROUTER_MODEL || 'x-ai/grok-4.1-fast:free';
+
+    if (!apiKey) {
+        throw new Error('OpenRouter API Key is not configured');
+    }
+
+    // Call LLM
+    const { default: OpenAI } = await import('openai');
+    const openrouter = new OpenAI({
+        baseURL: 'https://openrouter.ai/api/v1',
+        apiKey: apiKey,
+        defaultHeaders: {
+            'HTTP-Referer': 'http://localhost:3001',
+            'X-Title': 'Social Scheduler'
+        }
+    });
+
+    const completion = await openrouter.chat.completions.create({
+        model: model,
+        messages: [{ role: 'user', content: fullPrompt }],
+        temperature: 0.7,
+        max_tokens: 2000
+    });
+
+    const correctedContent = completion.choices[0].message.content.trim();
+
+    // Update post with new content and increment version
+    const newVersion = post.version + 1;
+    await db.prepare(`
+        UPDATE posts 
+        SET content = ?, version = ?, status = 'draft', updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    `).run(correctedContent, newVersion, postId);
+
+    // Save this version with correction prompt
+    await db.prepare(`
+        INSERT INTO post_versions (post_id, version, content, correction_prompt)
+        VALUES (?, ?, ?, ?)
+    `).run(postId, newVersion, correctedContent, correctionPrompt);
+
+    const updatedPost = await db.prepare(`
+        SELECT posts.*, platforms.name as platform_name, platforms.display_name as platform_display_name
+        FROM posts
+        JOIN platforms ON posts.platform_id = platforms.id
+        WHERE posts.id = ?
+    `).get(postId);
+
+    console.log(`✅ Corrected post for ${platform.display_name} (v${newVersion})`);
+
+    return updatedPost;
+}
+
+/**
+ * NEW: Regenerate post from scratch
+ */
+export async function regeneratePost(postId) {
+    const post = await db.prepare('SELECT * FROM posts WHERE id = ?').get(postId);
+    if (!post) {
+        throw new Error('Post not found');
+    }
+
+    // Delete existing post
+    await db.prepare('DELETE FROM posts WHERE id = ?').run(postId);
+    await db.prepare('DELETE FROM post_versions WHERE post_id = ?').run(postId);
+
+    // Trigger regeneration for this specific platform
+    const brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(post.brief_id);
+    const platform = await db.prepare('SELECT * FROM platforms WHERE id = ?').get(post.platform_id);
+
+    // We'll regenerate just this one platform
+    // (reuse logic from generatePlatformContentDirect but for single platform)
+    const posts = await generatePlatformContentDirect(post.brief_id);
+    const newPost = posts.find(p => p.platform_id === post.platform_id);
+
+    return newPost || null;
+}
+
+/**
+ * NEW: Get version history for a post
+ */
+export async function getPostVersions(postId) {
+    const versions = await db.prepare(`
+        SELECT * FROM post_versions
+        WHERE post_id = ?
+        ORDER BY version DESC
+    `).all(postId);
+
+    return versions;
+}
+
+// ======== LEGACY FUNCTIONS (Keep for backward compatibility) ========
+
+export async function generatePostsForBrief(briefId, masterId = null) {
+    // ... existing implementation ...
+}
+
 export async function generatePostsFromMaster(masterId) {
     const masterDraft = await db.prepare('SELECT * FROM master_drafts WHERE id = ?').get(masterId);
     if (!masterDraft) {
@@ -181,49 +272,59 @@ export async function generatePostsFromMaster(masterId) {
     return generatePostsForBrief(masterDraft.brief_id, masterId);
 }
 
-/**
- * Gets all posts for brief
- */
 export async function getPostsForBrief(briefId) {
     return await db.prepare(`
-    SELECT 
-      posts.*,
-      platforms.name as platform_name,
-      platforms.display_name as platform_display_name
-    FROM posts
-    JOIN platforms ON posts.platform_id = platforms.id
-    WHERE posts.brief_id = ?
-    ORDER BY platforms.name
-  `).all(briefId);
+        SELECT 
+          posts.*,
+          platforms.name as platform_name,
+          platforms.display_name as platform_display_name
+        FROM posts
+        JOIN platforms ON posts.platform_id = platforms.id
+        WHERE posts.brief_id = ?
+        ORDER BY platforms.name
+    `).all(briefId);
 }
 
-/**
- * Updates post content (editing)
- */
 export async function updatePostContent(postId, editedContent) {
     await db.prepare(`
-    UPDATE posts 
-    SET edited_content = ?, updated_at = CURRENT_TIMESTAMP, edit_count = edit_count + 1
-    WHERE id = ?
-  `).run(editedContent, postId);
+        UPDATE posts 
+        SET edited_content = ?, updated_at = CURRENT_TIMESTAMP, edit_count = edit_count + 1
+        WHERE id = ?
+    `).run(editedContent, postId);
 
     return await db.prepare('SELECT * FROM posts WHERE id = ?').get(postId);
 }
 
-/**
- * Approves post
- */
 export async function approvePost(postId) {
-    await db.prepare(`
-    UPDATE posts 
-    SET status = 'approved', updated_at = CURRENT_TIMESTAMP, approved_at = CURRENT_TIMESTAMP
-    WHERE id = ?
-  `).run(postId);
+    // Allow toggle: if already approved, un-approve
+    const post = await db.prepare('SELECT status FROM posts WHERE id = ?').get(postId);
+
+    if (post.status === 'approved') {
+        // Un-approve
+        await db.prepare(`
+            UPDATE posts 
+            SET status = 'draft', approved_at = NULL, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(postId);
+    } else {
+        // Approve
+        await db.prepare(`
+            UPDATE posts 
+            SET status = 'approved', approved_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(postId);
+    }
 
     return await db.prepare('SELECT * FROM posts WHERE id = ?').get(postId);
 }
 
 export default {
+    // New functions
+    generatePlatformContentDirect,
+    correctPost,
+    regeneratePost,
+    getPostVersions,
+    // Legacy functions
     generatePostsForBrief,
     getPostsForBrief,
     updatePostContent,

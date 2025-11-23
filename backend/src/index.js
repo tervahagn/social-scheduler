@@ -14,6 +14,7 @@ import calendarRoutes from './api/calendar.routes.js';
 import settingsRoutes from './api/settings.routes.js';
 import mastersRoutes from './api/masters.routes.js';
 import analyticsRoutes from './api/analytics.routes.js';
+import contentRoutes from './api/content.routes.js';
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ app.use('/api/platforms', platformsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/masters', mastersRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/content', contentRoutes);
 
 // 404 handler
 app.use((req, res) => {

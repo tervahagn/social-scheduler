@@ -91,7 +91,7 @@ export default function History() {
                         <div
                             key={brief.id}
                             className="card"
-                            onClick={() => navigate(`/preview/${brief.id}`)}
+                            onClick={() => navigate(`/brief/${brief.id}/edit`)}
                             style={{
                                 cursor: 'pointer',
                                 transition: 'all 0.2s',
