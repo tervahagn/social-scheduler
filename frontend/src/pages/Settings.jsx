@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Save, Loader, FileCode, Key, Cpu } from 'lucide-react';
+import { Save, Loader, Key, Cpu, Link as LinkIcon, ChevronDown, ChevronUp, BookOpen, X } from 'lucide-react';
 
 const AVAILABLE_MODELS = [
     { id: 'x-ai/grok-4.1-fast:free', name: 'Grok 4.1 Fast (Free - Recommended)' },
@@ -16,16 +16,17 @@ import { useNotification } from '../contexts/NotificationContext';
 export default function Settings() {
     const { showSuccess, showError } = useNotification();
     const [settings, setSettings] = useState({
-        master_prompt: '',
         openrouter_api_key: '',
-        openrouter_model: 'x-ai/grok-4.1-fast:free'
+        openrouter_model: 'x-ai/grok-4.1-fast:free',
+        make_webhook_url: ''
     });
-    // Separate state for custom model ID input to avoid overwriting the select value while typing
     const [customModel, setCustomModel] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [showKey, setShowKey] = useState(false);
-    const [editingPrompt, setEditingPrompt] = useState(false);
+    const [showOpenRouterGuide, setShowOpenRouterGuide] = useState(false);
+    const [showWebhookGuide, setShowWebhookGuide] = useState(false);
+    const [showDeepGuide, setShowDeepGuide] = useState(false);
 
     useEffect(() => {
         fetchSettings();
@@ -34,7 +35,6 @@ export default function Settings() {
     const fetchSettings = async () => {
         try {
             const response = await axios.get('/api/settings');
-            // Determine if stored model is a custom ID
             const storedModel = response.data.openrouter_model || 'x-ai/grok-4.1-fast:free';
             const isPredefined = AVAILABLE_MODELS.some(m => m.id === storedModel);
             setSettings(prev => ({
@@ -42,7 +42,6 @@ export default function Settings() {
                 ...response.data,
                 openrouter_model: isPredefined ? storedModel : 'custom'
             }));
-            // If custom, keep the actual ID in separate state
             if (!isPredefined && storedModel) {
                 setCustomModel(storedModel);
             }
@@ -56,7 +55,6 @@ export default function Settings() {
 
     const handleChange = (key, value) => {
         if (key === 'openrouter_model' && value !== 'custom') {
-            // When selecting a predefined model, clear any custom model value
             setCustomModel('');
         }
         setSettings(prev => ({ ...prev, [key]: value }));
@@ -65,22 +63,17 @@ export default function Settings() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            // Determine the model value to save
             const modelToSave = settings.openrouter_model === 'custom' ? customModel : settings.openrouter_model;
-            // Save all settings
             await Promise.all([
-                axios.put('/api/settings/master_prompt', { value: settings.master_prompt }),
                 axios.put('/api/settings/openrouter_api_key', { value: settings.openrouter_api_key }),
-                axios.put('/api/settings/openrouter_model', { value: modelToSave })
+                axios.put('/api/settings/openrouter_model', { value: modelToSave }),
+                axios.put('/api/settings/make_webhook_url', { value: settings.make_webhook_url })
             ]);
 
-            // Update local state after saving
             if (settings.openrouter_model === 'custom') {
-                // Keep 'custom' selected and store actual ID in customModel state
                 setSettings(prev => ({ ...prev, openrouter_model: 'custom' }));
                 setCustomModel(modelToSave);
             } else {
-                // Predefined model selected
                 setSettings(prev => ({ ...prev, openrouter_model: modelToSave }));
                 setCustomModel('');
             }
@@ -96,7 +89,7 @@ export default function Settings() {
     return (
         <div className="container">
             <h1 style={{ marginBottom: '8px' }}>Settings</h1>
-            <p className="text-secondary mb-4">Configure global content generation settings</p>
+            <p className="text-secondary mb-4">Configure AI models and webhook integrations</p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: '32px', alignItems: 'start' }}>
 
@@ -182,102 +175,61 @@ export default function Settings() {
                                 </p>
                             </div>
                         </div>
-
-                        <div style={{ marginTop: '24px' }}>
-                            <button
-                                onClick={handleSave}
-                                className="button"
-                                disabled={saving}
-                                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                            >
-                                {saving ? (
-                                    <>
-                                        <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                                        Saving...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save size={18} />
-                                        Save Settings
-                                    </>
-                                )}
-                            </button>
-                        </div>
                     </div>
 
-                    {/* Master Prompt */}
-                    <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                            <h2 style={{ fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <FileCode size={20} />
-                                Master Prompt
-                            </h2>
-                            {!editingPrompt && (
-                                <button
-                                    onClick={() => setEditingPrompt(true)}
-                                    className="button button-secondary"
-                                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
-                                >
-                                    Edit Prompt
-                                </button>
-                            )}
-                        </div>
-                        <p className="text-secondary" style={{ fontSize: '14px', marginBottom: '16px', lineHeight: '1.6' }}>
-                            This is the system prompt used to guide content generation across all platforms.
-                        </p>
+                    {/* Make.com Webhook Integration */}
+                    <div style={{ marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--border-color)' }}>
+                        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <LinkIcon size={20} />
+                            Make.com Webhook Integration
+                        </h2>
 
-                        {editingPrompt ? (
-                            <>
-                                <textarea
-                                    className="textarea"
-                                    value={settings.master_prompt || ''}
-                                    onChange={(e) => handleChange('master_prompt', e.target.value)}
-                                    placeholder="Enter your master prompt for content generation..."
-                                    style={{ minHeight: '300px', fontFamily: 'monospace', fontSize: '13px' }}
-                                />
-                                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                                    <button
-                                        onClick={() => {
-                                            handleSave();
-                                            setEditingPrompt(false);
-                                        }}
-                                        disabled={saving}
-                                        className="button"
-                                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                                    >
-                                        {saving ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={16} />}
-                                        Save Changes
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            fetchSettings();
-                                            setEditingPrompt(false);
-                                        }}
-                                        className="button button-secondary"
-                                    >
-                                        Cancel
-                                    </button>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                                Webhook URL
+                            </label>
+                            <div style={{ position: 'relative' }}>
+                                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }}>
+                                    <LinkIcon size={16} />
                                 </div>
-                            </>
-                        ) : (
-                            <div style={{
-                                padding: '16px',
-                                background: 'var(--bg-secondary)',
-                                borderRadius: '8px',
-                                border: '1px solid var(--border)',
-                                fontSize: '13px',
-                                lineHeight: '1.6',
-                                fontFamily: 'monospace',
-                                whiteSpace: 'pre-wrap',
-                                maxHeight: '300px',
-                                overflowY: 'auto',
-                                color: 'var(--text-secondary)'
-                            }}>
-                                {settings.master_prompt || 'No master prompt set'}
+                                <input
+                                    type="url"
+                                    className="input"
+                                    value={settings.make_webhook_url || ''}
+                                    onChange={(e) => handleChange('make_webhook_url', e.target.value)}
+                                    placeholder="https://hook.eu2.make.com/..."
+                                    style={{ paddingLeft: '36px', width: '100%' }}
+                                />
                             </div>
-                        )}
+                            <p className="text-secondary text-sm" style={{ marginTop: '6px' }}>
+                                Single webhook URL that routes to all your social platforms via Make.com
+                            </p>
+                        </div>
                     </div>
 
+                    {/* Save Button */}
+                    <div>
+                        <button
+                            onClick={handleSave}
+                            className="button"
+                            disabled={saving}
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                        >
+                            {saving ? (
+                                <>
+                                    <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save size={18} />
+                                    Save Settings
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                    {/* Info Box */}
                     <div style={{
                         marginTop: '32px',
                         padding: '16px',
@@ -288,73 +240,320 @@ export default function Settings() {
                         <p style={{ fontWeight: '600', marginBottom: '8px' }}>ℹ️ How it works:</p>
                         <ul style={{ paddingLeft: '20px', lineHeight: '1.8' }}>
                             <li><strong>OpenRouter:</strong> Settings here override the .env file. API Key is stored securely in your local database.</li>
-                            <li><strong>Master Prompt:</strong> Sent first, then platform-specific prompt.</li>
-                            <li>Use <code style={{ background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '3px' }}>{'{{brief}}'}</code> placeholder for brief content.</li>
-                            <li>Changes apply immediately to new content generation.</li>
+                            <li><strong>Make.com:</strong> One webhook URL routes to all platforms using Make.com's Router module.</li>
+                            <li>Changes apply immediately to new content generation and publishing.</li>
                         </ul>
                     </div>
                 </div>
 
-                {/* Right Column: Sticky OpenRouter Guide */}
-                <div style={{ position: 'sticky', top: '24px' }}>
-                    <div className="card" style={{ padding: '24px', background: 'linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary))' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Cpu size={20} className="text-accent" />
-                            OpenRouter Guide
-                        </h3>
+                {/* Right Column: Guides */}
+                <div style={{ position: 'sticky', top: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-                        <div style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            <p style={{ marginBottom: '16px' }}>
-                                <strong>OpenRouter</strong> connects Social Scheduler to top AI models like GPT-4, Claude 3.5, and Llama 3.
-                            </p>
+                    {/* OpenRouter Guide - Collapsible */}
+                    <div className="card" style={{ padding: '16px', background: 'linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary))' }}>
+                        <button
+                            onClick={() => setShowOpenRouterGuide(!showOpenRouterGuide)}
+                            style={{
+                                width: '100%',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '0'
+                            }}
+                        >
+                            <h3 style={{ fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                <Cpu size={18} className="text-accent" />
+                                OpenRouter Guide
+                            </h3>
+                            {showOpenRouterGuide ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        </button>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <div style={{
-                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
-                                    }}>1</div>
-                                    <div>
-                                        <strong style={{ color: 'var(--text-primary)' }}>Get API Key</strong>
-                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>
-                                            Go to <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>openrouter.ai/keys</a> and create a new key.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <div style={{
-                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
-                                    }}>2</div>
-                                    <div>
-                                        <strong style={{ color: 'var(--text-primary)' }}>Add Credits</strong>
-                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>Ensure your OpenRouter account has credits (min $5). Free models don't need credits.</p>
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <div style={{
-                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
-                                    }}>3</div>
-                                    <div>
-                                        <strong style={{ color: 'var(--text-primary)' }}>Select Model</strong>
-                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>Choose a model on the right. <strong>Grok 4.1 Fast</strong> is currently free and very fast.</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style={{ marginTop: '24px', padding: '12px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-                                <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--accent)', fontSize: '13px' }}>💡 Recommendation</strong>
-                                <p style={{ fontSize: '12px', margin: 0 }}>
-                                    For best quality, use <strong>Claude 3.5 Sonnet</strong>. For speed and free testing, use <strong>Grok 4.1</strong>.
+                        {showOpenRouterGuide && (
+                            <div style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-secondary)', marginTop: '16px' }}>
+                                <p style={{ marginBottom: '16px' }}>
+                                    <strong>OpenRouter</strong> connects Social Scheduler to top AI models like GPT-4, Claude 3.5, and Llama 3.
                                 </p>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div style={{
+                                            width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                        }}>1</div>
+                                        <div>
+                                            <strong style={{ color: 'var(--text-primary)' }}>Get API Key</strong>
+                                            <p style={{ fontSize: '13px', marginTop: '4px' }}>
+                                                Go to <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>openrouter.ai/keys</a> and create a new key.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div style={{
+                                            width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                        }}>2</div>
+                                        <div>
+                                            <strong style={{ color: 'var(--text-primary)' }}>Add Credits</strong>
+                                            <p style={{ fontSize: '13px', marginTop: '4px' }}>Ensure your OpenRouter account has credits (min $5). Free models don't need credits.</p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div style={{
+                                            width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                        }}>3</div>
+                                        <div>
+                                            <strong style={{ color: 'var(--text-primary)' }}>Select Model</strong>
+                                            <p style={{ fontSize: '13px', marginTop: '4px' }}>Choose a model on the left. <strong>Grok 4.1 Fast</strong> is currently free and very fast.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                                    <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--accent)', fontSize: '13px' }}>💡 Recommendation</strong>
+                                    <p style={{ fontSize: '12px', margin: 0 }}>
+                                        For best quality, use <strong>Claude 3.5 Sonnet</strong>. For speed and free testing, use <strong>Grok 4.1</strong>.
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        )}
+                    </div>
+
+                    {/* Webhook Setup Guide - Collapsible */}
+                    <div className="card" style={{ padding: '16px', background: 'linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary))' }}>
+                        <button
+                            onClick={() => setShowWebhookGuide(!showWebhookGuide)}
+                            style={{
+                                width: '100%',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '0'
+                            }}
+                        >
+                            <h3 style={{ fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                <LinkIcon size={18} className="text-accent" />
+                                Webhook Setup Guide
+                            </h3>
+                            {showWebhookGuide ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        </button>
+
+                        {showWebhookGuide && (
+                            <div style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-secondary)', marginTop: '16px' }}>
+                                <p style={{ marginBottom: '16px' }}>
+                                    Connect Social Scheduler to <strong>Make.com</strong> (formerly Integromat) to automate posting to all your social accounts.
+                                </p>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div style={{
+                                            width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                        }}>1</div>
+                                        <div>
+                                            <strong style={{ color: 'var(--text-primary)' }}>Create Scenario</strong>
+                                            <p style={{ fontSize: '13px', marginTop: '4px' }}>Create a new scenario in Make.com and add a <strong>Custom Webhook</strong> trigger.</p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div style={{
+                                            width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                        }}>2</div>
+                                        <div>
+                                            <strong style={{ color: 'var(--text-primary)' }}>Copy URL</strong>
+                                            <p style={{ fontSize: '13px', marginTop: '4px' }}>Copy the generated webhook URL from Make.com.</p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div style={{
+                                            width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                        }}>3</div>
+                                        <div>
+                                            <strong style={{ color: 'var(--text-primary)' }}>Paste & Save</strong>
+                                            <p style={{ fontSize: '13px', marginTop: '4px' }}>Paste the URL into the <strong>Webhook URL</strong> field on the left and click Save.</p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div style={{
+                                            width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                        }}>4</div>
+                                        <div>
+                                            <strong style={{ color: 'var(--text-primary)' }}>Connect Platforms</strong>
+                                            <p style={{ fontSize: '13px', marginTop: '4px' }}>In Make.com, add a Router module and connect social media modules (LinkedIn, Instagram, etc.) based on the <code>platform</code> field.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ marginTop: '16px' }}>
+                                    <button
+                                        onClick={() => setShowDeepGuide(true)}
+                                        className="button button-secondary"
+                                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                    >
+                                        <BookOpen size={16} />
+                                        Deep Guide
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
+
+            {/* Deep Guide Modal */}
+            {showDeepGuide && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.7)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                    padding: '20px'
+                }}>
+                    <div className="card" style={{
+                        width: '100%',
+                        maxWidth: '800px',
+                        maxHeight: '90vh',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        padding: 0,
+                        overflow: 'hidden',
+                        background: 'var(--bg-primary)'
+                    }}>
+                        {/* Modal Header */}
+                        <div style={{
+                            padding: '20px',
+                            borderBottom: '1px solid var(--border)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            background: 'var(--bg-secondary)'
+                        }}>
+                            <h2 style={{ fontSize: '20px', fontWeight: '600', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <BookOpen size={24} className="text-accent" />
+                                The Ultimate Make.com Integration Guide
+                            </h2>
+                            <button
+                                onClick={() => setShowDeepGuide(false)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--text-secondary)',
+                                    cursor: 'pointer',
+                                    padding: '4px'
+                                }}
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div style={{
+                            padding: '24px',
+                            overflowY: 'auto',
+                            lineHeight: '1.6',
+                            fontSize: '15px'
+                        }}>
+                            <div style={{ marginBottom: '24px', padding: '16px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                                <strong style={{ display: 'block', marginBottom: '8px', color: 'var(--accent)', fontSize: '16px' }}>🧠 The Concept</strong>
+                                <p style={{ margin: 0 }}>
+                                    Instead of creating a separate connection for every single platform, we use <strong>one master connection</strong>.
+                                    Social Scheduler sends a package (your post) to Make.com, which opens it, checks the label, and routes it to the correct destination.
+                                </p>
+                            </div>
+
+                            <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 1: The Handshake (Connecting the Apps)</h3>
+                            <ol style={{ paddingLeft: '20px', marginBottom: '24px' }}>
+                                <li style={{ marginBottom: '8px' }}>Log in to <strong>Make.com</strong> and click <strong>+ Create a new scenario</strong>.</li>
+                                <li style={{ marginBottom: '8px' }}>Add a <strong>Webhooks</strong> module and select <strong>Custom webhook</strong>.</li>
+                                <li style={{ marginBottom: '8px' }}>Click <strong>Add</strong>, name it "Social Scheduler Master Hook", and click <strong>Save</strong>.</li>
+                                <li style={{ marginBottom: '8px' }}>Copy the URL (e.g., <code>https://hook.make.com/...</code>).</li>
+                                <li style={{ marginBottom: '8px' }}>Paste it into the <strong>Webhook URL</strong> field in Social Scheduler Settings and click Save.</li>
+                            </ol>
+
+                            <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 2: The Traffic Controller (The Router)</h3>
+                            <p style={{ marginBottom: '16px' }}>Now we need to tell Make.com how to sort the mail.</p>
+                            <ol style={{ paddingLeft: '20px', marginBottom: '24px' }}>
+                                <li style={{ marginBottom: '8px' }}>Hover over the Webhook module's right side and add a new module.</li>
+                                <li style={{ marginBottom: '8px' }}>Search for <strong>Flow Control</strong> and select <strong>Router</strong>.</li>
+                                <li style={{ marginBottom: '8px' }}>You should now see the Webhook connected to a Router splitting into paths.</li>
+                            </ol>
+
+                            <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 3: The Destinations (Setting up Platforms)</h3>
+
+                            <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                                <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    📝 Path A: The Blog (HubSpot CMS)
+                                </h4>
+                                <ol style={{ paddingLeft: '20px', marginBottom: '0' }}>
+                                    <li style={{ marginBottom: '8px' }}>Add a <strong>HubSpot CRM</strong> module (Create a Blog Post).</li>
+                                    <li style={{ marginBottom: '8px' }}>Map <strong>Name</strong> to <code>brief.title</code> and <strong>Post Body</strong> to <code>content</code>.</li>
+                                    <li style={{ marginBottom: '8px' }}>Set up the <strong>Filter</strong> on the line between Router and HubSpot:
+                                        <ul style={{ marginTop: '4px' }}>
+                                            <li>Label: "Is Blog"</li>
+                                            <li>Condition: <code>platform</code> Equal to <code>blog</code></li>
+                                        </ul>
+                                    </li>
+                                </ol>
+                            </div>
+
+                            <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                                <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    💼 Path B: LinkedIn / Socials
+                                </h4>
+                                <ol style={{ paddingLeft: '20px', marginBottom: '0' }}>
+                                    <li style={{ marginBottom: '8px' }}>Add a <strong>LinkedIn</strong> module (Create a Text/Image Post).</li>
+                                    <li style={{ marginBottom: '8px' }}>Map <strong>Content</strong> to <code>content</code>.</li>
+                                    <li style={{ marginBottom: '8px' }}>Set up the <strong>Filter</strong>:
+                                        <ul style={{ marginTop: '4px' }}>
+                                            <li>Label: "Is LinkedIn"</li>
+                                            <li>Condition: <code>platform</code> Equal to <code>linkedin</code></li>
+                                        </ul>
+                                    </li>
+                                </ol>
+                            </div>
+
+                            <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 5: Turn it On!</h3>
+                            <p>Click the <strong>Save</strong> icon and toggle the <strong>Scheduling</strong> switch to <strong>ON</strong>.</p>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div style={{
+                            padding: '16px 24px',
+                            borderTop: '1px solid var(--border)',
+                            background: 'var(--bg-secondary)',
+                            display: 'flex',
+                            justifyContent: 'flex-end'
+                        }}>
+                            <button
+                                onClick={() => setShowDeepGuide(false)}
+                                className="button"
+                            >
+                                Close Guide
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 }

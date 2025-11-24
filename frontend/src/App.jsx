@@ -5,9 +5,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { useEffect, useState } from 'react';
 import Intro from './pages/Intro';
 import NewBrief from './pages/NewBrief';
-import MasterDraft from './pages/MasterDraft';
 import ContentEditor from './pages/ContentEditor';
-import Preview from './pages/Preview';
 import History from './pages/History';
 import Platforms from './pages/Platforms';
 import Calendar from './pages/Calendar';
@@ -180,9 +178,7 @@ export default function App() {
                         <Route path="/" element={<Root />} />
                         <Route path="/intro" element={<Intro />} />
                         <Route path="/new" element={<NewBrief />} />
-                        <Route path="/master/:briefId" element={<MasterDraft />} />
                         <Route path="/brief/:briefId/edit" element={<ContentEditor />} />
-                        <Route path="/preview/:briefId" element={<Preview />} />
                         <Route path="/calendar" element={<Calendar />} />
                         <Route path="/analytics" element={<Analytics />} />
                         <Route path="/history" element={<History />} />

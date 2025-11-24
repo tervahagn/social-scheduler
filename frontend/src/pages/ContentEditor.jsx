@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Sparkles, Share2, Copy, CheckCircle, Circle, AlertCircle, Loader, RefreshCw, Calendar, Edit2, LayoutGrid, List, RotateCcw, Check, X } from 'lucide-react';
+import { ArrowLeft, Save, Sparkles, Share2, Copy, CheckCircle, Circle, AlertCircle, Loader, RefreshCw, Calendar, Edit2, LayoutGrid, List, RotateCcw, Check, X, Clock } from 'lucide-react';
 import axios from 'axios';
 import { useNotification } from '../contexts/NotificationContext';
 import { getPlatformConfig } from '../config/platforms';
@@ -287,13 +287,71 @@ export default function ContentEditor() {
                                 </button>
                             </div>
 
-                            <button
-                                onClick={handleBulkApprove}
-                                className="button button-secondary"
-                                style={{ fontSize: '13px', padding: '8px 12px' }}
-                            >
-                                Approve All
-                            </button>
+
+                            {/* Action Buttons */}
+                            {hasApproved && (
+                                <>
+                                    <button
+                                        onClick={handlePublish}
+                                        disabled={processing}
+                                        className="button"
+                                        style={{
+                                            background: 'var(--success)',
+                                            color: 'white',
+                                            fontWeight: '600',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            fontSize: '13px',
+                                            padding: '8px 12px'
+                                        }}
+                                    >
+                                        {processing ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={16} />}
+                                        Publish Now
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            setProcessing(true);
+                                            try {
+                                                const approvedPosts = posts.filter(p => p.status === 'approved');
+                                                for (const post of approvedPosts) {
+                                                    const response = await axios.post(`/api/posts/${post.id}/approve`);
+                                                    setPosts(prev => prev.map(p => p.id === post.id ? response.data : p));
+                                                }
+                                                showSuccess('Un-approved all posts');
+                                            } catch (err) {
+                                                console.error('Error un-approving all:', err);
+                                                showError('Failed to un-approve all posts');
+                                            }
+                                            setProcessing(false);
+                                        }}
+                                        disabled={processing}
+                                        className="button button-secondary"
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            fontSize: '13px',
+                                            padding: '8px 12px'
+                                        }}
+                                    >
+                                        <X size={16} />
+                                        Un-approve All
+                                    </button>
+                                </>
+                            )}
+
+                            {hasDrafts && !hasApproved && (
+                                <button
+                                    onClick={handleApproveAll}
+                                    disabled={processing}
+                                    className="button"
+                                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '8px 12px' }}
+                                >
+                                    <CheckCircle size={16} />
+                                    Approve All
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
@@ -458,106 +516,6 @@ export default function ContentEditor() {
                 </div>
             ) : (
                 <>
-                    {/* Action Bar - Publish & Bulk Actions */}
-                    {posts.length > 0 && (
-                        <div className="card" style={{
-                            padding: '16px 20px',
-                            marginBottom: '24px',
-                            background: hasApproved ? 'linear-gradient(135deg, var(--success), #059669)' : 'var(--bg-primary)',
-                            color: hasApproved ? 'white' : 'var(--text-primary)',
-                            border: hasApproved ? 'none' : '1px solid var(--border)'
-                        }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                                {/* Status */}
-                                <div style={{ flex: '1', minWidth: '200px' }}>
-                                    {hasApproved ? (
-                                        <>
-                                            <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <CheckCircle size={20} />
-                                                Ready to Publish
-                                            </div>
-                                            <div style={{ fontSize: '13px', opacity: 0.9 }}>
-                                                {posts.filter(p => p.status === 'approved').length} of {posts.length} platform{posts.length !== 1 ? 's' : ''} approved
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>Content Review</div>
-                                            <div className="text-secondary" style={{ fontSize: '13px' }}>
-                                                {posts.filter(p => p.status === 'draft').length} platform{posts.filter(p => p.status === 'draft').length !== 1 ? 's' : ''} pending approval
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-
-                                {/* Actions */}
-                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                    {hasApproved && (
-                                        <>
-                                            <button
-                                                onClick={handlePublish}
-                                                disabled={processing}
-                                                className="button"
-                                                style={{
-                                                    background: 'white',
-                                                    color: 'var(--success)',
-                                                    fontWeight: '600',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '6px'
-                                                }}
-                                            >
-                                                {processing ? <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={16} />}
-                                                Publish Now
-                                            </button>
-                                            <button
-                                                onClick={async () => {
-                                                    setProcessing(true);
-                                                    try {
-                                                        const approvedPosts = posts.filter(p => p.status === 'approved');
-                                                        for (const post of approvedPosts) {
-                                                            const response = await axios.post(`/api/posts/${post.id}/approve`);
-                                                            setPosts(prev => prev.map(p => p.id === post.id ? response.data : p));
-                                                        }
-                                                        showSuccess('Un-approved all posts');
-                                                    } catch (err) {
-                                                        console.error('Error un-approving all:', err);
-                                                        showError('Failed to un-approve all posts');
-                                                    }
-                                                    setProcessing(false);
-                                                }}
-                                                disabled={processing}
-                                                className="button"
-                                                style={{
-                                                    background: 'rgba(255,255,255,0.2)',
-                                                    color: 'white',
-                                                    border: '1px solid rgba(255,255,255,0.3)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '6px'
-                                                }}
-                                            >
-                                                <X size={16} />
-                                                Un-approve All
-                                            </button>
-                                        </>
-                                    )}
-
-                                    {hasDrafts && !hasApproved && (
-                                        <button
-                                            onClick={handleApproveAll}
-                                            disabled={processing}
-                                            className="button"
-                                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                                        >
-                                            <CheckCircle size={16} />
-                                            Approve All
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(400px, 1fr))' : '1fr',

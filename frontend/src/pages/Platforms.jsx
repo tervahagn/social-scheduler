@@ -1,54 +1,37 @@
 import { useState, useEffect } from 'react';
 import { getPlatforms, updatePlatform } from '../services/api';
+import axios from 'axios';
 import {
     Save,
     Loader,
-    CheckCircle,
-    XCircle,
-    Settings,
-    Link as LinkIcon,
     FileText,
     LayoutGrid,
-    List
+    List,
+    FileCode,
+    BookOpen,
+    ChevronDown,
+    ChevronRight,
+
+    X,
+    Info
 } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
 import { getPlatformConfig } from '../config/platforms';
 
 function PlatformCard({ platform, onUpdate }) {
     const { showSuccess, showError } = useNotification();
-    const [editing, setEditing] = useState(false);
     const [editingPrompt, setEditingPrompt] = useState(false);
-    const [webhookUrl, setWebhookUrl] = useState(platform.webhook_url || '');
-    const [isActive, setIsActive] = useState(platform.is_active === 1);
     const [promptContent, setPromptContent] = useState(platform.prompt_content || '');
-    const [ultraShortPrompt, setUltraShortPrompt] = useState(platform.ultra_short_prompt || '');
     const [loading, setLoading] = useState(false);
 
     const config = getPlatformConfig(platform.name);
     const Icon = config.icon;
 
-    const handleSave = async () => {
-        setLoading(true);
-        try {
-            await updatePlatform(platform.id, {
-                webhook_url: webhookUrl,
-                is_active: isActive ? 1 : 0
-            });
-            setEditing(false);
-            onUpdate();
-            showSuccess('Platform settings updated');
-        } catch (err) {
-            showError('Failed to update: ' + err.message);
-        }
-        setLoading(false);
-    };
-
     const handleSavePrompt = async () => {
         setLoading(true);
         try {
             await updatePlatform(platform.id, {
-                prompt_content: promptContent,
-                ultra_short_prompt: ultraShortPrompt
+                prompt_content: promptContent
             });
             setEditingPrompt(false);
             onUpdate();
@@ -90,7 +73,7 @@ function PlatformCard({ platform, onUpdate }) {
                         width: '40px',
                         height: '40px',
                         borderRadius: '10px',
-                        background: config.color + '15', // 15% opacity
+                        background: config.color + '15',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -112,110 +95,28 @@ function PlatformCard({ platform, onUpdate }) {
                 </label>
             </div>
 
-            {/* Webhook Section */}
-            <div style={{ position: 'relative', marginBottom: '24px' }}>
-                {editing ? (
-                    <div style={{ marginBottom: '16px' }}>
-                        <div className="mb-4">
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px' }}>
-                                <LinkIcon size={14} style={{ display: 'inline', marginRight: '4px' }} />
-                                Webhook URL
-                            </label>
-                            <input
-                                type="url"
-                                className="input"
-                                value={webhookUrl}
-                                onChange={(e) => setWebhookUrl(e.target.value)}
-                                placeholder="https://hooks.zapier.com/..."
-                                style={{ width: '100%' }}
-                            />
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={handleSave} className="button" disabled={loading}>
-                                {loading ? <Loader size={16} className="animate-spin" /> : 'Save'}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setEditing(false);
-                                    setWebhookUrl(platform.webhook_url || '');
-                                }}
-                                className="button button-secondary"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <div>
-                        <div style={{ marginBottom: '12px' }}>
-                            <p className="text-sm text-secondary" style={{ marginBottom: '4px', fontSize: '12px' }}>Webhook URL</p>
-                            <div style={{
-                                wordBreak: 'break-all',
-                                fontFamily: 'monospace',
-                                background: 'var(--bg-tertiary)',
-                                padding: '8px',
-                                borderRadius: '4px',
-                                fontSize: '12px',
-                                color: platform.webhook_url ? 'var(--text-primary)' : 'var(--text-secondary)'
-                            }}>
-                                {platform.webhook_url || 'Not configured'}
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => setEditing(true)}
-                            className="button button-secondary"
-                            style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '4px 8px' }}
-                        >
-                            <Settings size={12} />
-                            Configure
-                        </button>
-                    </div>
-                )}
-            </div>
-
             {/* Prompt Editor */}
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px', position: 'relative' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <h4 style={{ fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <FileText size={16} />
-                        Prompt Settings
-                    </h4>
-                </div>
-
+            <div style={{ position: 'relative' }}>
                 {editingPrompt ? (
                     <div>
                         <div style={{ marginBottom: '12px' }}>
-                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '500' }}>Main Prompt</label>
                             <textarea
                                 className="textarea"
                                 value={promptContent}
                                 onChange={(e) => setPromptContent(e.target.value)}
                                 placeholder="Enter platform-specific prompt..."
-                                style={{ minHeight: '150px', fontFamily: 'monospace', fontSize: '12px', width: '100%' }}
-                            />
-                        </div>
-
-                        <div style={{ marginBottom: '12px' }}>
-                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '500' }}>Technical Prompt</label>
-                            <textarea
-                                className="textarea"
-                                value={ultraShortPrompt}
-                                onChange={(e) => setUltraShortPrompt(e.target.value)}
-                                placeholder="Enter technical constraints (e.g. max characters)..."
-                                style={{ minHeight: '60px', fontFamily: 'monospace', fontSize: '12px', width: '100%' }}
+                                style={{ minHeight: '225px', fontFamily: 'monospace', fontSize: '12px', width: '100%' }}
                             />
                         </div>
 
                         <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                             <button onClick={handleSavePrompt} className="button" disabled={loading}>
-                                {loading ? <Loader size={16} className="animate-spin" /> : 'Save Prompts'}
+                                {loading ? <Loader size={16} className="animate-spin" /> : 'Save Prompt'}
                             </button>
                             <button
                                 onClick={() => {
                                     setEditingPrompt(false);
                                     setPromptContent(platform.prompt_content || '');
-                                    setUltraShortPrompt(platform.ultra_short_prompt || '');
                                 }}
                                 className="button button-secondary"
                             >
@@ -226,10 +127,10 @@ function PlatformCard({ platform, onUpdate }) {
                 ) : (
                     <div>
                         <div style={{ marginBottom: '12px' }}>
-                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>Main Prompt</label>
                             <div style={{
-                                maxHeight: '80px',
-                                overflow: 'hidden',
+                                maxHeight: '180px',
+                                minHeight: '180px',
+                                overflowY: 'auto',
                                 textOverflow: 'ellipsis',
                                 background: 'var(--bg-tertiary)',
                                 padding: '8px',
@@ -244,32 +145,13 @@ function PlatformCard({ platform, onUpdate }) {
                             </div>
                         </div>
 
-                        <div style={{ marginBottom: '12px' }}>
-                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>Technical Prompt</label>
-                            <div style={{
-                                maxHeight: '40px',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                background: 'var(--bg-tertiary)',
-                                padding: '8px',
-                                borderRadius: '4px',
-                                fontFamily: 'monospace',
-                                fontSize: '11px',
-                                lineHeight: '1.4',
-                                whiteSpace: 'pre-wrap',
-                                color: platform.ultra_short_prompt ? 'var(--text-primary)' : 'var(--text-secondary)'
-                            }}>
-                                {platform.ultra_short_prompt || 'No technical prompt set'}
-                            </div>
-                        </div>
-
                         <button
                             onClick={() => setEditingPrompt(true)}
                             className="button button-secondary"
                             style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '4px 8px' }}
                         >
                             <FileText size={12} />
-                            Edit Prompts
+                            Edit Prompt
                         </button>
                     </div>
                 )}
@@ -278,14 +160,143 @@ function PlatformCard({ platform, onUpdate }) {
     );
 }
 
+function PromptHierarchyModal({ onClose }) {
+    return (
+        <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            backdropFilter: 'blur(4px)',
+            padding: '20px'
+        }}>
+            <div className="card" style={{
+                width: '100%',
+                maxWidth: '800px',
+                maxHeight: '90vh',
+                display: 'flex',
+                flexDirection: 'column',
+                padding: 0,
+                overflow: 'hidden',
+                background: 'var(--bg-primary)'
+            }}>
+                <div style={{
+                    padding: '20px',
+                    borderBottom: '1px solid var(--border-color)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    background: 'var(--bg-secondary)'
+                }}>
+                    <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', fontWeight: '600' }}>
+                        <BookOpen size={24} className="text-accent" />
+                        How Content is Generated
+                    </h2>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--text-secondary)',
+                            padding: '4px'
+                        }}
+                    >
+                        <X size={24} />
+                    </button>
+                </div>
+
+                <div style={{
+                    padding: '24px',
+                    lineHeight: '1.6',
+                    overflowY: 'auto',
+                    fontSize: '15px'
+                }}>
+                    <div style={{ marginBottom: '32px' }}>
+                        <h3 style={{ fontSize: '18px', marginBottom: '16px', color: 'var(--text-primary)', fontWeight: '600' }}>1. The Ingredients</h3>
+                        <p style={{ marginBottom: '12px' }}>The system gathers three main pieces of text:</p>
+                        <ol style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <li><strong>The Brief</strong>: Your content, links, and attached files.</li>
+                            <li><strong>Master Prompt</strong>: The global instructions from this page.</li>
+                            <li><strong>Platform Prompt</strong>: The specific "Main Prompt" for the target platform.</li>
+                        </ol>
+                    </div>
+
+                    <div style={{ marginBottom: '32px' }}>
+                        <h3 style={{ fontSize: '18px', marginBottom: '16px', color: 'var(--text-primary)', fontWeight: '600' }}>2. The Hierarchy (The "Sandwich")</h3>
+                        <p style={{ marginBottom: '12px' }}>The system builds a single "Final Prompt" to send to the AI, layered like this:</p>
+
+                        <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '8px', marginBottom: '16px', border: '1px solid var(--border-color)' }}>
+                            <strong style={{ display: 'block', marginBottom: '8px', color: 'var(--accent)' }}>Layer 1: Master Prompt (The Boss)</strong>
+                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                                <li>Sets the overall persona and core principles.</li>
+                                <li>Injects the <code>{`{{brief}}`}</code> content.</li>
+                            </ul>
+                        </div>
+
+                        <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                            <strong style={{ display: 'block', marginBottom: '8px', color: 'var(--accent)' }}>Layer 2: Platform Prompt (The Specialist)</strong>
+                            <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                                <li>Appended <strong>below</strong> the Master Prompt.</li>
+                                <li>Adds specific rules (e.g., "Use 3 hashtags," "Max 3000 chars").</li>
+                                <li>Overrides general instructions with platform-specific constraints.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 style={{ fontSize: '18px', marginBottom: '16px', color: 'var(--text-primary)', fontWeight: '600' }}>3. Final Output</h3>
+                        <p style={{ marginBottom: '12px' }}>The AI receives one sequence:</p>
+                        <div style={{
+                            background: 'var(--bg-tertiary)',
+                            padding: '12px',
+                            borderRadius: '6px',
+                            fontFamily: 'monospace',
+                            textAlign: 'center',
+                            border: '1px dashed var(--border-color)'
+                        }}>
+                            [MASTER PROMPT] + [BRIEF] + [PLATFORM PROMPT]
+                        </div>
+                    </div>
+                </div>
+
+                <div style={{
+                    padding: '16px 24px',
+                    borderTop: '1px solid var(--border-color)',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    background: 'var(--bg-secondary)'
+                }}>
+                    <button onClick={onClose} className="button">
+                        Close Guide
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function Platforms() {
-    const { showError } = useNotification();
+    const { showSuccess, showError } = useNotification();
     const [platforms, setPlatforms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('grid');
+    const [masterPrompt, setMasterPrompt] = useState('');
+    const [editingMasterPrompt, setEditingMasterPrompt] = useState(false);
+    const [savingMasterPrompt, setSavingMasterPrompt] = useState(false);
+    const [showPromptGuide, setShowPromptGuide] = useState(false);
+    const [showHierarchyModal, setShowHierarchyModal] = useState(false);
+
 
     useEffect(() => {
         fetchPlatforms();
+        fetchMasterPrompt();
     }, []);
 
     const fetchPlatforms = async () => {
@@ -300,6 +311,27 @@ export default function Platforms() {
         }
     };
 
+    const fetchMasterPrompt = async () => {
+        try {
+            const response = await axios.get('/api/settings');
+            setMasterPrompt(response.data.master_prompt || '');
+        } catch (err) {
+            console.error('Error fetching master prompt:', err);
+        }
+    };
+
+    const handleSaveMasterPrompt = async () => {
+        setSavingMasterPrompt(true);
+        try {
+            await axios.put('/api/settings/master_prompt', { value: masterPrompt });
+            setEditingMasterPrompt(false);
+            showSuccess('Master prompt updated successfully');
+        } catch (err) {
+            showError('Failed to update master prompt: ' + err.message);
+        }
+        setSavingMasterPrompt(false);
+    };
+
     if (loading) return <div className="loading">Loading platforms...</div>;
 
     return (
@@ -307,7 +339,7 @@ export default function Platforms() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <div>
                     <h1 style={{ marginBottom: '8px' }}>Platform Configuration</h1>
-                    <p className="text-secondary">Manage your social media platforms and automation settings</p>
+                    <p className="text-secondary">Manage your social media platforms and content generation settings</p>
                 </div>
                 <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                     <button
@@ -347,92 +379,154 @@ export default function Platforms() {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '32px', alignItems: 'start' }}>
-                {/* Left Column: Platforms List */}
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(350px, 1fr))' : '1fr',
-                    gap: '24px'
-                }}>
-                    {platforms.map(platform => (
-                        <PlatformCard
-                            key={platform.id}
-                            platform={platform}
-                            onUpdate={fetchPlatforms}
-                        />
-                    ))}
+            {/* Top Section: Master Prompt & Guide */}
+            <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '24px', marginBottom: '32px' }}>
+
+                {/* Master Prompt Card */}
+                <div className="card" style={{ background: 'linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary))', height: 'fit-content' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <h2 style={{ fontSize: '20px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                            <FileCode size={24} />
+                            Master Prompt
+                        </h2>
+                        {!editingMasterPrompt && (
+                            <button
+                                onClick={() => setEditingMasterPrompt(true)}
+                                className="button button-secondary"
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                            >
+                                Edit Prompt
+                            </button>
+                        )}
+                    </div>
+                    <p className="text-secondary" style={{ fontSize: '14px', marginBottom: '16px', lineHeight: '1.6' }}>
+                        System prompt used to guide AI content generation across all platforms. This is applied before platform-specific prompts.
+                    </p>
+
+                    {editingMasterPrompt ? (
+                        <>
+                            <textarea
+                                className="textarea"
+                                value={masterPrompt}
+                                onChange={(e) => setMasterPrompt(e.target.value)}
+                                placeholder="Enter your master prompt for content generation..."
+                                style={{ minHeight: '200px', fontFamily: 'monospace', fontSize: '13px' }}
+                            />
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                                <button
+                                    onClick={handleSaveMasterPrompt}
+                                    disabled={savingMasterPrompt}
+                                    className="button"
+                                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                    {savingMasterPrompt ? <Loader size={16} className="animate-spin" /> : <Save size={16} />}
+                                    Save Master Prompt
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        fetchMasterPrompt();
+                                        setEditingMasterPrompt(false);
+                                    }}
+                                    className="button button-secondary"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <div style={{
+                            padding: '16px',
+                            background: 'var(--bg-primary)',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border)',
+                            fontSize: '13px',
+                            lineHeight: '1.6',
+                            fontFamily: 'monospace',
+                            whiteSpace: 'pre-wrap',
+                            maxHeight: '200px',
+                            overflowY: 'auto',
+                            color: 'var(--text-secondary)'
+                        }}>
+                            {masterPrompt || 'No master prompt set'}
+                        </div>
+                    )}
                 </div>
 
-                {/* Right Column: Sticky Webhook Guide */}
-                <div style={{ position: 'sticky', top: '24px' }}>
-                    <div className="card" style={{ padding: '24px', background: 'linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary))' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <LinkIcon size={20} className="text-accent" />
-                            Webhook Setup Guide
+                {/* Prompt Logic Guide */}
+                <div className="card" style={{ height: 'fit-content', padding: '16px', background: 'linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary))' }}>
+                    <button
+                        onClick={() => setShowPromptGuide(!showPromptGuide)}
+                        style={{
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '0'
+                        }}
+                    >
+                        <h3 style={{ fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                            <Info size={18} className="text-accent" />
+                            Prompt Logic Guide
                         </h3>
+                        {showPromptGuide ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                    </button>
 
-                        <div style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            <p style={{ marginBottom: '16px' }}>
-                                Connect Social Scheduler to <strong>Make.com</strong> (formerly Integromat) to automate posting to all your social accounts.
+                    {showPromptGuide && (
+                        <div className="animate-fade-in" style={{ marginTop: '16px' }}>
+                            <p className="text-secondary" style={{ fontSize: '14px', lineHeight: '1.6', marginBottom: '16px' }}>
+                                Understanding how the Master Prompt interacts with Platform Prompts is key to getting the best results.
                             </p>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <div style={{
-                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
-                                    }}>1</div>
-                                    <div>
-                                        <strong style={{ color: 'var(--text-primary)' }}>Create Scenario</strong>
-                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>Create a new scenario in Make.com and add a <strong>Custom Webhook</strong> trigger.</p>
-                                    </div>
+                            <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '8px', marginBottom: '16px', border: '1px solid var(--border-color)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                    <span style={{ background: 'var(--accent)', color: 'white', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>1</span>
+                                    <span style={{ fontWeight: '500' }}>Master Prompt</span>
                                 </div>
-
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <div style={{
-                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
-                                    }}>2</div>
-                                    <div>
-                                        <strong style={{ color: 'var(--text-primary)' }}>Copy URL</strong>
-                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>Copy the generated webhook URL from Make.com.</p>
-                                    </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', paddingLeft: '11px' }}>
+                                    <div style={{ width: '2px', height: '16px', background: 'var(--border-color)' }}></div>
                                 </div>
-
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <div style={{
-                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
-                                    }}>3</div>
-                                    <div>
-                                        <strong style={{ color: 'var(--text-primary)' }}>Paste & Save</strong>
-                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>Enable the platform switch here, paste the URL into the <strong>Webhook URL</strong> field, and click Save.</p>
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <div style={{
-                                        width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
-                                    }}>4</div>
-                                    <div>
-                                        <strong style={{ color: 'var(--text-primary)' }}>Connect Platform</strong>
-                                        <p style={{ fontSize: '13px', marginTop: '4px' }}>In Make.com, add the social media module (e.g., LinkedIn, Instagram) after the webhook to create the post.</p>
-                                    </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ background: 'var(--accent)', color: 'white', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>2</span>
+                                    <span style={{ fontWeight: '500' }}>Platform Prompt</span>
                                 </div>
                             </div>
 
-                            <div style={{ marginTop: '24px', padding: '12px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-                                <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--accent)', fontSize: '13px' }}>💡 Pro Tip</strong>
-                                <p style={{ fontSize: '12px', margin: 0 }}>
-                                    You can use the same webhook URL for multiple platforms if you route them in Make.com using a Router module based on the <code>platform</code> field.
-                                </p>
-                            </div>
+                            <button
+                                onClick={() => setShowHierarchyModal(true)}
+                                className="button button-secondary"
+                                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                            >
+                                <BookOpen size={16} />
+                                Deep Guide
+                            </button>
                         </div>
-                    </div>
+                    )}
                 </div>
+            </div>
+
+            {showHierarchyModal && <PromptHierarchyModal onClose={() => setShowHierarchyModal(false)} />}
+
+            {/* Platforms Grid */}
+            <h2 style={{ fontSize: '20px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', marginTop: '32px' }}>
+                <FileText size={24} />
+                Platform Prompts
+            </h2>
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(350px, 1fr))' : '1fr',
+                gap: '24px'
+            }}>
+                {platforms.map(platform => (
+                    <PlatformCard
+                        key={platform.id}
+                        platform={platform}
+                        onUpdate={fetchPlatforms}
+                    />
+                ))}
             </div>
         </div>
     );
 }
-

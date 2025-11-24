@@ -13,12 +13,12 @@ import {
 export const PLATFORM_CONFIG = {
     'linkedin': {
         name: 'LinkedIn (Company)',
-        color: '#0077B5',
+        color: '#0A66C2',
         icon: Linkedin
     },
     'linkedin-personal': {
         name: 'LinkedIn (Personal)',
-        color: '#0A66C2',
+        color: '#2867B2',
         icon: Linkedin
     },
     'facebook': {
@@ -33,17 +33,17 @@ export const PLATFORM_CONFIG = {
     },
     'twitter': {
         name: 'X (Twitter)',
-        color: '#000000',
+        color: '#1DA1F2',
         icon: Twitter
     },
     'google-business': {
         name: 'Google Business',
-        color: '#4285F4',
+        color: '#34A853',
         icon: MapPin
     },
     'blog': {
         name: 'Blog',
-        color: '#FF6B6B',
+        color: '#8B5CF6',
         icon: FileText
     },
     'reddit': {

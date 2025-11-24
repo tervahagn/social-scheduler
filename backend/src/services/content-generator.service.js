@@ -259,17 +259,8 @@ export async function getPostVersions(postId) {
 
 // ======== LEGACY FUNCTIONS (Keep for backward compatibility) ========
 
-export async function generatePostsForBrief(briefId, masterId = null) {
-    // ... existing implementation ...
-}
-
-export async function generatePostsFromMaster(masterId) {
-    const masterDraft = await db.prepare('SELECT * FROM master_drafts WHERE id = ?').get(masterId);
-    if (!masterDraft) {
-        throw new Error('Master draft not found');
-    }
-
-    return generatePostsForBrief(masterDraft.brief_id, masterId);
+export async function generatePostsForBrief(briefId) {
+    return generatePlatformContent(briefId);
 }
 
 export async function getPostsForBrief(briefId) {
@@ -328,6 +319,5 @@ export default {
     generatePostsForBrief,
     getPostsForBrief,
     updatePostContent,
-    approvePost,
-    generatePostsFromMaster
+    approvePost
 };

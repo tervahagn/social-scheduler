@@ -85,17 +85,14 @@ router.post('/', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
     try {
-        const { display_name, webhook_url, is_active, prompt_content, ultra_short_prompt } = req.body;
-
         await db.prepare(`
       UPDATE platforms 
       SET display_name = COALESCE(?, display_name),
           webhook_url = COALESCE(?, webhook_url),
           is_active = COALESCE(?, is_active),
-          prompt_content = COALESCE(?, prompt_content),
-          ultra_short_prompt = COALESCE(?, ultra_short_prompt)
+          prompt_content = COALESCE(?, prompt_content)
       WHERE id = ?
-    `).run(display_name, webhook_url, is_active, prompt_content, ultra_short_prompt, req.params.id);
+    `).run(display_name, webhook_url, is_active, prompt_content, req.params.id);
 
         const platform = await db.prepare('SELECT * FROM platforms WHERE id = ?').get(req.params.id);
         res.json(platform);

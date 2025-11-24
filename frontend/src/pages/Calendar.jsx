@@ -60,7 +60,7 @@ export default function Calendar() {
     };
 
     const handleSelectEvent = (event) => {
-        navigate(`/preview/${event.resource.brief_id}`);
+        navigate(`/brief/${event.resource.brief_slug || event.resource.brief_id}/edit`);
     };
 
     const eventStyleGetter = (event) => {

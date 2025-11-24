@@ -17,11 +17,20 @@ export async function queuePost(postId) {
  * Publishes post via Make.com webhook
  */
 export async function publishPost(postId) {
+    // Get webhook URL from settings (centralized for all platforms)
+    const webhookSetting = await db.prepare(
+        "SELECT value FROM settings WHERE key = 'make_webhook_url'"
+    ).get();
+    const webhookUrl = webhookSetting?.value;
+
+    if (!webhookUrl) {
+        throw new Error('Make.com webhook URL not configured. Please add it in Settings → Make.com Webhook Integration.');
+    }
+
     // Get post with platform data
     const post = await db.prepare(`
     SELECT 
       posts.*,
-      platforms.webhook_url,
       platforms.name as platform_name,
       platforms.display_name,
       briefs.media_url,
@@ -35,10 +44,6 @@ export async function publishPost(postId) {
 
     if (!post) {
         throw new Error('Post not found');
-    }
-
-    if (!post.webhook_url) {
-        throw new Error(`Webhook URL not configured for ${post.display_name}`);
     }
 
     // Use edited content if available, otherwise original
@@ -59,8 +64,8 @@ export async function publishPost(postId) {
     };
 
     try {
-        // Send to Make.com
-        const response = await axios.post(post.webhook_url, payload, {
+        // Send to Make.com using centralized webhook URL
+        const response = await axios.post(webhookUrl, payload, {
             timeout: 10000,
             headers: {
                 'Content-Type': 'application/json'
