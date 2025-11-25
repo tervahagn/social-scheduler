@@ -19,6 +19,8 @@ export default function ContentEditor() {
     const [processing, setProcessing] = useState(false);
     const [editingPost, setEditingPost] = useState(null); // { postId, content }
     const [loadingPosts, setLoadingPosts] = useState(new Set()); // Track which posts are generating
+    const [versionDropdowns, setVersionDropdowns] = useState({});  // { postId: { open: bool, versions: [] } }
+    const [loadingVersions, setLoadingVersions] = useState(new Set());
 
     const [saving, setSaving] = useState(false);
     const [viewMode, setViewMode] = useState('grid');
@@ -127,9 +129,17 @@ export default function ContentEditor() {
                 correctionPrompt
             });
 
+            // Preserve platform info if not returned by API
+            const currentPost = posts.find(p => p.id === postId);
+            const updatedPost = {
+                ...response.data,
+                platform_display_name: response.data.platform_display_name || currentPost?.platform_display_name,
+                platform_name: response.data.platform_name || currentPost?.platform_name
+            };
+
             // Update posts list
-            setPosts(prev => prev.map(p => p.id === postId ? response.data : p));
-            showSuccess(`Created v${response.data.version} for ${response.data.platform_display_name}`);
+            setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+            showSuccess(`Created v${updatedPost.version} for ${updatedPost.platform_display_name}`);
         } catch (err) {
             console.error('Error correcting post:', err);
             showError(err.response?.data?.error || 'Failed to correct post');
@@ -165,10 +175,6 @@ export default function ContentEditor() {
     };
 
     const handleRegenerate = async (post) => {
-        if (!window.confirm(`Regenerate ${post.platform_display_name} from scratch? This will delete all versions.`)) {
-            return;
-        }
-
         const postId = post.id;
         setLoadingPosts(prev => new Set([...prev, postId]));
 
@@ -184,6 +190,78 @@ export default function ContentEditor() {
                 const newSet = new Set(prev);
                 newSet.delete(postId);
                 return newSet;
+            });
+        }
+    };
+
+    const handleVersionClick = async (postId) => {
+        // Toggle dropdown
+        if (versionDropdowns[postId]?.open) {
+            setVersionDropdowns(prev => ({
+                ...prev,
+                [postId]: { ...prev[postId], open: false }
+            }));
+            return;
+        }
+
+        // Fetch versions if not already loaded
+        if (!versionDropdowns[postId]?.versions) {
+            setLoadingVersions(prev => new Set([...prev, postId]));
+            try {
+                const response = await axios.get(`/api/content/post/${postId}/versions`);
+                setVersionDropdowns(prev => ({
+                    ...prev,
+                    [postId]: { open: true, versions: response.data }
+                }));
+            } catch (err) {
+                console.error('Error fetching versions:', err);
+                showError('Failed to load version history');
+            } finally {
+                setLoadingVersions(prev => {
+                    const next = new Set(prev);
+                    next.delete(postId);
+                    return next;
+                });
+            }
+        } else {
+            setVersionDropdowns(prev => ({
+                ...prev,
+                [postId]: { ...prev[postId], open: true }
+            }));
+        }
+    };
+
+    const handleSelectVersion = async (postId, version) => {
+        setLoadingPosts(prev => new Set([...prev, postId]));
+        try {
+            // Find the version data
+            const versionData = versionDropdowns[postId]?.versions.find(v => v.version === version);
+            if (!versionData) return;
+
+            // Update post content with the selected version
+            const post = posts.find(p => p.id === postId);
+            const updatedPost = {
+                ...post,
+                content: versionData.content,
+                version: version
+            };
+            setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p));
+
+            // Close dropdown
+            setVersionDropdowns(prev => ({
+                ...prev,
+                [postId]: { ...prev[postId], open: false }
+            }));
+
+            showSuccess(`Switched to version ${version}`);
+        } catch (err) {
+            console.error('Error switching version:', err);
+            showError('Failed to switch version');
+        } finally {
+            setLoadingPosts(prev => {
+                const next = new Set(prev);
+                next.delete(postId);
+                return next;
             });
         }
     };
@@ -654,17 +732,96 @@ export default function ContentEditor() {
                                                 <h3 style={{ fontSize: '18px', fontWeight: '600', color: platformColor, margin: 0 }}>
                                                     {post.platform_display_name}
                                                 </h3>
-                                                {post.version > 1 && (
-                                                    <span style={{
-                                                        fontSize: '12px',
-                                                        padding: '2px 8px',
-                                                        borderRadius: '12px',
-                                                        background: 'var(--bg-tertiary)',
-                                                        color: 'var(--text-secondary)'
-                                                    }}>
-                                                        v{post.version}
-                                                    </span>
-                                                )}
+
+                                                {/* Version Badge/Dropdown */}
+                                                {(() => {
+                                                    // Show dropdown if current version > 1 OR if we have multiple versions loaded
+                                                    const hasMultipleVersions = post.version > 1 || (versionDropdowns[post.id]?.versions?.length > 1);
+                                                    const displayVersion = post.version || 1;
+
+                                                    return hasMultipleVersions ? (
+                                                        /* Dropdown for multiple versions */
+                                                        <div style={{ position: 'relative' }}>
+                                                            <button
+                                                                onClick={() => handleVersionClick(post.id)}
+                                                                style={{
+                                                                    fontSize: '12px',
+                                                                    padding: '2px 8px',
+                                                                    borderRadius: '12px',
+                                                                    background: 'var(--bg-tertiary)',
+                                                                    color: 'var(--text-secondary)',
+                                                                    border: '1px solid var(--border)',
+                                                                    cursor: 'pointer',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '4px'
+                                                                }}
+                                                            >
+                                                                v{displayVersion}
+                                                                <span style={{ fontSize: '10px' }}>▼</span>
+                                                            </button>
+
+                                                            {/* Dropdown Menu */}
+                                                            {versionDropdowns[post.id]?.open && (
+                                                                <div style={{
+                                                                    position: 'absolute',
+                                                                    top: '100%',
+                                                                    left: 0,
+                                                                    marginTop: '4px',
+                                                                    background: 'var(--bg-primary)',
+                                                                    border: '1px solid var(--border)',
+                                                                    borderRadius: '8px',
+                                                                    padding: '4px',
+                                                                    minWidth: '80px',
+                                                                    zIndex: 10,
+                                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                                                }}>
+                                                                    {versionDropdowns[post.id]?.versions?.map(v => (
+                                                                        <button
+                                                                            key={v.version}
+                                                                            onClick={() => handleSelectVersion(post.id, v.version)}
+                                                                            style={{
+                                                                                display: 'block',
+                                                                                width: '100%',
+                                                                                padding: '6px 10px',
+                                                                                background: v.version === displayVersion ? 'var(--bg-tertiary)' : 'transparent',
+                                                                                border: 'none',
+                                                                                borderRadius: '4px',
+                                                                                textAlign: 'left',
+                                                                                cursor: 'pointer',
+                                                                                fontSize: '13px',
+                                                                                color: 'var(--text-primary)'
+                                                                            }}
+                                                                            onMouseEnter={(e) => {
+                                                                                if (v.version !== displayVersion) {
+                                                                                    e.target.style.background = 'var(--bg-secondary)';
+                                                                                }
+                                                                            }}
+                                                                            onMouseLeave={(e) => {
+                                                                                if (v.version !== displayVersion) {
+                                                                                    e.target.style.background = 'transparent';
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            v{v.version} {v.version === displayVersion && '✓'}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        /* Simple badge for v1 only (no history) */
+                                                        <span style={{
+                                                            fontSize: '12px',
+                                                            padding: '2px 8px',
+                                                            borderRadius: '12px',
+                                                            background: 'var(--bg-tertiary)',
+                                                            color: 'var(--text-secondary)'
+                                                        }}>
+                                                            v{displayVersion}
+                                                        </span>
+                                                    );
+                                                })()}
                                                 <div style={{
                                                     display: 'flex',
                                                     alignItems: 'center',

@@ -532,6 +532,49 @@ export default function Settings() {
                                 </ol>
                             </div>
 
+                            <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 4: Understanding the Data Format</h3>
+                            <p style={{ marginBottom: '16px' }}>When you publish posts, Social Scheduler sends data to Make.com in JSON format. Here's what it looks like:</p>
+
+                            <div style={{ background: '#1e1e1e', padding: '16px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', fontFamily: 'monospace', color: '#d4d4d4', overflow: 'auto' }}>
+                                <pre style={{ margin: 0 }}>{`{
+  "platform": "twitter",
+  "content": "Your generated post text...",
+  "media_url": "https://...image.jpg",
+  "media_type": "image/jpeg",
+  "link_url": "https://yourlink.com",
+  "post_id": 123,
+  "timestamp": "2025-11-24T19:21:00.000Z"
+}`}</pre>
+                            </div>
+
+                            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>📋 All Platform Identifiers:</h4>
+                            <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                                <ul style={{ paddingLeft: '20px', margin: 0, lineHeight: '1.8' }}>
+                                    <li><code>blog</code> - Blog/Website</li>
+                                    <li><code>linkedin</code> - LinkedIn (Company Page)</li>
+                                    <li><code>linkedin-personal</code> - LinkedIn (Personal Profile)</li>
+                                    <li><code>twitter</code> - Twitter/X</li>
+                                    <li><code>facebook</code> - Facebook</li>
+                                    <li><code>instagram</code> - Instagram</li>
+                                    <li><code>reddit</code> - Reddit</li>
+                                    <li><code>google-business</code> - Google Business Profile</li>
+                                    <li><code>youtube-posts</code> - YouTube Community Posts</li>
+                                </ul>
+                            </div>
+
+                            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>🔀 Router Setup Example:</h4>
+                            <p style={{ marginBottom: '12px' }}>In Make.com Router, you'll create one path for each platform you use:</p>
+                            <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '24px', fontSize: '14px' }}>
+                                <p style={{ fontWeight: '600', marginBottom: '8px' }}>Webhook → Router → 9 paths:</p>
+                                <ul style={{ paddingLeft: '20px', margin: 0, lineHeight: '1.8' }}>
+                                    <li><strong>Path 1:</strong> Filter: <code>platform</code> = <code>twitter</code> → Twitter module</li>
+                                    <li><strong>Path 2:</strong> Filter: <code>platform</code> = <code>linkedin</code> → LinkedIn module</li>
+                                    <li><strong>Path 3:</strong> Filter: <code>platform</code> = <code>facebook</code> → Facebook module</li>
+                                    <li><strong>Path 4:</strong> Filter: <code>platform</code> = <code>instagram</code> → Instagram module</li>
+                                    <li>...and so on for each platform you use</li>
+                                </ul>
+                            </div>
+
                             <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 5: Turn it On!</h3>
                             <p>Click the <strong>Save</strong> icon and toggle the <strong>Scheduling</strong> switch to <strong>ON</strong>.</p>
                         </div>
