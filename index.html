@@ -1,198 +1,172 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Social Scheduler - AI-powered social media content generator and scheduler">
-    <title>Social Scheduler | AI-Powered Social Media Management</title>
+    <meta name="description" content="Social Scheduler - The open-source operating system for sovereign social media management. LLM-independent, version-controlled, and privacy-first.">
+    <title>Social Scheduler | The OS for Modern Influence</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header class="hero">
-        <nav class="nav">
-            <div class="nav-brand">
-                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span class="brand-name">Social Scheduler</span>
-            </div>
-            <div class="nav-links">
-                <a href="#features" class="nav-link">Features</a>
-                <a href="#how-it-works" class="nav-link">How It Works</a>
-                <a href="https://github.com/tervahagn/social-scheduler" class="nav-link">GitHub</a>
-                <a href="#get-started" class="btn btn-primary">Get Started</a>
-            </div>
-        </nav>
+    <div class="noise-overlay"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
 
-        <div class="hero-content">
-            <div class="hero-badge">
-                <span class="badge-dot"></span>
-                AI-Powered Social Media Management
-            </div>
-            <h1 class="hero-title">
-                Schedule Smarter,<br>
-                <span class="gradient-text">Create Faster</span>
-            </h1>
-            <p class="hero-description">
-                Transform your social media workflow with AI-generated content, intelligent scheduling, and seamless platform integration.
-            </p>
-            <div class="hero-cta">
-                <a href="#get-started" class="btn btn-large btn-primary">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    Start Free
-                </a>
-                <a href="https://github.com/tervahagn/social-scheduler" class="btn btn-large btn-secondary" target="_blank" rel="noopener">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                    </svg>
-                    View on GitHub
-                </a>
-            </div>
+    <nav class="nav glass">
+        <div class="nav-brand">
+            <div class="logo-mark">S</div>
+            <span class="brand-name">Social Scheduler</span>
         </div>
-
-        <div class="hero-visual">
-            <div class="floating-card card-1">
-                <div class="card-icon">📱</div>
-                <div class="card-text">Multi-Platform</div>
-            </div>
-            <div class="floating-card card-2">
-                <div class="card-icon">🤖</div>
-                <div class="card-text">AI Content</div>
-            </div>
-            <div class="floating-card card-3">
-                <div class="card-icon">📊</div>
-                <div class="card-text">Smart Scheduling</div>
-            </div>
+        <div class="nav-links">
+            <a href="#manifesto" class="nav-link">Manifesto</a>
+            <a href="#architecture" class="nav-link">Architecture</a>
+            <a href="https://github.com/tervahagn/social-scheduler" class="btn btn-glow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
+            </a>
         </div>
-    </header>
+    </nav>
 
-    <section id="features" class="features">
-        <div class="section-header">
-            <h2 class="section-title">Powerful Features</h2>
-            <p class="section-subtitle">Everything you need to manage your social media presence</p>
-        </div>
-
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">✨</div>
-                <h3 class="feature-title">AI Content Generation</h3>
-                <p class="feature-description">Generate engaging posts with AI. Customize tone, style, and platform-specific formatting.</p>
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="pill-badge">
+                    <span class="pulse"></span>
+                    v1.0 Open Source Release
+                </div>
+                <h1 class="display-text">
+                    The Operating System<br>
+                    for <span class="text-gradient">Sovereign Influence</span>
+                </h1>
+                <p class="hero-sub">
+                    Stop renting your workflow. Social Scheduler is the self-hosted, LLM-agnostic engine for orchestrating complex content campaigns across the decentralized web.
+                </p>
+                <div class="cta-group">
+                    <a href="https://github.com/tervahagn/social-scheduler" class="btn btn-primary btn-lg">
+                        Deploy Now
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
+                </div>
             </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">📅</div>
-                <h3 class="feature-title">Smart Scheduling</h3>
-                <p class="feature-description">Schedule posts across platforms with version control and draft management.</p>
+            
+            <div class="hero-ui-preview glass">
+                <div class="ui-header">
+                    <div class="ui-dots"><span></span><span></span><span></span></div>
+                    <div class="ui-bar"></div>
+                </div>
+                <div class="ui-grid">
+                    <div class="ui-sidebar"></div>
+                    <div class="ui-main">
+                        <div class="ui-card"></div>
+                        <div class="ui-row">
+                            <div class="ui-col"></div>
+                            <div class="ui-col"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <div class="feature-card">
-                <div class="feature-icon">🔄</div>
-                <h3 class="feature-title">Version History</h3>
-                <p class="feature-description">Track content changes, revert to previous versions, maintain full history.</p>
+        <section id="manifesto" class="manifesto">
+            <div class="container">
+                <div class="section-label">THE PHILOSOPHY</div>
+                <h2 class="section-heading">Why We Built This: <br>Escaping the "Black Box"</h2>
+                
+                <div class="manifesto-grid">
+                    <div class="manifesto-card glass">
+                        <h3>The Fragmentation Problem</h3>
+                        <p>
+                            Modern marketing is a logistical nightmare. You have a strategy in a Google Doc, assets in Dropbox, copy generation in ChatGPT, and scheduling in Buffer or Hootsuite. This fragmentation kills context. When you move from strategy to execution, the "why" gets lost. We built Social Scheduler to be the <strong>single source of truth</strong> where strategy, generation, and execution live in one unified, version-controlled environment.
+                        </p>
+                    </div>
+
+                    <div class="manifesto-card glass">
+                        <h3>LLM Independence & Sovereignty</h3>
+                        <p>
+                            Most "AI tools" are just thin wrappers around OpenAI, charging you a 10x markup for a prompt you could write yourself. We reject that model. <strong>Social Scheduler is model-agnostic.</strong> Bring your own keys. Use Claude 3.5 Sonnet for nuanced writing, GPT-4 for reasoning, or a local Llama 3 model for privacy. You own the intelligence, you control the costs, and you are never locked into a single provider's ecosystem.
+                        </p>
+                    </div>
+
+                    <div class="manifesto-card glass highlight">
+                        <h3>The "Campaign," Not the "Post"</h3>
+                        <p>
+                            Amateurs post; professionals campaign. Our data model reflects this reality. You don't just "write a tweet." You create a <strong>Brief</strong>—a core strategic concept. The system then orchestrates this Brief into a multi-channel execution: a thread for X, a professional update for LinkedIn, a visual story for Instagram. This ensures <strong>thematic consistency</strong> across all channels while respecting the unique "vibe" and format of each platform.
+                        </p>
+                    </div>
+
+                    <div class="manifesto-card glass">
+                        <h3>Prompt Hierarchy Architecture</h3>
+                        <p>
+                            Generic prompts yield generic results. We implemented a <strong>Cascading Prompt Architecture</strong>. 
+                            <br><br>
+                            1. <strong>Master Prompts:</strong> Define your brand's immutable voice, tonal guidelines, and forbidden terms.
+                            <br>
+                            2. <strong>Platform Prompts:</strong> Encode the best practices of each channel (e.g., "Use hooks for Twitter," "Professional tone for LinkedIn").
+                            <br>
+                            3. <strong>Brief Prompts:</strong> The specific context of the current campaign.
+                            <br><br>
+                            The system merges these layers at runtime, ensuring every piece of content is both on-brand and platform-native, without you having to repeat instructions.
+                        </p>
+                    </div>
+
+                    <div class="manifesto-card glass">
+                        <h3>Version Control for Copy</h3>
+                        <p>
+                            Developers have Git; marketers have... chaos? Not anymore. Every generation, every edit, and every refinement is tracked. We treat content with the same rigor as code. <strong>Branch</strong> your copy to explore different angles. <strong>Revert</strong> to a previous version if an edit lands flat. Maintain a pristine audit trail for C-level review or compliance. This is "ContentOps" for the modern era.
+                        </p>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <div class="feature-card">
-                <div class="feature-icon">🎯</div>
-                <h3 class="feature-title">Platform Optimization</h3>
-                <p class="feature-description">Optimize for LinkedIn, Twitter, Facebook, Instagram, and more.</p>
+        <section id="architecture" class="bento-section">
+            <div class="container">
+                <div class="section-label">CAPABILITIES</div>
+                <h2 class="section-heading">Engineered for Scale</h2>
+                
+                <div class="bento-grid">
+                    <div class="bento-item large glass">
+                        <div class="bento-content">
+                            <h3>Multi-Channel Orchestration</h3>
+                            <p>Simultaneous generation and scheduling for LinkedIn, X (Twitter), Instagram, and Facebook. One click propagates your message everywhere.</p>
+                        </div>
+                        <div class="bento-visual visual-channels"></div>
+                    </div>
+                    
+                    <div class="bento-item medium glass">
+                        <div class="bento-content">
+                            <h3>OAuth 2.0 Security</h3>
+                            <p>Enterprise-grade token management. Your credentials never leave your server.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bento-item medium glass">
+                        <div class="bento-content">
+                            <h3>OpenRouter Integration</h3>
+                            <p>Access the world's best models via a single unified API.</p>
+                        </div>
+                    </div>
+
+                    <div class="bento-item wide glass">
+                        <div class="bento-content">
+                            <h3>Draft & Approval Workflow</h3>
+                            <p>Separate the "Drafting" phase from the "Scheduling" phase. Review, refine, and approve content in a dedicated workspace before it ever hits the queue.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">🔐</div>
-                <h3 class="feature-title">Secure Integration</h3>
-                <p class="feature-description">Connect securely with OAuth 2.0 authentication.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3 class="feature-title">Real-time Preview</h3>
-                <p class="feature-description">Preview posts exactly as they appear on each platform.</p>
-            </div>
-        </div>
-    </section>
-
-    <section id="how-it-works" class="how-it-works">
-        <div class="section-header">
-            <h2 class="section-title">How It Works</h2>
-            <p class="section-subtitle">Get started in 3 simple steps</p>
-        </div>
-
-        <div class="steps">
-            <div class="step">
-                <div class="step-number">01</div>
-                <h3 class="step-title">Connect Your Accounts</h3>
-                <p class="step-description">Securely connect your social platforms with OAuth 2.0.</p>
-            </div>
-
-            <div class="step-connector"></div>
-
-            <div class="step">
-                <div class="step-number">02</div>
-                <h3 class="step-title">Generate Content</h3>
-                <p class="step-description">Use AI to create posts or write your own. Edit and optimize.</p>
-            </div>
-
-            <div class="step-connector"></div>
-
-            <div class="step">
-                <div class="step-number">03</div>
-                <h3 class="step-title">Schedule & Publish</h3>
-                <p class="step-description">Schedule for optimal times or publish immediately.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="tech-stack">
-        <div class="section-header">
-            <h2 class="section-title">Built With Modern Tech</h2>
-            <p class="section-subtitle">Open source and developer-friendly</p>
-        </div>
-
-        <div class="tech-grid">
-            <div class="tech-item"><span class="tech-name">React</span></div>
-            <div class="tech-item"><span class="tech-name">Node.js</span></div>
-            <div class="tech-item"><span class="tech-name">Express</span></div>
-            <div class="tech-item"><span class="tech-name">PostgreSQL</span></div>
-            <div class="tech-item"><span class="tech-name">OpenRouter AI</span></div>
-            <div class="tech-item"><span class="tech-name">OAuth 2.0</span></div>
-        </div>
-    </section>
-
-    <section id="get-started" class="cta">
-        <div class="cta-content">
-            <h2 class="cta-title">Ready to Transform Your Social Media?</h2>
-            <p class="cta-description">Get started with Social Scheduler today. Free and open source.</p>
-            <div class="cta-buttons">
-                <a href="https://github.com/tervahagn/social-scheduler" class="btn btn-large btn-primary" target="_blank">
-                    View on GitHub
-                </a>
-                <a href="https://github.com/tervahagn/social-scheduler#readme" class="btn btn-large btn-secondary" target="_blank">
-                    Read Documentation
-                </a>
-            </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
     <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-brand">
-                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span class="brand-name">Social Scheduler</span>
-            </div>
-            <p class="footer-text">AI-powered social media management made simple</p>
-            <div class="footer-links">
-                <a href="https://github.com/tervahagn/social-scheduler" target="_blank">GitHub</a>
-                <span class="separator">•</span>
-                <a href="https://github.com/tervahagn/social-scheduler/issues" target="_blank">Issues</a>
-                <span class="separator">•</span>
-                <a href="https://github.com/tervahagn/social-scheduler#readme" target="_blank">Docs</a>
+        <div class="container">
+            <div class="footer-content">
+                <p class="vibe-code">
+                    🌴 Vibe-coded in Pasadena, California, by <a href="https://tervahagn.com" target="_blank" class="author-link">Vahagn Ter-Sarkisyan</a> and open for free of charge use.
+                </p>
             </div>
         </div>
     </footer>

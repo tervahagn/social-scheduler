@@ -12,28 +12,24 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Add scroll effect to navigation
-let lastScroll = 0;
+// Navbar scroll effect
 const nav = document.querySelector('.nav');
-
 window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
-    
-    if (currentScroll > 100) {
-        nav.style.background = 'rgba(15, 23, 42, 0.95)';
-        nav.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+    if (window.scrollY > 50) {
+        nav.style.background = 'rgba(255, 255, 255, 0.05)';
+        nav.style.backdropFilter = 'blur(20px)';
+        nav.style.border = '1px solid rgba(255, 255, 255, 0.1)';
     } else {
-        nav.style.background = 'rgba(15, 23, 42, 0.8)';
-        nav.style.boxShadow = 'none';
+        nav.style.background = 'rgba(255, 255, 255, 0.03)';
+        nav.style.backdropFilter = 'blur(12px)';
+        nav.style.border = '1px solid rgba(255, 255, 255, 0.05)';
     }
-    
-    lastScroll = currentScroll;
 });
 
 // Intersection Observer for fade-in animations
 const observerOptions = {
     threshold: 0.1,
-    rootMargin: '0px 0px -100px 0px'
+    rootMargin: '0px 0px -50px 0px'
 };
 
 const observer = new IntersectionObserver((entries) => {
@@ -45,24 +41,27 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-// Observe feature cards
-document.querySelectorAll('.feature-card, .step, .tech-item').forEach(el => {
+// Animate elements on scroll
+const animatedElements = document.querySelectorAll('.manifesto-card, .bento-item, .hero-content');
+animatedElements.forEach((el, index) => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(30px)';
-    el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+    el.style.transition = 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+    // Add staggered delay based on index or position
+    // el.style.transitionDelay = `${index * 0.1}s`; 
     observer.observe(el);
 });
 
-// Add stagger effect to feature cards
-document.querySelectorAll('.feature-card').forEach((card, index) => {
-    card.style.transitionDelay = `${index * 0.1}s`;
-});
-
-// Track button clicks (optional analytics placeholder)
-document.querySelectorAll('.btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const action = e.currentTarget.textContent.trim();
-        console.log('Button clicked:', action);
-        // Add analytics tracking here if needed
-    });
+// Mouse movement effect for gradient orbs (parallax)
+document.addEventListener('mousemove', (e) => {
+    const mouseX = e.clientX / window.innerWidth;
+    const mouseY = e.clientY / window.innerHeight;
+    
+    const orb1 = document.querySelector('.orb-1');
+    const orb2 = document.querySelector('.orb-2');
+    
+    if(orb1 && orb2) {
+        orb1.style.transform = `translate(${mouseX * 50}px, ${mouseY * 50}px)`;
+        orb2.style.transform = `translate(-${mouseX * 50}px, -${mouseY * 50}px)`;
+    }
 });
