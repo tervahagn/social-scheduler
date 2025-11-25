@@ -1,4 +1,94 @@
-# Social Scheduler Documentation
+# Social Scheduler - Documentation
+
+## Features
+
+### Content Generation
+- [Progressive Loading](features/progressive-loading.md) - Instant feedback with progressive content updates
+
+### Platform Management
+- Individual platform publishing
+- Platform prompt configuration
+- Platform activation/deactivation
+
+### Content Editing
+- Individual post approval/un-approval
+- Bulk approval operations
+- Request changes with AI corrections
+- Content regeneration
+- Version history
+
+## API Reference
+
+### Content Generation
+```
+POST /api/content/brief/:briefId/generate
+Returns: Placeholder posts immediately
+Background: Generates content asynchronously
+```
+
+### Platform Publishing
+```
+POST /api/posts/:id/publish        - Publish single platform
+POST /api/publish/brief/:briefId   - Publish all approved posts
+```
+
+### Post Management
+```
+POST /api/posts/:id/approve        - Toggle post approval
+PUT  /api/posts/:id                - Update post content
+POST /api/content/post/:id/correct - Request AI corrections
+POST /api/content/post/:id/regenerate - Regenerate from scratch
+```
+
+### Platform Configuration
+```
+GET  /api/platforms                - Get all platforms
+PUT  /api/platforms/:id            - Update platform settings
+```
+
+## Recent Changes
+
+See [CHANGELOG.md](CHANGELOG.md) for recent updates.
+
+## Development
+
+### Starting the Application
+```bash
+./start.sh
+```
+
+This starts both frontend (port 3000) and backend (port 3001).
+
+### Project Structure
+```
+├── backend/
+│   ├── src/
+│   │   ├── api/           # API routes
+│   │   ├── services/      # Business logic
+│   │   └── database/      # Database setup
+│   └── scheduler.db       # SQLite database
+│
+├── frontend/
+│   └── src/
+│       ├── pages/         # Page components
+│       ├── components/    # Reusable components
+│       └── services/      # API client
+│
+└── docs/                  # Documentation
+    └── features/          # Feature docs
+```
+
+## Key Technologies
+
+- **Frontend:** React, Vite
+- **Backend:** Node.js, Express
+- **Database:** SQLite
+- **AI:** OpenRouter API (Grok-4.1-fast)
+- **Publishing:** Make.com webhooks
+
+---
+
+Last Updated: November 24, 2025 Documentation
 
 ## Overview
 Social Scheduler is a modern content management system for creating and publishing platform-specific social media posts using AI.

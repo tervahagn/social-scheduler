@@ -7,7 +7,7 @@ import { useNotification } from '../contexts/NotificationContext';
 export default function History() {
     const [briefs, setBriefs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [viewMode, setViewMode] = useState('list');
+    const [viewMode, setViewMode] = useState('grid');
     const navigate = useNavigate();
     const { showSuccess, showError } = useNotification();
 

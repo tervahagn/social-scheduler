@@ -26,10 +26,21 @@ router.post('/brief/:briefId/generate', async (req, res) => {
             return res.status(404).json({ error: 'Brief not found' });
         }
 
-        const posts = await generatePlatformContentDirect(brief.id);
-        res.json(posts);
+        // Import progressive loading functions
+        const { createPlaceholderPosts, generateContentForPosts } = await import('../services/content-generator.service.js');
+
+        // Create placeholder posts immediately
+        const placeholders = await createPlaceholderPosts(brief.id);
+
+        // Return placeholders right away for instant UI feedback
+        res.json(placeholders);
+
+        // Generate content asynchronously (don't await - fire and forget)
+        generateContentForPosts(brief.id).catch(err => {
+            console.error('Background content generation error:', err);
+        });
     } catch (error) {
-        console.error('Error generating platform content:', error);
+        console.error('Error starting content generation:', error);
         res.status(500).json({ error: error.message });
     }
 });

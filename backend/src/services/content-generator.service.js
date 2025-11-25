@@ -3,9 +3,64 @@ import db from '../database/db.js';
 import { generateContent, generateContentWithImage } from './openrouter.service.js';
 
 /**
- * NEW: Generate platform-specific content directly from brief (skip master draft)
+ * NEW: Create placeholder posts immediately for instant UI feedback
  */
-export async function generatePlatformContentDirect(briefId) {
+export async function createPlaceholderPosts(briefId) {
+    const brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(briefId);
+    if (!brief) {
+        throw new Error('Brief not found');
+    }
+
+    // Get selected platforms
+    let platforms;
+    if (brief.selected_platforms) {
+        const selectedIds = JSON.parse(brief.selected_platforms);
+        const placeholders = selectedIds.map(() => '?').join(',');
+        platforms = await db.prepare(`SELECT * FROM platforms WHERE id IN (${placeholders}) AND is_active = 1`).all(...selectedIds);
+    } else {
+        platforms = await db.prepare('SELECT * FROM platforms WHERE is_active = 1').all();
+    }
+
+    // Platform sequence for consistent ordering
+    const platformSequence = [
+        'blog', 'linkedin', 'linkedin-personal', 'reddit', 'google-business',
+        'twitter', 'youtube-posts', 'facebook', 'instagram'
+    ];
+
+    platforms.sort((a, b) => {
+        const indexA = platformSequence.indexOf(a.name);
+        const indexB = platformSequence.indexOf(b.name);
+        const valA = indexA === -1 ? 999 : indexA;
+        const valB = indexB === -1 ? 999 : indexB;
+        return valA - valB;
+    });
+
+    const posts = [];
+
+    // Create empty placeholder posts
+    for (const platform of platforms) {
+        const result = await db.prepare(`
+            INSERT INTO posts (brief_id, platform_id, content, status, version)
+            VALUES (?, ?, '', 'generating', 1)
+        `).run(briefId, platform.id);
+
+        const post = await db.prepare(`
+            SELECT posts.*, platforms.name as platform_name, platforms.display_name as platform_display_name
+            FROM posts
+            JOIN platforms ON posts.platform_id = platforms.id
+            WHERE posts.id = ?
+        `).get(result.lastInsertRowid);
+
+        posts.push(post);
+    }
+
+    return posts;
+}
+
+/**
+ * NEW: Generate content for placeholder posts (async background task)
+ */
+export async function generateContentForPosts(briefId) {
     // Fetch brief data
     const brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(briefId);
     if (!brief) {
@@ -110,18 +165,19 @@ export async function generatePlatformContentDirect(briefId) {
 
             const generationTime = Date.now() - startTime;
 
-            // Save post to DB (version 1)
-            const result = await db.prepare(`
-                INSERT INTO posts (brief_id, platform_id, content, status, version, generation_time_ms)
-                VALUES (?, ?, ?, 'draft', 1, ?)
-            `).run(briefId, platform.id, content, generationTime);
+            // Update existing placeholder post with generated content
+            await db.prepare(`
+                UPDATE posts 
+                SET content = ?, status = 'draft', generation_time_ms = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE brief_id = ? AND platform_id = ? AND status = 'generating'
+            `).run(content, generationTime, briefId, platform.id);
 
             const post = await db.prepare(`
                 SELECT posts.*, platforms.name as platform_name, platforms.display_name as platform_display_name
                 FROM posts
                 JOIN platforms ON posts.platform_id = platforms.id
-                WHERE posts.id = ?
-            `).get(result.lastInsertRowid);
+                WHERE posts.brief_id = ? AND posts.platform_id = ?
+            `).get(briefId, platform.id);
 
             posts.push(post);
 
@@ -131,7 +187,26 @@ export async function generatePlatformContentDirect(briefId) {
         }
     }
 
+    console.log(`✅ Completed generation for brief ${briefId}`);
     return posts;
+}
+
+/**
+ * Legacy: Generate platform-specific content directly from brief (creates and fills in one go)
+ */
+export async function generatePlatformContentDirect(briefId) {
+    // For backwards compatibility, create placeholders then generate
+    const posts = await createPlaceholderPosts(briefId);
+    await generateContentForPosts(briefId);
+
+    // Return updated posts
+    return await db.prepare(`
+        SELECT posts.*, platforms.name as platform_name, platforms.display_name as platform_display_name
+        FROM posts
+        JOIN platforms ON posts.platform_id = platforms.id
+        WHERE posts.brief_id = ?
+        ORDER BY posts.id
+    `).all(briefId);
 }
 
 /**
@@ -310,6 +385,9 @@ export async function approvePost(postId) {
 }
 
 export default {
+    // Progressive loading functions
+    createPlaceholderPosts,
+    generateContentForPosts,
     // New functions
     generatePlatformContentDirect,
     correctPost,

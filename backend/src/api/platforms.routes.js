@@ -85,6 +85,8 @@ router.post('/', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
     try {
+        const { display_name, webhook_url, is_active, prompt_content } = req.body;
+
         await db.prepare(`
       UPDATE platforms 
       SET display_name = COALESCE(?, display_name),

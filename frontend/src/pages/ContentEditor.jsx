@@ -21,7 +21,7 @@ export default function ContentEditor() {
     const [loadingPosts, setLoadingPosts] = useState(new Set()); // Track which posts are generating
 
     const [saving, setSaving] = useState(false);
-    const [viewMode, setViewMode] = useState('list');
+    const [viewMode, setViewMode] = useState('grid');
 
     useEffect(() => {
         fetchData();
@@ -47,14 +47,59 @@ export default function ContentEditor() {
     const handleGenerateContent = async () => {
         setGenerating(true);
         try {
+            // Call API to create placeholder posts
             const response = await axios.post(`/api/content/brief/${briefId}/generate`);
-            setPosts(response.data);
-            showSuccess(`Generated content for ${response.data.length} platforms`);
+            const placeholders = response.data;
+
+            // Immediately show cards with loading states
+            setPosts(placeholders);
+            setLoadingPosts(new Set(placeholders.map(p => p.id)));
+
+            showSuccess(`Generating content for ${placeholders.length} platforms...`);
+
+            // Start polling for updates
+            const pollInterval = setInterval(async () => {
+                try {
+                    const postsResponse = await axios.get(`/api/briefs/${briefId}/posts`);
+                    const updatedPosts = postsResponse.data;
+
+                    setPosts(updatedPosts);
+
+                    // Check which posts are still generating
+                    const stillGenerating = updatedPosts.filter(p =>
+                        p.status === 'generating' || !p.content
+                    );
+
+                    if (stillGenerating.length === 0) {
+                        // All done!
+                        clearInterval(pollInterval);
+                        setGenerating(false);
+                        setLoadingPosts(new Set());
+                        showSuccess(`Content generated successfully for ${updatedPosts.length} platforms!`);
+                    } else {
+                        // Update loading states for posts still generating
+                        setLoadingPosts(new Set(stillGenerating.map(p => p.id)));
+                    }
+                } catch (pollErr) {
+                    console.error('Polling error:', pollErr);
+                    // Don't stop on poll errors, keep trying
+                }
+            }, 1500); // Poll every 1.5 seconds
+
+            // Safety timeout: stop polling after 2 minutes
+            setTimeout(() => {
+                if (pollInterval) {
+                    clearInterval(pollInterval);
+                    setGenerating(false);
+                    setLoadingPosts(new Set());
+                }
+            }, 120000); // 2 minutes max
+
         } catch (err) {
             console.error('Error generating content:', err);
             showError(err.response?.data?.error || 'Failed to generate content');
+            setGenerating(false);
         }
-        setGenerating(false);
     };
 
     const handleCorrect = (post) => {
@@ -100,7 +145,13 @@ export default function ContentEditor() {
     const handleApprove = async (post) => {
         try {
             const response = await axios.post(`/api/posts/${post.id}/approve`);
-            setPosts(prev => prev.map(p => p.id === post.id ? response.data : p));
+            // Preserve platform_display_name and platform_name if not returned by API
+            const updatedPost = {
+                ...response.data,
+                platform_display_name: response.data.platform_display_name || post.platform_display_name,
+                platform_name: response.data.platform_name || post.platform_name
+            };
+            setPosts(prev => prev.map(p => p.id === post.id ? updatedPost : p));
 
             if (response.data.status === 'approved') {
                 showSuccess(`Approved ${post.platform_display_name}`);
@@ -161,7 +212,13 @@ export default function ContentEditor() {
             const response = await axios.put(`/api/posts/${editingPost.postId}`, {
                 edited_content: editingPost.content
             });
-            setPosts(prev => prev.map(p => p.id === editingPost.postId ? response.data : p));
+            // Preserve platform info if not returned by API
+            const updatedPost = {
+                ...response.data,
+                platform_display_name: response.data.platform_display_name || posts.find(p => p.id === editingPost.postId)?.platform_display_name,
+                platform_name: response.data.platform_name || posts.find(p => p.id === editingPost.postId)?.platform_name
+            };
+            setPosts(prev => prev.map(p => p.id === editingPost.postId ? updatedPost : p));
             showSuccess('Post updated');
             setEditingPost(null);
         } catch (err) {
@@ -190,6 +247,28 @@ export default function ContentEditor() {
         } catch (err) {
             console.error('Error publishing:', err);
             showError(err.response?.data?.error || 'Failed to publish posts');
+        }
+        setProcessing(false);
+    };
+
+    const handlePublishSingle = async (post) => {
+        if (!window.confirm(`Publish this ${post.platform_display_name} post?`)) {
+            return;
+        }
+
+        setProcessing(true);
+        try {
+            const response = await axios.post(`/api/posts/${post.id}/publish`);
+            // Update post to show published status
+            const updatedPost = {
+                ...response.data,
+                platform_display_name: response.data.platform_display_name || post.platform_display_name
+            };
+            setPosts(prev => prev.map(p => p.id === post.id ? updatedPost : p));
+            showSuccess(`${post.platform_display_name} post published successfully!`);
+        } catch (err) {
+            console.error('Error publishing post:', err);
+            showError(err.response?.data?.error || `Failed to publish ${post.platform_display_name} post`);
         }
         setProcessing(false);
     };
@@ -522,7 +601,9 @@ export default function ContentEditor() {
                         gap: '24px'
                     }}>
                         {posts.map(post => {
-                            const platformColor = getPlatformConfig(post.platform).color;
+                            const platformConfig = getPlatformConfig(post.platform_name);
+                            const platformColor = platformConfig.color;
+                            const PlatformIcon = platformConfig.icon;
                             const isApproved = post.status === 'approved';
 
                             return (
@@ -535,13 +616,42 @@ export default function ContentEditor() {
                                         position: 'relative',
                                         height: '100%',
                                         display: 'flex',
-                                        flexDirection: 'column'
+                                        flexDirection: 'column',
+                                        overflow: 'hidden'
                                     }}
-                                >                              {/* Header */}
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                                >
+                                    {/* Background Watermark Icon */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '-10px',
+                                        right: '-10px',
+                                        opacity: 0.05,
+                                        transform: 'rotate(15deg)',
+                                        pointerEvents: 'none'
+                                    }}>
+                                        <PlatformIcon size={120} color="var(--text-primary)" />
+                                    </div>
+
+                                    {/* Header */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', position: 'relative' }}>
                                         <div style={{ flex: 1 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                                                <h3 style={{ fontSize: '18px', fontWeight: '600', color: platformColor }}>
+                                                {/* Icon Container */}
+                                                <div style={{
+                                                    width: '40px',
+                                                    height: '40px',
+                                                    borderRadius: '10px',
+                                                    background: platformColor + '15',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: platformColor,
+                                                    flexShrink: 0
+                                                }}>
+                                                    <PlatformIcon size={24} />
+                                                </div>
+
+                                                <h3 style={{ fontSize: '18px', fontWeight: '600', color: platformColor, margin: 0 }}>
                                                     {post.platform_display_name}
                                                 </h3>
                                                 {post.version > 1 && (
@@ -716,6 +826,25 @@ export default function ContentEditor() {
                                                     {isApproved ? <X size={14} /> : <Check size={14} />}
                                                     {isApproved ? 'Un-approve' : 'Approve'}
                                                 </button>
+
+                                                {isApproved && (
+                                                    <button
+                                                        onClick={() => handlePublishSingle(post)}
+                                                        disabled={processing}
+                                                        className="button"
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '6px',
+                                                            fontSize: '13px',
+                                                            background: 'var(--success)',
+                                                            color: 'white'
+                                                        }}
+                                                    >
+                                                        {processing ? <Loader size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Share2 size={14} />}
+                                                        Publish
+                                                    </button>
+                                                )}
                                             </>
                                         )}
                                     </div>
