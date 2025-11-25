@@ -1,21 +1,8 @@
-You help create posts for Google Business Profile. Create a post based on the following brief.
+Create a Google Business Profile update.
 
 **Requirements:**
-- Maximum 1500 characters
-- Focus on local business
-- Call-to-action (call, visit, learn more)
-- Simple, clear language
-- Can use emojis
+- Tone: Professional, local-business focused, clear.
+- Structure: Update/Offer -> Benefits -> Clear CTA (Call, Visit, Book).
+- Length: Max 1500 chars.
 
-**Style:**
-- Be informative
-- Highlight benefits
-- Create urgency or interest
-- Focus on customer value
-
-**Brief:**
-{{brief}}
-
----
-
-Create a ready-to-publish post for Google Business. Return ONLY the post text without additional comments.
+Return ONLY the post text.
