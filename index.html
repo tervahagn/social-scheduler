@@ -3,12 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Social Scheduler - The open-source operating system for sovereign social media management. LLM-independent, version-controlled, and privacy-first.">
+    <meta name="description" content="Social Scheduler is an open-source, self-hosted social media orchestration platform. Features cascading prompt architecture, version control for copy, and LLM-agnostic generation.">
+    <meta name="keywords" content="social media automation, open source marketing tools, LLM orchestration, prompt engineering, self-hosted social media">
+    <meta name="author" content="Vahagn Ter-Sarkisyan">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tervahagn.github.io/social-scheduler/">
+    <meta property="og:title" content="Social Scheduler | The OS for Sovereign Influence">
+    <meta property="og:description" content="Stop renting your workflow. A self-hosted engine for orchestrating complex content campaigns with deep LLM integration.">
+    <meta property="og:image" content="https://tervahagn.github.io/social-scheduler/assets/demo.webp">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://tervahagn.github.io/social-scheduler/">
+    <meta property="twitter:title" content="Social Scheduler | The OS for Sovereign Influence">
+    <meta property="twitter:description" content="Stop renting your workflow. A self-hosted engine for orchestrating complex content campaigns with deep LLM integration.">
+    <meta property="twitter:image" content="https://tervahagn.github.io/social-scheduler/assets/demo.webp">
+
     <title>Social Scheduler | The OS for Modern Influence</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- JSON-LD for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Social Scheduler",
+      "operatingSystem": "Web",
+      "applicationCategory": "BusinessApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Vahagn Ter-Sarkisyan",
+        "url": "https://tervahagn.com"
+      },
+      "description": "An open-source, self-hosted platform for orchestrating social media content generation and scheduling using LLMs.",
+      "featureList": [
+        "Cascading Prompt Architecture",
+        "Version Control for Copy",
+        "Multi-channel Orchestration",
+        "LLM Agnostic (OpenRouter Integration)"
+      ]
+    }
+    </script>
 </head>
 <body>
     <div class="noise-overlay"></div>
@@ -21,8 +66,8 @@
             <span class="brand-name">Social Scheduler</span>
         </div>
         <div class="nav-links">
-            <a href="#manifesto" class="nav-link">Manifesto</a>
             <a href="#architecture" class="nav-link">Architecture</a>
+            <a href="#workflow" class="nav-link">Workflow</a>
             <a href="https://github.com/tervahagn/social-scheduler" class="btn btn-glow">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                 GitHub
@@ -55,105 +100,87 @@
             <div class="hero-ui-preview glass">
                 <div class="ui-header">
                     <div class="ui-dots"><span></span><span></span><span></span></div>
-                    <div class="ui-bar"></div>
+                    <div class="ui-bar">social-scheduler.local</div>
                 </div>
-                <div class="ui-grid">
-                    <div class="ui-sidebar"></div>
-                    <div class="ui-main">
-                        <div class="ui-card"></div>
-                        <div class="ui-row">
-                            <div class="ui-col"></div>
-                            <div class="ui-col"></div>
-                        </div>
-                    </div>
+                <div class="video-container">
+                    <img src="assets/demo.webp" alt="Social Scheduler Demo Flow" class="demo-video">
                 </div>
             </div>
         </section>
 
-        <section id="manifesto" class="manifesto">
+        <section id="architecture" class="manifesto">
             <div class="container">
-                <div class="section-label">THE PHILOSOPHY</div>
-                <h2 class="section-heading">Why We Built This: <br>Escaping the "Black Box"</h2>
+                <div class="section-label">SYSTEM ARCHITECTURE</div>
+                <h2 class="section-heading">Engineered for <br>Content Operations</h2>
                 
                 <div class="manifesto-grid">
-                    <div class="manifesto-card glass">
-                        <h3>The Fragmentation Problem</h3>
-                        <p>
-                            Modern marketing is a logistical nightmare. You have a strategy in a Google Doc, assets in Dropbox, copy generation in ChatGPT, and scheduling in Buffer or Hootsuite. This fragmentation kills context. When you move from strategy to execution, the "why" gets lost. We built Social Scheduler to be the <strong>single source of truth</strong> where strategy, generation, and execution live in one unified, version-controlled environment.
-                        </p>
-                    </div>
-
-                    <div class="manifesto-card glass">
-                        <h3>LLM Independence & Sovereignty</h3>
-                        <p>
-                            Most "AI tools" are just thin wrappers around OpenAI, charging you a 10x markup for a prompt you could write yourself. We reject that model. <strong>Social Scheduler is model-agnostic.</strong> Bring your own keys. Use Claude 3.5 Sonnet for nuanced writing, GPT-4 for reasoning, or a local Llama 3 model for privacy. You own the intelligence, you control the costs, and you are never locked into a single provider's ecosystem.
-                        </p>
-                    </div>
-
                     <div class="manifesto-card glass highlight">
-                        <h3>The "Campaign," Not the "Post"</h3>
+                        <h3>Cascading Prompt Architecture</h3>
                         <p>
-                            Amateurs post; professionals campaign. Our data model reflects this reality. You don't just "write a tweet." You create a <strong>Brief</strong>—a core strategic concept. The system then orchestrates this Brief into a multi-channel execution: a thread for X, a professional update for LinkedIn, a visual story for Instagram. This ensures <strong>thematic consistency</strong> across all channels while respecting the unique "vibe" and format of each platform.
+                            We solved the "generic AI content" problem with a 3-layer inheritance model.
+                            <br><br>
+                            <code>Master Prompt</code> (Brand Voice) <br>
+                            &nbsp;&nbsp;↳ <code>Platform Prompt</code> (Channel Specifics) <br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;↳ <code>Brief Prompt</code> (Campaign Context)
+                            <br><br>
+                            At runtime, the system merges these layers. This ensures every tweet, LinkedIn post, or blog article is strictly on-brand while respecting the unique formatting and tonal requirements of the destination platform.
                         </p>
                     </div>
 
                     <div class="manifesto-card glass">
-                        <h3>Prompt Hierarchy Architecture</h3>
+                        <h3>Immutable Version Control</h3>
                         <p>
-                            Generic prompts yield generic results. We implemented a <strong>Cascading Prompt Architecture</strong>. 
+                            Treating copy like code. The <code>post_versions</code> table tracks every generation cycle. 
                             <br><br>
-                            1. <strong>Master Prompts:</strong> Define your brand's immutable voice, tonal guidelines, and forbidden terms.
-                            <br>
-                            2. <strong>Platform Prompts:</strong> Encode the best practices of each channel (e.g., "Use hooks for Twitter," "Professional tone for LinkedIn").
-                            <br>
-                            3. <strong>Brief Prompts:</strong> The specific context of the current campaign.
-                            <br><br>
-                            The system merges these layers at runtime, ensuring every piece of content is both on-brand and platform-native, without you having to repeat instructions.
+                            When you click "Regenerate" or "Correct", the system doesn't overwrite—it branches. You can traverse the history of a post, compare iterations, and revert to any previous state with zero data loss.
                         </p>
                     </div>
 
                     <div class="manifesto-card glass">
-                        <h3>Version Control for Copy</h3>
+                        <h3>LLM Agnostic Core</h3>
                         <p>
-                            Developers have Git; marketers have... chaos? Not anymore. Every generation, every edit, and every refinement is tracked. We treat content with the same rigor as code. <strong>Branch</strong> your copy to explore different angles. <strong>Revert</strong> to a previous version if an edit lands flat. Maintain a pristine audit trail for C-level review or compliance. This is "ContentOps" for the modern era.
+                            Built on top of OpenRouter, giving you access to the entire model landscape. 
+                            <br><br>
+                            Swap models per task: Use <strong>Claude 3.5 Sonnet</strong> for creative writing, <strong>GPT-4o</strong> for reasoning, or <strong>Llama 3</strong> for local privacy. You are not locked into a single vendor's API or pricing model.
+                        </p>
+                    </div>
+
+                    <div class="manifesto-card glass">
+                        <h3>Webhook Orchestration</h3>
+                        <p>
+                            We decouple generation from publication. The <code>PublisherService</code> pushes approved content to a centralized webhook (Make.com/Zapier).
+                            <br><br>
+                            This allows for infinite downstream flexibility: route content to Slack for final approval, push to a custom CMS, or trigger complex automation flows without modifying the core codebase.
                         </p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="architecture" class="bento-section">
+        <section id="workflow" class="bento-section">
             <div class="container">
-                <div class="section-label">CAPABILITIES</div>
-                <h2 class="section-heading">Engineered for Scale</h2>
+                <div class="section-label">WORKFLOW</div>
+                <h2 class="section-heading">From Brief to Broadcast</h2>
                 
                 <div class="bento-grid">
                     <div class="bento-item large glass">
                         <div class="bento-content">
-                            <h3>Multi-Channel Orchestration</h3>
-                            <p>Simultaneous generation and scheduling for LinkedIn, X (Twitter), Instagram, and Facebook. One click propagates your message everywhere.</p>
-                        </div>
-                        <div class="bento-visual visual-channels"></div>
-                    </div>
-                    
-                    <div class="bento-item medium glass">
-                        <div class="bento-content">
-                            <h3>OAuth 2.0 Security</h3>
-                            <p>Enterprise-grade token management. Your credentials never leave your server.</p>
+                            <h3>The "Brief" First Model</h3>
+                            <p>Most tools start with a "Post". We start with a "Brief". A Brief is a strategic container that holds your campaign's core message, assets, and links. The system then "explodes" this Brief into platform-native assets for X, LinkedIn, Instagram, and more simultaneously.</p>
                         </div>
                     </div>
                     
                     <div class="bento-item medium glass">
                         <div class="bento-content">
-                            <h3>OpenRouter Integration</h3>
-                            <p>Access the world's best models via a single unified API.</p>
+                            <h3>Secure OAuth 2.0</h3>
+                            <p>Enterprise-grade token management. Your credentials are encrypted and never leave your self-hosted instance.</p>
                         </div>
                     </div>
-
-                    <div class="bento-item wide glass">
+                    
+                    <div class="bento-item medium glass">
                         <div class="bento-content">
-                            <h3>Draft & Approval Workflow</h3>
-                            <p>Separate the "Drafting" phase from the "Scheduling" phase. Review, refine, and approve content in a dedicated workspace before it ever hits the queue.</p>
+                            <h3>Draft & Queue</h3>
+                            <p>Separate "Drafting" from "Scheduling". Review content in a dedicated workspace before committing to the publish queue.</p>
                         </div>
                     </div>
                 </div>
