@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "make": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://us1.make.com/mcp/api/v1/u/000b402a-ab28-419b-b1f9-038e767c5869/sse"]
+    }
+  }
+}

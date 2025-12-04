@@ -5,6 +5,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { useEffect, useState } from 'react';
 import Intro from './pages/Intro';
 import NewBrief from './pages/NewBrief';
+import QuickPost from './pages/QuickPost';
 import ContentEditor from './pages/ContentEditor';
 import History from './pages/History';
 import Platforms from './pages/Platforms';
@@ -55,6 +56,7 @@ function Navigation() {
     const isActive = (path) => location.pathname === path;
 
     const navItems = [
+        { path: '/quick-post', icon: Zap, label: 'Quick Post' },
         { path: '/', icon: FileText, label: 'New Brief' },
         { path: '/history', icon: Clock, label: 'History' },
         { path: '/calendar', icon: CalendarDays, label: 'Calendar' },
@@ -177,6 +179,7 @@ export default function App() {
                     <Routes>
                         <Route path="/" element={<Root />} />
                         <Route path="/intro" element={<Intro />} />
+                        <Route path="/quick-post" element={<QuickPost />} />
                         <Route path="/new" element={<NewBrief />} />
                         <Route path="/brief/:briefId/edit" element={<ContentEditor />} />
                         <Route path="/calendar" element={<Calendar />} />

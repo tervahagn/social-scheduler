@@ -13,6 +13,7 @@ import publishRoutes from './api/publish.routes.js';
 import platformsRoutes from './api/platforms.routes.js';
 import calendarRoutes from './api/calendar.routes.js';
 import settingsRoutes from './api/settings.routes.js';
+import quickPostRoutes from './api/quick-post.routes.js';
 import analyticsRoutes from './api/analytics.routes.js';
 
 dotenv.config();
@@ -49,6 +50,7 @@ app.use('/api/calendar', calendarRoutes);
 app.use('/api/publish', publishRoutes);
 app.use('/api/platforms', platformsRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/quick-post', quickPostRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/content', contentRoutes);
 

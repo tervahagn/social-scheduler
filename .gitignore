@@ -26,6 +26,10 @@ uploads/
 .vscode/
 .idea/
 
+# Claude Code (contains API keys)
+.claude/
+.claude.md
+
 # Data
 data/
 !data/.gitkeep

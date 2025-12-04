@@ -239,9 +239,35 @@ export async function retryFailed() {
     }
 }
 
+/**
+ * Generic function to publish payload to the configured webhook
+ */
+export async function publishToWebhook(payload) {
+    // Get webhook URL from settings
+    const webhookSetting = await db.prepare(
+        "SELECT value FROM settings WHERE key = 'make_webhook_url'"
+    ).get();
+    const webhookUrl = webhookSetting?.value;
+
+    if (!webhookUrl) {
+        throw new Error('Make.com webhook URL not configured. Please add it in Settings.');
+    }
+
+    // Send to Make.com
+    await axios.post(webhookUrl, payload, {
+        timeout: 10000,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+
+    return true;
+}
+
 export default {
     queuePost,
     publishPost,
     publishAllPosts,
-    retryFailed
+    retryFailed,
+    publishToWebhook
 };
