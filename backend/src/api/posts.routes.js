@@ -1,6 +1,6 @@
 import express from 'express';
 import { updatePostContent, approvePost } from '../services/content-generator.service.js';
-import { publishPost } from '../services/publisher.service.js';
+import { publishPost, updatePostStatus, schedulePost } from '../services/publisher.service.js';
 import db from '../database/db.js';
 
 const router = express.Router();
@@ -102,6 +102,43 @@ router.post('/:id/publish', async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Error publishing post:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/posts/:id/schedule - Schedule post
+ */
+router.post('/:id/schedule', async (req, res) => {
+    try {
+        const { scheduled_at } = req.body;
+        if (!scheduled_at) {
+            return res.status(400).json({ error: 'Scheduled date is required' });
+        }
+
+        const result = await schedulePost(req.params.id, scheduled_at);
+        res.json(result);
+    } catch (error) {
+        console.error('Error scheduling post:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/posts/:id/status - Update post status (Callback from Make.com)
+ */
+router.post('/:id/status', async (req, res) => {
+    try {
+        const { status, link_url, error } = req.body;
+
+        if (!status) {
+            return res.status(400).json({ error: 'Status is required' });
+        }
+
+        const result = await updatePostStatus(req.params.id, status, link_url, error);
+        res.json(result);
+    } catch (error) {
+        console.error('Error updating post status:', error);
         res.status(500).json({ error: error.message });
     }
 });

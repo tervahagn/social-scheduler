@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Sparkles, Share2, Copy, CheckCircle, Circle, AlertCirc
 import axios from 'axios';
 import { useNotification } from '../contexts/NotificationContext';
 import { getPlatformConfig } from '../config/platforms';
+import ScheduleModal from '../components/ScheduleModal';
 
 export default function ContentEditor() {
     const { briefId } = useParams();
@@ -24,10 +25,42 @@ export default function ContentEditor() {
 
     const [saving, setSaving] = useState(false);
     const [viewMode, setViewMode] = useState('grid');
+    const [showScheduleModal, setShowScheduleModal] = useState(false);
+    const [schedulePostId, setSchedulePostId] = useState(null); // ID of post being scheduled, or null for all
 
     useEffect(() => {
         fetchData();
     }, [briefId]);
+
+    const handleSchedule = async (scheduledAt) => {
+        setProcessing(true);
+        try {
+            let response;
+            if (schedulePostId) {
+                // Schedule single post
+                response = await axios.post(`/api/posts/${schedulePostId}/schedule`, {
+                    scheduled_at: scheduledAt
+                });
+            } else {
+                // Schedule all posts
+                response = await axios.post(`/api/publish/brief/${briefId}/schedule`, {
+                    scheduled_at: scheduledAt
+                });
+            }
+
+            // Refresh posts to show scheduled status
+            const postsRes = await axios.get(`/api/briefs/${briefId}/posts`);
+            setPosts(postsRes.data);
+
+            showSuccess(response.data.message || (schedulePostId ? 'Post scheduled successfully!' : 'Posts scheduled successfully!'));
+            setShowScheduleModal(false);
+            setSchedulePostId(null);
+        } catch (err) {
+            console.error('Error scheduling:', err);
+            showError(err.response?.data?.error || 'Failed to schedule');
+        }
+        setProcessing(false);
+    };
 
     const fetchData = async () => {
         try {
@@ -373,6 +406,16 @@ export default function ContentEditor() {
 
     return (
         <div className="container" style={{ maxWidth: '1200px' }}>
+            <ScheduleModal
+                isOpen={showScheduleModal}
+                onClose={() => {
+                    setShowScheduleModal(false);
+                    setSchedulePostId(null);
+                }}
+                onConfirm={handleSchedule}
+                loading={processing}
+                title={schedulePostId ? "Schedule Post" : "Schedule All Posts"}
+            />
             {/* Header */}
             <div style={{ marginBottom: '32px' }}>
                 <button
@@ -448,6 +491,25 @@ export default function ContentEditor() {
                             {/* Action Buttons */}
                             {hasApproved && (
                                 <>
+                                    <button
+                                        onClick={() => {
+                                            setSchedulePostId(null);
+                                            setShowScheduleModal(true);
+                                        }}
+                                        disabled={processing}
+                                        className="button button-secondary"
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            fontSize: '13px',
+                                            padding: '8px 12px',
+                                            marginRight: '8px'
+                                        }}
+                                    >
+                                        <Calendar size={16} />
+                                        Schedule All
+                                    </button>
                                     <button
                                         onClick={handlePublish}
                                         disabled={processing}
@@ -985,22 +1047,45 @@ export default function ContentEditor() {
                                                 </button>
 
                                                 {isApproved && (
-                                                    <button
-                                                        onClick={() => handlePublishSingle(post)}
-                                                        disabled={processing}
-                                                        className="button"
-                                                        style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: '6px',
-                                                            fontSize: '13px',
-                                                            background: 'var(--success)',
-                                                            color: 'white'
-                                                        }}
-                                                    >
-                                                        {processing ? <Loader size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Share2 size={14} />}
-                                                        Publish
-                                                    </button>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button
+                                                            onClick={() => {
+                                                                setSchedulePostId(post.id);
+                                                                setShowScheduleModal(true);
+                                                            }}
+                                                            disabled={processing}
+                                                            className="button button-secondary"
+                                                            style={{
+                                                                fontSize: '12px',
+                                                                padding: '4px 12px',
+                                                                height: '32px',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '6px'
+                                                            }}
+                                                        >
+                                                            <Calendar size={14} />
+                                                            Schedule
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handlePublishSingle(post)}
+                                                            disabled={processing}
+                                                            className="button"
+                                                            style={{
+                                                                background: 'var(--success)',
+                                                                color: 'white',
+                                                                fontSize: '12px',
+                                                                padding: '4px 12px',
+                                                                height: '32px',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '6px'
+                                                            }}
+                                                        >
+                                                            <Sparkles size={14} />
+                                                            Publish
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </>
                                         )}

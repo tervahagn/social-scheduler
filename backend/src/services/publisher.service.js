@@ -125,7 +125,10 @@ export async function publishPost(postId) {
 /**
  * Publishes all approved posts of a brief
  */
-export async function publishAllPosts(briefId) {
+/**
+ * Publishes all approved posts of a brief
+ */
+export async function publishAllPosts(briefId, scheduledAt = null) {
     const posts = await db.prepare('SELECT * FROM posts WHERE brief_id = ? AND status = ?').all(briefId, 'approved');
 
     if (posts.length === 0) {
@@ -133,19 +136,24 @@ export async function publishAllPosts(briefId) {
     }
 
     // Get webhook URL from settings (optional)
-    const webhookSetting = await db.prepare("SELECT value FROM settings WHERE key = 'publish_webhook_url'").get();
+    const webhookSetting = await db.prepare("SELECT value FROM settings WHERE key = 'make_webhook_url'").get();
     const webhookUrl = webhookSetting?.value;
 
     const results = [];
 
     for (const post of posts) {
         try {
-            // Mark as published in database
+            // Determine status and timestamp based on scheduling
+            const status = scheduledAt ? 'scheduled' : 'published';
+            const timestampField = scheduledAt ? 'scheduled_at' : 'published_at';
+            const timestampValue = scheduledAt || new Date().toISOString(); // Use provided time or current time
+
+            // Update database
             await db.prepare(`
                 UPDATE posts 
-                SET status = 'published', published_at = CURRENT_TIMESTAMP 
+                SET status = ?, ${timestampField} = ?
                 WHERE id = ?
-            `).run(post.id);
+            `).run(status, timestampValue, post.id);
 
             // If webhook configured, send data to Make.com / Zapier
             if (webhookUrl) {
@@ -166,8 +174,10 @@ export async function publishAllPosts(briefId) {
                             content: brief?.content,
                             link_url: brief?.link_url
                         },
-                        scheduled_at: post.scheduled_at,
-                        published_at: new Date().toISOString()
+                        scheduled_at: scheduledAt, // Will be null if publishing immediately
+                        published_at: !scheduledAt ? new Date().toISOString() : null,
+                        is_scheduled: !!scheduledAt,
+                        timestamp: new Date().toISOString()
                     }, {
                         timeout: 10000, // 10 second timeout
                         headers: {
@@ -179,11 +189,12 @@ export async function publishAllPosts(briefId) {
                         success: true,
                         post_id: post.id,
                         platform: platform?.display_name,
-                        webhook_sent: true
+                        webhook_sent: true,
+                        status: status
                     });
                 } catch (webhookError) {
                     console.error(`Webhook error for post ${post.id}:`, webhookError.message);
-                    // Mark as published but note webhook error
+                    // Mark as published/scheduled but note webhook error
                     await db.prepare(`
                         UPDATE posts 
                         SET publish_error = ? 
@@ -191,25 +202,27 @@ export async function publishAllPosts(briefId) {
                     `).run(`Webhook failed: ${webhookError.message}`, post.id);
 
                     results.push({
-                        success: true, // Still published locally
+                        success: true, // Still updated locally
                         post_id: post.id,
                         platform: platform?.display_name,
                         webhook_sent: false,
-                        webhook_error: webhookError.message
+                        webhook_error: webhookError.message,
+                        status: status
                     });
                 }
             } else {
-                // No webhook configured - just mark as published
+                // No webhook configured - just mark as published/scheduled
                 const platform = await db.prepare('SELECT * FROM platforms WHERE id = ?').get(post.platform_id);
                 results.push({
                     success: true,
                     post_id: post.id,
                     platform: platform?.display_name,
-                    webhook_sent: false
+                    webhook_sent: false,
+                    status: status
                 });
             }
         } catch (error) {
-            console.error(`Error publishing post ${post.id}:`, error);
+            console.error(`Error processing post ${post.id}:`, error);
             results.push({
                 success: false,
                 post_id: post.id,
@@ -219,6 +232,86 @@ export async function publishAllPosts(briefId) {
     }
 
     return results;
+}
+
+/**
+ * Schedules a single post
+ */
+export async function schedulePost(postId, scheduledAt) {
+    const post = await db.prepare(`
+        SELECT 
+            posts.*,
+            platforms.name as platform_name,
+            platforms.display_name,
+            briefs.media_url,
+            briefs.media_type,
+            briefs.link_url,
+            briefs.title as brief_title,
+            briefs.content as brief_content
+        FROM posts
+        JOIN platforms ON posts.platform_id = platforms.id
+        JOIN briefs ON posts.brief_id = briefs.id
+        WHERE posts.id = ?
+    `).get(postId);
+
+    if (!post) {
+        throw new Error('Post not found');
+    }
+
+    // Update database
+    await db.prepare(`
+        UPDATE posts 
+        SET status = 'scheduled', scheduled_at = ?
+        WHERE id = ?
+    `).run(scheduledAt, postId);
+
+    // Get webhook URL
+    const webhookSetting = await db.prepare("SELECT value FROM settings WHERE key = 'make_webhook_url'").get();
+    const webhookUrl = webhookSetting?.value;
+
+    if (webhookUrl) {
+        try {
+            // Send webhook
+            await axios.post(webhookUrl, {
+                post_id: post.id,
+                platform: post.platform_id,
+                platform_name: post.display_name,
+                content: post.edited_content || post.content,
+                brief: {
+                    id: post.brief_id,
+                    title: post.brief_title,
+                    content: post.brief_content,
+                    link_url: post.link_url
+                },
+                scheduled_at: scheduledAt,
+                published_at: null,
+                is_scheduled: true,
+                timestamp: new Date().toISOString()
+            }, {
+                timeout: 10000,
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            return { success: true, platform: post.display_name, webhook_sent: true };
+        } catch (webhookError) {
+            console.error(`Webhook error for post ${post.id}:`, webhookError.message);
+            // Note webhook error but keep scheduled status
+            await db.prepare(`
+                UPDATE posts 
+                SET publish_error = ? 
+                WHERE id = ?
+            `).run(`Webhook failed: ${webhookError.message}`, post.id);
+
+            return {
+                success: true,
+                platform: post.display_name,
+                webhook_sent: false,
+                webhook_error: webhookError.message
+            };
+        }
+    }
+
+    return { success: true, platform: post.display_name, webhook_sent: false };
 }
 
 /**
@@ -269,5 +362,49 @@ export default {
     publishPost,
     publishAllPosts,
     retryFailed,
-    publishToWebhook
+    publishToWebhook,
+    updatePostStatus,
+    schedulePost
 };
+
+/**
+ * Updates post status from external callback (Make.com)
+ */
+export async function updatePostStatus(postId, status, linkUrl = null, errorMessage = null) {
+    // Validate status
+    const validStatuses = ['published', 'failed'];
+    if (!validStatuses.includes(status)) {
+        throw new Error(`Invalid status: ${status}. Must be one of: ${validStatuses.join(', ')}`);
+    }
+
+    const post = await db.prepare('SELECT * FROM posts WHERE id = ?').get(postId);
+    if (!post) {
+        throw new Error('Post not found');
+    }
+
+    if (status === 'published') {
+        await db.prepare(`
+            UPDATE posts 
+            SET status = 'published', 
+                published_at = CURRENT_TIMESTAMP,
+                link_url = COALESCE(?, link_url),
+                publish_error = NULL,
+                error_message = NULL
+            WHERE id = ?
+        `).run(linkUrl, postId);
+
+        console.log(`✅ Post ${postId} confirmed published via callback`);
+    } else if (status === 'failed') {
+        await db.prepare(`
+            UPDATE posts 
+            SET status = 'failed', 
+                publish_error = ?,
+                error_message = ?
+            WHERE id = ?
+        `).run(errorMessage || 'Unknown error from Make.com', errorMessage || 'Unknown error', postId);
+
+        console.log(`❌ Post ${postId} reported failed via callback: ${errorMessage}`);
+    }
+
+    return { success: true, postId, status };
+}

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Zap, FileText, Clock, Settings as SettingsIcon, CalendarDays, Sliders, Sun, Moon, BarChart2, Share2, MessageCircle, Calendar as CalendarIcon } from 'lucide-react';
+import { Zap, FileText, Clock, Settings as SettingsIcon, CalendarDays, Sliders, Sun, Moon, BarChart2, Share2, MessageCircle, Calendar as CalendarIcon, Menu, X } from 'lucide-react';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { useEffect, useState } from 'react';
@@ -52,6 +52,7 @@ function AnimatedLogo() {
 function Navigation() {
     const { theme, toggleTheme } = useTheme();
     const location = useLocation();
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const isActive = (path) => location.pathname === path;
 
@@ -80,7 +81,17 @@ function Navigation() {
                     <AnimatedLogo />
                 </Link>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {/* Hamburger button - mobile only */}
+                <button
+                    className="hamburger-btn"
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    aria-label="Toggle menu"
+                >
+                    {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+
+                {/* Desktop navigation */}
+                <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {navItems.map((item) => {
                         const active = isActive(item.path);
                         const Icon = item.icon;
@@ -151,6 +162,37 @@ function Navigation() {
                         {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
                 </div>
+
+                {/* Mobile dropdown menu */}
+                {mobileMenuOpen && (
+                    <div className="mobile-menu">
+                        {navItems.map((item) => {
+                            const active = isActive(item.path);
+                            const Icon = item.icon;
+                            return (
+                                <Link
+                                    key={item.path}
+                                    to={item.path}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className={`mobile-menu-item ${active ? 'active' : ''}`}
+                                >
+                                    <Icon size={20} />
+                                    {item.label}
+                                </Link>
+                            );
+                        })}
+                        <button
+                            onClick={() => {
+                                toggleTheme();
+                                setMobileMenuOpen(false);
+                            }}
+                            className="mobile-menu-item"
+                        >
+                            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                        </button>
+                    </div>
+                )}
             </div>
         </nav>
     );

@@ -15,9 +15,11 @@ import {
     MessageSquare,
     Youtube,
     LayoutGrid,
-    List
+    List,
+    Calendar
 } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
+import ScheduleModal from '../components/ScheduleModal';
 
 // Helper to get platform icon (copied from Platforms.jsx/utils)
 const getPlatformIcon = (name) => {
@@ -65,6 +67,7 @@ export default function QuickPost() {
     const [loading, setLoading] = useState(true);
     const [publishing, setPublishing] = useState(false);
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+    const [showScheduleModal, setShowScheduleModal] = useState(false);
 
     // State for form data
     const [selectedPlatforms, setSelectedPlatforms] = useState({});
@@ -127,6 +130,71 @@ export default function QuickPost() {
             ...prev,
             [platformName]: prev[platformName].filter((_, i) => i !== index)
         }));
+    };
+
+    const handleSchedule = async (scheduledAt) => {
+        const platformsToPublish = platforms.filter(p => selectedPlatforms[p.name] && content[p.name]?.trim());
+
+        if (platformsToPublish.length === 0) {
+            showError('Please select platforms and enter content');
+            return;
+        }
+
+        setPublishing(true);
+
+        try {
+            // 1. Create Quick Post container
+            const createRes = await axios.post('/api/quick-post', {
+                title: `Quick Post - ${new Date().toLocaleString()}`,
+                items: platformsToPublish.map(p => ({
+                    platform_id: p.id,
+                    content: content[p.name]
+                }))
+            });
+
+            const quickPostId = createRes.data.id;
+            const items = createRes.data.items;
+
+            // 2. Upload files and attach to items
+            for (const item of items) {
+                const platform = platforms.find(p => p.id === item.platform_id);
+                const pFiles = files[platform.name] || [];
+
+                for (const file of pFiles) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    // Upload file
+                    const uploadRes = await axios.post('/api/quick-post/upload', formData);
+
+                    // Attach to item
+                    await axios.post(`/api/quick-post/item/${item.id}/attach`, {
+                        path: uploadRes.data.path,
+                        originalName: uploadRes.data.originalName,
+                        mimeType: uploadRes.data.mimeType
+                    });
+                }
+            }
+
+            // 3. Schedule
+            await axios.post(`/api/quick-post/${quickPostId}/schedule`, {
+                scheduled_at: scheduledAt
+            });
+
+            showSuccess('Scheduled successfully!');
+            setShowScheduleModal(false);
+
+            // Reset form
+            setContent({});
+            setFiles({});
+            setSelectedPlatforms({});
+
+        } catch (err) {
+            console.error('Schedule error:', err);
+            showError('Failed to schedule');
+        } finally {
+            setPublishing(false);
+        }
     };
 
     const handlePublishAll = async () => {
@@ -205,6 +273,13 @@ export default function QuickPost() {
 
     return (
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
+            <ScheduleModal
+                isOpen={showScheduleModal}
+                onClose={() => setShowScheduleModal(false)}
+                onConfirm={handleSchedule}
+                loading={publishing}
+                title="Schedule Quick Post"
+            />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                 <div>
                     <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>Quick Post</h1>
@@ -213,41 +288,64 @@ export default function QuickPost() {
                     </p>
                 </div>
 
-                {/* View Switcher */}
-                <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {/* View Switcher */}
+                    <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            title="Grid View"
+                            style={{
+                                padding: '8px',
+                                borderRadius: '6px',
+                                background: viewMode === 'grid' ? 'var(--bg-tertiary)' : 'transparent',
+                                color: viewMode === 'grid' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <LayoutGrid size={20} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('list')}
+                            title="List View"
+                            style={{
+                                padding: '8px',
+                                borderRadius: '6px',
+                                background: viewMode === 'list' ? 'var(--bg-tertiary)' : 'transparent',
+                                color: viewMode === 'list' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <List size={20} />
+                        </button>
+                    </div>
+
                     <button
-                        onClick={() => setViewMode('grid')}
-                        title="Grid View"
+                        onClick={() => setShowScheduleModal(true)}
+                        disabled={publishing}
+                        className="button button-secondary"
                         style={{
-                            padding: '8px',
-                            borderRadius: '6px',
-                            background: viewMode === 'grid' ? 'var(--bg-tertiary)' : 'transparent',
-                            color: viewMode === 'grid' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                            border: 'none',
-                            cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            gap: '8px',
+                            padding: '10px 20px',
+                            fontSize: '14px',
+                            background: 'var(--bg-secondary)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '8px',
+                            cursor: 'pointer'
                         }}
                     >
-                        <LayoutGrid size={20} />
-                    </button>
-                    <button
-                        onClick={() => setViewMode('list')}
-                        title="List View"
-                        style={{
-                            padding: '8px',
-                            borderRadius: '6px',
-                            background: viewMode === 'list' ? 'var(--bg-tertiary)' : 'transparent',
-                            color: viewMode === 'list' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        <List size={20} />
+                        <Calendar size={18} />
+                        Schedule All
                     </button>
                 </div>
             </div>

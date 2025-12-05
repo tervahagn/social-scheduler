@@ -45,6 +45,8 @@ CREATE TABLE IF NOT EXISTS posts (
     master_draft_id INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    version INTEGER DEFAULT 1,
+    link_url TEXT,
     FOREIGN KEY (brief_id) REFERENCES briefs(id) ON DELETE CASCADE,
     FOREIGN KEY (platform_id) REFERENCES platforms(id) ON DELETE CASCADE,
     FOREIGN KEY (master_draft_id) REFERENCES master_drafts(id)
@@ -364,4 +366,35 @@ Brief:
 ---
 
 Create compelling content following the platform-specific guidelines below.'
+);
+
+-- Quick Posts
+CREATE TABLE IF NOT EXISTS quick_posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    published_at DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS quick_post_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    quick_post_id INTEGER NOT NULL,
+    platform_id INTEGER NOT NULL,
+    content TEXT,
+    status TEXT DEFAULT 'pending', -- pending, published, failed, scheduled
+    published_at DATETIME,
+    scheduled_at DATETIME,
+    error_message TEXT,
+    FOREIGN KEY (quick_post_id) REFERENCES quick_posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (platform_id) REFERENCES platforms(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS quick_post_files (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    quick_post_item_id INTEGER NOT NULL,
+    file_path TEXT NOT NULL,
+    original_name TEXT NOT NULL,
+    mime_type TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (quick_post_item_id) REFERENCES quick_post_items(id) ON DELETE CASCADE
 );
