@@ -1,67 +1,90 @@
 # Social Scheduler Landing Page - Context & Design Doc
 
 ## Overview
-This document captures the design decisions, technical implementation details, and content strategy established during the "Juicy" landing page overhaul (November 2025). Use this as a reference for future iterations to maintain consistency.
+This document captures the design decisions, technical implementation details, and content strategy for the landing page. Updated December 2025 to reflect v2.0 features.
 
-## 1. Design System ("The Juicy Look")
-The design philosophy is **"Arch-Professional yet Vibrant"**. It avoids generic SaaS looks in favor of a deep, immersive aesthetic.
+## 1. Design System
+The design philosophy is **"Dark, Professional, Clean"**. No marketing fluff.
 
 ### Color Palette
-- **Background**: Deep Space (`#030014`) to Void (`#0f0728`) gradients.
+- **Background**: Deep Space (`#030712`)
 - **Accents**:
-  - Primary: Electric Indigo (`#6366f1`)
-  - Secondary: Hot Pink/Purple (`#a855f7`)
-  - Text Gradient: `linear-gradient(to right, #c084fc, #6366f1)`
+  - Primary: Purple (`#8b5cf6`)
+  - Secondary: Cyan (`#06b6d4`)
 - **Glassmorphism**:
   - Background: `rgba(255, 255, 255, 0.03)`
   - Border: `rgba(255, 255, 255, 0.05)`
-  - Backdrop Filter: `blur(10px)`
+  - Backdrop Filter: `blur(12px)`
 
 ### Typography
-- **Headings**: `Outfit` (Google Fonts) - Bold, modern, geometric.
-- **Body**: `Space Grotesk` (Google Fonts) - Tech-forward, readable.
+- **Headings**: `Space Grotesk` (Google Fonts)
+- **Body**: `Outfit` (Google Fonts)
 
 ### Key Visual Elements
-- **Zig-Zag Layout**: Alternating Text/Image sections for the "Brief", "Engine", and "Editor" features.
-- **Animated Logo**: A custom JS/CSS implementation that cycles through 4 icons (Zap, Calendar, Share, Message) every 3 seconds.
-- **Micro-interactions**: Hover glows (`btn-glow`), floating elements (`float` animation), and pulse rings.
+- **Zig-Zag Layout**: Alternating Text/Image sections
+- **Animated Logo**: Cycles through 4 icons every 3 seconds
+- **Glass cards**: Semi-transparent with blur effect
 
 ## 2. Content Strategy
-The landing page tells a specific story about the product's value proposition:
+The landing page communicates what the product actually does:
 
-1.  **Hero**: "Operating System for Sovereign Influence". Focus on self-hosting and ownership.
-2.  **The Brief (Strategy Center)**: Emphasizes starting with a strategy, not just a post.
-3.  **The Engine (Generation)**: Explains the "Cascading Prompt Architecture" (Master -> Platform -> Brief prompts).
-4.  **The Editor (Version Control)**: Highlights "Git for Copy" - version history and safety.
-5.  **Integrations**: Showcases OpenRouter (LLM Agnostic), Make.com (Automation), and Self-Hosting.
+1. **Hero**: "Post to 9 Platforms from One Place" — direct, no buzzwords
+2. **Quick Post**: Fast mode for direct posting without briefs
+3. **Calendar**: Visual scheduling and timeline view
+4. **Brief**: The AI content generation workflow
+5. **Integrations**: OpenRouter, Make.com, 9 platforms listed
+6. **FAQ**: Common questions with JSON-LD schema for SEO
 
-## 3. Technical Implementation
+## 3. SEO Implementation
 
-### File Structure
+### JSON-LD Schemas (in `<head>`)
+1. **SoftwareApplication** — app metadata, features, author
+2. **FAQPage** — 6 common questions for rich snippets
+
+### Meta Tags
+- Description focuses on features, not marketing speak
+- Keywords: social media scheduler, open source, self-hosted
+- Open Graph tags for social sharing
+
+## 4. File Structure
 ```
 Social-Scheduler-Landing/
-├── index.html       # Main entry point (Single Page)
-├── style.css        # All styles (Tailwind-free, pure CSS variables)
-├── script.js        # Scroll animations & interaction logic
-└── assets/          # Images and media
-    ├── demo.webp    # Hero video loop
-    ├── brief.png    # Feature 1 screenshot
-    ├── results.png  # Feature 2 screenshot
-    ├── editor.png   # Feature 3 screenshot
+├── index.html       # Main page with JSON-LD schemas
+├── style.css        # Pure CSS, no Tailwind
+├── script.js        # Scroll animations
+├── CNAME            # GitHub Pages custom domain
+└── assets/
+    ├── demo.webp    # Hero animation
+    ├── brief.png    # Screenshot
+    ├── results.png  # Screenshot
+    ├── editor.png   # Screenshot
     └── ...
 ```
 
-### Key Code Components
-- **Logo Animation**: Logic resides in `index.html` script tag (cycling `active` class on SVGs).
-- **Scroll Reveal**: `IntersectionObserver` in `script.js` triggers `.visible` class on `.fade-in-section` elements.
-- **Responsive Grid**: The `.integration-grid` and `.feature-row` use CSS Grid/Flexbox to stack on mobile and expand on desktop.
-
-## 4. Deployment
+## 5. Deployment
 - **Platform**: GitHub Pages
-- **Branch**: `gh-pages`
-- **URL**: `https://tervahagn.github.io/social-scheduler/`
+- **Custom Domain**: tervahagn.github.io/social-scheduler/
+- **CNAME**: Configured for custom domain
 
-## 5. Future Considerations
-- **Performance**: Ensure `demo.webp` remains optimized (<500KB).
-- **SEO**: Maintain the meta tags in `index.html` if page content changes.
-- **Dark Mode**: The site is "Dark Mode Only" by design. Do not add a light mode toggle without a full redesign.
+## 6. Features Documented
+
+### Mentioned on Landing Page
+- Quick Post (multi-platform simultaneous posting)
+- Content Calendar with scheduling
+- Brief → AI → Platform-native posts workflow
+- 9 platforms: LinkedIn, Facebook, Instagram, X, YouTube, Reddit, Google Business, Blog
+- OpenRouter integration (any LLM)
+- Make.com/Zapier webhooks
+- Self-hosted, SQLite database
+- Version history for content
+
+### Not Yet on Landing Page (Future)
+- WebSocket real-time updates
+- Cloudinary media upload
+- Dark/Light theme toggle
+
+## 7. Writing Style
+- **No buzzwords**: "sovereign influence", "orchestrating", "ecosystem" removed
+- **Plain English**: "Post to 9 platforms" > "Multi-channel content orchestration"
+- **Direct answers**: FAQ gives real answers, not marketing
+- **Honest limitations**: "You need Node.js skills" in FAQ

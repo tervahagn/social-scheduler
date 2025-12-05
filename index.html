@@ -3,8 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Social Scheduler - The open-source operating system for sovereign social media management. LLM-independent, version-controlled, and privacy-first.">
-    <title>Social Scheduler | The OS for Modern Influence</title>
+    <meta name="description" content="Social Scheduler — open-source tool for managing social media. Quick Post to 9 platforms, schedule content, use any LLM. Self-hosted, free, no monthly fees.">
+    <meta name="keywords" content="social media scheduler, open source, self-hosted, content management, AI content generation, Make.com integration">
+    <meta name="author" content="Vahagn Ter-Sarkisyan">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://tervahagn.github.io/social-scheduler/">
+    <title>Social Scheduler | Open-Source Social Media Tool</title>
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Social Scheduler — Open-Source Social Media Tool">
+    <meta property="og:description" content="Manage 9 social platforms from one place. Quick Post, scheduling, AI content generation. Self-hosted and free.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tervahagn.github.io/social-scheduler/">
+    
+    <!-- JSON-LD: Software Application -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Social Scheduler",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web, macOS, Windows, Linux",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "Vahagn Ter-Sarkisyan",
+            "url": "https://tervahagn.com"
+        },
+        "description": "Open-source social media management tool. Quick Post to 9 platforms, schedule content, generate with any LLM via OpenRouter.",
+        "url": "https://tervahagn.github.io/social-scheduler/",
+        "downloadUrl": "https://github.com/tervahagn/social-scheduler",
+        "softwareVersion": "2.0",
+        "featureList": [
+            "Quick Post to multiple platforms",
+            "Content scheduling with calendar",
+            "AI content generation via OpenRouter",
+            "9 platform support",
+            "Self-hosted and privacy-first",
+            "Make.com webhook integration"
+        ]
+    }
+    </script>
+    
+    <!-- JSON-LD: FAQ Schema -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "Is Social Scheduler really free?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. It's open-source under MIT license. You only pay for the LLM API you use (like OpenRouter) and optional cloud hosting if you want it."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What platforms does Social Scheduler support?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Currently 9 platforms: LinkedIn (company and personal), Facebook, Instagram, X (Twitter), YouTube Community Posts, Reddit, Google Business Profile, and Blog."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How does publishing work?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Social Scheduler sends your content to a Make.com or Zapier webhook. From there, you configure the actual posting to each platform using their native integrations. This keeps the app simple and avoids dealing with changing social APIs."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I use my own AI model?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. The app uses OpenRouter, which gives you access to GPT-4, Claude, Llama, Gemini, and many others. You bring your own API key and pick whichever model you want."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Where is my data stored?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Everything stays on your machine in a SQLite database. No cloud sync, no third-party storage. You can back it up by copying a single file."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Do I need technical skills to run this?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "You need to be comfortable running Node.js and npm install. It's a developer tool, not a consumer app. If you can follow a README, you can run it."
+                }
+            }
+        ]
+    }
+    </script>
+    
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,10 +134,10 @@
             </div>
         </a>
         <div class="nav-links">
+            <a href="#quickpost" class="nav-link">Quick Post</a>
+            <a href="#calendar" class="nav-link">Calendar</a>
             <a href="#brief" class="nav-link">Brief</a>
-            <a href="#engine" class="nav-link">Engine</a>
-            <a href="#editor" class="nav-link">Editor</a>
-            <a href="#integrations" class="nav-link">Integrations</a>
+            <a href="#faq" class="nav-link">FAQ</a>
             <a href="https://github.com/tervahagn/social-scheduler" class="btn btn-glow">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                 GitHub
@@ -49,18 +151,18 @@
             <div class="hero-content">
                 <div class="pill-badge">
                     <span class="pulse"></span>
-                    v1.0 Open Source Release
+                    v2.0 — Quick Post & Scheduling
                 </div>
                 <h1 class="display-text">
-                    The Operating System<br>
-                    for <span class="text-gradient">Sovereign Influence</span>
+                    Post to 9 Platforms<br>
+                    from <span class="text-gradient">One Place</span>
                 </h1>
                 <p class="hero-sub">
-                    Stop renting your workflow. Social Scheduler is the self-hosted, LLM-agnostic engine for orchestrating complex content campaigns across the decentralized web.
+                    Open-source tool for social media. Write once, generate for all platforms with AI, schedule or publish instantly. Runs on your machine. Free.
                 </p>
                 <div class="cta-group">
                     <a href="https://github.com/tervahagn/social-scheduler" class="btn btn-primary btn-lg">
-                        Deploy Now
+                        Get Started
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 8px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </a>
                 </div>
@@ -69,122 +171,122 @@
             <div class="hero-ui-preview glass">
                 <div class="ui-header">
                     <div class="ui-dots"><span></span><span></span><span></span></div>
-                    <div class="ui-bar">social-scheduler.local</div>
+                    <div class="ui-bar">localhost:3000</div>
                 </div>
                 <div class="video-container">
-                    <img src="assets/demo.webp" alt="Social Scheduler Demo Flow" class="demo-video">
+                    <img src="assets/demo.webp" alt="Social Scheduler interface showing content editor" class="demo-video">
                 </div>
             </div>
         </section>
 
-        <!-- Feature 1: The Brief -->
+        <!-- Feature: Quick Post -->
+        <section id="quickpost" class="feature-section">
+            <div class="container">
+                <div class="feature-row">
+                    <div class="feature-content">
+                        <span class="feature-label">FAST MODE</span>
+                        <h2 class="feature-title">Quick Post.<br>No Brief Needed.</h2>
+                        <p class="feature-desc">
+                            Sometimes you just want to post. Write your content, pick platforms, hit publish. Character counters show limits in real-time. Attach images. Schedule for later or send now.
+                        </p>
+                        <ul class="feature-list">
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Write once, post everywhere
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Live character limits per platform
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Schedule or publish instantly
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="feature-visual">
+                        <div class="screenshot-card glass">
+                            <img src="assets/brief.png" alt="Quick Post interface" class="screenshot-img">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature: Calendar -->
+        <section id="calendar" class="feature-section">
+            <div class="container">
+                <div class="feature-row">
+                    <div class="feature-visual">
+                        <div class="screenshot-card glass">
+                            <img src="assets/results.png" alt="Content calendar view" class="screenshot-img">
+                        </div>
+                    </div>
+                    <div class="feature-content">
+                        <span class="feature-label">SCHEDULING</span>
+                        <h2 class="feature-title">Calendar View.<br>See Everything.</h2>
+                        <p class="feature-desc">
+                            All your scheduled and published posts on one screen. Month, week, or day view. Color-coded by status: purple for scheduled, green for published. Click any post to edit it.
+                        </p>
+                        <ul class="feature-list">
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Visual timeline of all content
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Pick date and time when scheduling
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Status colors: scheduled, published
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature: The Brief -->
         <section id="brief" class="feature-section">
             <div class="container">
                 <div class="feature-row">
                     <div class="feature-content">
-                        <span class="feature-label">STRATEGY CENTER</span>
-                        <h2 class="feature-title">Don't Start with a Tweet.<br>Start with a Strategy.</h2>
+                        <span class="feature-label">CAMPAIGN MODE</span>
+                        <h2 class="feature-title">Brief → AI → Posts.<br>For Each Platform.</h2>
                         <p class="feature-desc">
-                            Amateurs post; professionals campaign. The <strong>Brief</strong> is your strategic container. Define your core message, attach assets, and set the context once. The system then "explodes" this into platform-native content for every channel.
+                            Write one brief with your main idea. Select platforms. AI generates a separate post for each one — LinkedIn gets professional tone, Twitter gets short punchy text, Instagram gets hashtags. Edit any of them, approve, publish.
                         </p>
                         <ul class="feature-list">
                             <li>
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Unified Campaign Context
+                                One idea → 9 platform-native posts
                             </li>
                             <li>
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Multi-Channel Selection
+                                Attach images, links, files
                             </li>
                             <li>
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Asset Management
+                                Edit and request AI corrections
                             </li>
                         </ul>
                     </div>
                     <div class="feature-visual">
                         <div class="screenshot-card glass">
-                            <img src="assets/brief.png" alt="New Brief Interface" class="screenshot-img">
+                            <img src="assets/editor.png" alt="Content editor with generated posts" class="screenshot-img">
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Feature 2: The Engine -->
-        <section id="engine" class="feature-section">
-            <div class="container">
-                <div class="feature-row">
-                    <div class="feature-visual">
-                        <div class="screenshot-card glass">
-                            <img src="assets/results.png" alt="Generated Content Results" class="screenshot-img">
-                        </div>
-                    </div>
-                    <div class="feature-content">
-                        <span class="feature-label">GENERATION ENGINE</span>
-                        <h2 class="feature-title">Cascading Prompt<br>Architecture</h2>
-                        <p class="feature-desc">
-                            Generic prompts yield generic results. We use a 3-layer inheritance model: <strong>Master Prompt</strong> (Brand Voice) > <strong>Platform Prompt</strong> (Channel Specifics) > <strong>Brief Prompt</strong> (Context). This ensures every post is on-brand and platform-native.
-                        </p>
-                        <ul class="feature-list">
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                LLM Agnostic (OpenRouter)
-                            </li>
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Parallel Generation
-                            </li>
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Vision Model Support
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Feature 3: The Editor -->
-        <section id="editor" class="feature-section">
-            <div class="container">
-                <div class="feature-row">
-                    <div class="feature-content">
-                        <span class="feature-label">VERSION CONTROL</span>
-                        <h2 class="feature-title">Git for Your Copy.<br>Safety Built In.</h2>
-                        <p class="feature-desc">
-                            Never lose a good idea. Every edit, regeneration, and correction is tracked in a version history. Branch your copy to explore different angles, or revert to a previous version if an edit lands flat. It's "ContentOps" for the modern era.
-                        </p>
-                        <ul class="feature-list">
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Full Version History
-                            </li>
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                AI-Assisted Corrections
-                            </li>
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Draft / Approval Workflow
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="feature-visual">
-                        <div class="screenshot-card glass">
-                            <img src="assets/editor.png" alt="Editor Modal" class="screenshot-img">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Integrations -->
+        <!-- Feature: LLM & Integrations -->
         <section id="integrations" class="integrations">
             <div class="container">
-                <div class="section-label">POWER MODULES</div>
-                <h2 class="section-heading">Infinite Extensibility</h2>
-                <p class="hero-sub">Connect to the world's best models and automation tools.</p>
+                <div class="section-label">PLATFORMS & INTEGRATIONS</div>
+                <h2 class="section-heading">9 Platforms. Any LLM.</h2>
+                <p class="hero-sub">Bring your own API key. Route to any automation.</p>
                 
                 <div class="integration-grid">
                     <div class="integration-card glass">
@@ -192,7 +294,7 @@
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
                         </div>
                         <h3>OpenRouter</h3>
-                        <p>Access Claude 3.5, GPT-4o, Llama 3, and more. Bring your own keys. You own the intelligence.</p>
+                        <p>GPT-4, Claude, Llama, Gemini. Pick any model. Your API key, your choice.</p>
                     </div>
 
                     <div class="integration-card glass">
@@ -200,7 +302,7 @@
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
                         </div>
                         <h3>Make.com / Zapier</h3>
-                        <p>Decoupled publishing. We push to a webhook; you route it anywhere (Slack, CMS, Email, Socials).</p>
+                        <p>We send to webhook. You route to LinkedIn, Facebook, wherever. Simple.</p>
                     </div>
 
                     <div class="integration-card glass">
@@ -208,7 +310,55 @@
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                         </div>
                         <h3>Self-Hosted</h3>
-                        <p>Your data, your server. No monthly fees per seat. Privacy first and always secure.</p>
+                        <p>Runs on your machine. SQLite database. No cloud required. Your data stays yours.</p>
+                    </div>
+
+                    <div class="integration-card glass">
+                        <div class="integration-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        </div>
+                        <h3>9 Platforms</h3>
+                        <p>LinkedIn, Facebook, Instagram, X, YouTube, Reddit, Google Business, Blog.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section id="faq" class="faq-section">
+            <div class="container">
+                <div class="section-label">QUESTIONS</div>
+                <h2 class="section-heading">FAQ</h2>
+                
+                <div class="faq-grid">
+                    <div class="faq-item glass">
+                        <h3>Is it really free?</h3>
+                        <p>Yes. MIT license. You pay only for the LLM API (like OpenRouter credits) and optional hosting if you want cloud deployment.</p>
+                    </div>
+
+                    <div class="faq-item glass">
+                        <h3>What platforms are supported?</h3>
+                        <p>9 platforms: LinkedIn (company + personal), Facebook, Instagram, X (Twitter), YouTube Community, Reddit, Google Business, Blog.</p>
+                    </div>
+
+                    <div class="faq-item glass">
+                        <h3>How does publishing work?</h3>
+                        <p>Social Scheduler sends content to a Make.com webhook. You set up the actual posting in Make.com using their integrations. This avoids dealing with constantly changing social media APIs.</p>
+                    </div>
+
+                    <div class="faq-item glass">
+                        <h3>Can I use my own AI model?</h3>
+                        <p>Yes. OpenRouter lets you pick from GPT-4, Claude, Llama, Gemini, and others. Bring your API key and choose your model in settings.</p>
+                    </div>
+
+                    <div class="faq-item glass">
+                        <h3>Where is data stored?</h3>
+                        <p>On your machine in a SQLite file. No cloud sync. Back it up by copying one file. Your content never leaves your computer unless you publish it.</p>
+                    </div>
+
+                    <div class="faq-item glass">
+                        <h3>Do I need technical skills?</h3>
+                        <p>You should be comfortable with Node.js and npm. It's a developer tool. If you can follow a README and run terminal commands, you're good.</p>
                     </div>
                 </div>
             </div>
@@ -219,7 +369,7 @@
         <div class="container">
             <div class="footer-content">
                 <p class="vibe-code">
-                    🌴 Vibe-coded in Pasadena, California, by <a href="https://tervahagn.com" target="_blank" class="author-link">Vahagn Ter-Sarkisyan</a> and open for free of charge use.
+                    Built in Pasadena, CA by <a href="https://tervahagn.com" target="_blank" class="author-link">Vahagn Ter-Sarkisyan</a>. Free to use.
                 </p>
             </div>
         </div>
