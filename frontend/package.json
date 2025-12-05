@@ -15,7 +15,8 @@
         "react-big-calendar": "^1.19.4",
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.20.1",
-        "recharts": "^3.4.1"
+        "recharts": "^3.4.1",
+        "socket.io-client": "^4.8.1"
     },
     "devDependencies": {
         "@vitejs/plugin-react": "^4.2.1",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Save, Loader, Key, Cpu, Link as LinkIcon, ChevronDown, ChevronUp, BookOpen, X } from 'lucide-react';
+import { Save, Loader, Key, Cpu, Link as LinkIcon, ChevronDown, ChevronUp, BookOpen, X, Cloud } from 'lucide-react';
 
 const AVAILABLE_MODELS = [
     { id: 'x-ai/grok-4.1-fast:free', name: 'Grok 4.1 Fast (Free - Recommended)' },
@@ -18,7 +18,10 @@ export default function Settings() {
     const [settings, setSettings] = useState({
         openrouter_api_key: '',
         openrouter_model: 'x-ai/grok-4.1-fast:free',
-        make_webhook_url: ''
+        make_webhook_url: '',
+        cloudinary_cloud_name: '',
+        cloudinary_api_key: '',
+        cloudinary_api_secret: ''
     });
     const [customModel, setCustomModel] = useState('');
     const [loading, setLoading] = useState(true);
@@ -27,6 +30,8 @@ export default function Settings() {
     const [showOpenRouterGuide, setShowOpenRouterGuide] = useState(false);
     const [showWebhookGuide, setShowWebhookGuide] = useState(false);
     const [showDeepGuide, setShowDeepGuide] = useState(false);
+    const [showCloudinaryGuide, setShowCloudinaryGuide] = useState(false);
+    const [showCloudinarySecret, setShowCloudinarySecret] = useState(false);
 
     useEffect(() => {
         fetchSettings();
@@ -67,7 +72,10 @@ export default function Settings() {
             await Promise.all([
                 axios.put('/api/settings/openrouter_api_key', { value: settings.openrouter_api_key }),
                 axios.put('/api/settings/openrouter_model', { value: modelToSave }),
-                axios.put('/api/settings/make_webhook_url', { value: settings.make_webhook_url })
+                axios.put('/api/settings/make_webhook_url', { value: settings.make_webhook_url }),
+                axios.put('/api/settings/cloudinary_cloud_name', { value: settings.cloudinary_cloud_name }),
+                axios.put('/api/settings/cloudinary_api_key', { value: settings.cloudinary_api_key }),
+                axios.put('/api/settings/cloudinary_api_secret', { value: settings.cloudinary_api_secret })
             ]);
 
             if (settings.openrouter_model === 'custom') {
@@ -207,6 +215,81 @@ export default function Settings() {
                         </div>
                     </div>
 
+                    {/* Cloudinary Media Storage */}
+                    <div style={{ marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--border-color)' }}>
+                        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Cloud size={20} />
+                            Cloudinary Media Storage
+                        </h2>
+
+                        <div style={{ display: 'grid', gap: '16px' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                                    Cloud Name
+                                </label>
+                                <input
+                                    type="text"
+                                    className="input"
+                                    value={settings.cloudinary_cloud_name || ''}
+                                    onChange={(e) => handleChange('cloudinary_cloud_name', e.target.value)}
+                                    placeholder="your-cloud-name"
+                                    style={{ width: '100%' }}
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                                    API Key
+                                </label>
+                                <input
+                                    type="text"
+                                    className="input"
+                                    value={settings.cloudinary_api_key || ''}
+                                    onChange={(e) => handleChange('cloudinary_api_key', e.target.value)}
+                                    placeholder="123456789012345"
+                                    style={{ width: '100%' }}
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                                    API Secret
+                                </label>
+                                <div style={{ position: 'relative' }}>
+                                    <input
+                                        type={showCloudinarySecret ? "text" : "password"}
+                                        className="input"
+                                        value={settings.cloudinary_api_secret || ''}
+                                        onChange={(e) => handleChange('cloudinary_api_secret', e.target.value)}
+                                        placeholder="Your API Secret"
+                                        style={{ paddingRight: '60px', width: '100%' }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCloudinarySecret(!showCloudinarySecret)}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '12px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'var(--text-secondary)',
+                                            cursor: 'pointer',
+                                            fontSize: '12px'
+                                        }}
+                                    >
+                                        {showCloudinarySecret ? 'Hide' : 'Show'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <p className="text-secondary text-sm">
+                                Cloudinary stores your images in the cloud so Make.com can access them for publishing.
+                            </p>
+                        </div>
+                    </div>
+
                     {/* Save Button */}
                     <div>
                         <button
@@ -241,6 +324,7 @@ export default function Settings() {
                         <ul style={{ paddingLeft: '20px', lineHeight: '1.8' }}>
                             <li><strong>OpenRouter:</strong> Settings here override the .env file. API Key is stored securely in your local database.</li>
                             <li><strong>Make.com:</strong> One webhook URL routes to all platforms using Make.com's Router module.</li>
+                            <li><strong>Cloudinary:</strong> Images are uploaded to cloud storage before publishing, so Make.com can access them.</li>
                             <li>Changes apply immediately to new content generation and publishing.</li>
                         </ul>
                     </div>
@@ -407,6 +491,81 @@ export default function Settings() {
                                         <BookOpen size={16} />
                                         Deep Guide
                                     </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Cloudinary Guide - Collapsible */}
+                    <div className="card" style={{ padding: '16px', background: 'linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary))' }}>
+                        <button
+                            onClick={() => setShowCloudinaryGuide(!showCloudinaryGuide)}
+                            style={{
+                                width: '100%',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '0'
+                            }}
+                        >
+                            <h3 style={{ fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                <Cloud size={18} className="text-accent" />
+                                Cloudinary Guide
+                            </h3>
+                            {showCloudinaryGuide ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        </button>
+
+                        {showCloudinaryGuide && (
+                            <div style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-secondary)', marginTop: '16px' }}>
+                                <p style={{ marginBottom: '16px' }}>
+                                    <strong>Cloudinary</strong> is a free image hosting service that stores your media so Make.com can access it for publishing.
+                                </p>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div style={{
+                                            width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                        }}>1</div>
+                                        <div>
+                                            <strong style={{ color: 'var(--text-primary)' }}>Create Account</strong>
+                                            <p style={{ fontSize: '13px', marginTop: '4px' }}>
+                                                Go to <a href="https://cloudinary.com/users/register_free" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>cloudinary.com</a> and sign up for free.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div style={{
+                                            width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                        }}>2</div>
+                                        <div>
+                                            <strong style={{ color: 'var(--text-primary)' }}>Get Credentials</strong>
+                                            <p style={{ fontSize: '13px', marginTop: '4px' }}>Go to <strong>Settings → Access Keys</strong> and copy your Cloud Name, API Key, and API Secret.</p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div style={{
+                                            width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', flexShrink: 0
+                                        }}>3</div>
+                                        <div>
+                                            <strong style={{ color: 'var(--text-primary)' }}>Paste & Save</strong>
+                                            <p style={{ fontSize: '13px', marginTop: '4px' }}>Enter the credentials on the left and click Save.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '8px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                                    <strong style={{ display: 'block', marginBottom: '4px', color: 'var(--accent)', fontSize: '13px' }}>💡 Free Tier</strong>
+                                    <p style={{ fontSize: '12px', margin: 0 }}>
+                                        Cloudinary offers <strong>25GB free storage</strong> — more than enough for most users!
+                                    </p>
                                 </div>
                             </div>
                         )}

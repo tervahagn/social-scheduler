@@ -1,5 +1,6 @@
 import db from '../database/db.js';
 import axios from 'axios';
+import { uploadToCloudinary } from './cloudinary.service.js';
 
 /**
  * Adds post to the publishing queue
@@ -49,11 +50,18 @@ export async function publishPost(postId) {
     // Use edited content if available, otherwise original
     const content = post.edited_content || post.content;
 
+    // Upload media to Cloudinary if present (converts local path to public URL)
+    let mediaUrl = post.media_url;
+    if (mediaUrl && !mediaUrl.startsWith('http')) {
+        console.log(`📤 Uploading media to Cloudinary: ${mediaUrl}`);
+        mediaUrl = await uploadToCloudinary(mediaUrl);
+    }
+
     // Format payload for Make.com
     const payload = {
         platform: post.platform_name,
         content: content,
-        media_url: post.media_url || null,
+        media_url: mediaUrl || null,
         media_type: post.media_type || null,
         link_url: post.link_url || null,
         post_id: post.id,
@@ -62,6 +70,7 @@ export async function publishPost(postId) {
         comment_scheduled_at: post.comment_scheduled_at || null,
         timestamp: new Date().toISOString()
     };
+
 
     try {
         // Send to Make.com using centralized webhook URL
@@ -162,12 +171,21 @@ export async function publishAllPosts(briefId, scheduledAt = null) {
                     const brief = await db.prepare('SELECT * FROM briefs WHERE id = ?').get(post.brief_id);
                     const platform = await db.prepare('SELECT * FROM platforms WHERE id = ?').get(post.platform_id);
 
+                    // Upload media to Cloudinary if present
+                    let mediaUrl = brief?.media_url;
+                    if (mediaUrl && !mediaUrl.startsWith('http')) {
+                        console.log(`📤 Uploading media to Cloudinary: ${mediaUrl}`);
+                        mediaUrl = await uploadToCloudinary(mediaUrl);
+                    }
+
                     // Send webhook
                     await axios.post(webhookUrl, {
                         post_id: post.id,
-                        platform: platform?.id,
+                        platform: platform?.name,
                         platform_name: platform?.display_name,
-                        content: post.content,
+                        content: post.edited_content || post.content,
+                        media_url: mediaUrl || null,
+                        media_type: brief?.media_type || null,
                         brief: {
                             id: brief?.id,
                             title: brief?.title,
@@ -271,12 +289,21 @@ export async function schedulePost(postId, scheduledAt) {
 
     if (webhookUrl) {
         try {
+            // Upload media to Cloudinary if present
+            let mediaUrl = post.media_url;
+            if (mediaUrl && !mediaUrl.startsWith('http')) {
+                console.log(`📤 Uploading media to Cloudinary: ${mediaUrl}`);
+                mediaUrl = await uploadToCloudinary(mediaUrl);
+            }
+
             // Send webhook
             await axios.post(webhookUrl, {
                 post_id: post.id,
-                platform: post.platform_id,
+                platform: post.platform_name,
                 platform_name: post.display_name,
                 content: post.edited_content || post.content,
+                media_url: mediaUrl || null,
+                media_type: post.media_type || null,
                 brief: {
                     id: post.brief_id,
                     title: post.brief_title,

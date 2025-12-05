@@ -1,13 +1,14 @@
 import { BrowserRouter, Routes, Route, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { Zap, FileText, Clock, Settings as SettingsIcon, CalendarDays, Sliders, Sun, Moon, BarChart2, Share2, MessageCircle, Calendar as CalendarIcon, Menu, X } from 'lucide-react';
+import { Zap, FileText, Clock, Settings as SettingsIcon, CalendarDays, Sliders, Sun, Moon, BarChart2, Share2, MessageCircle, Calendar as CalendarIcon, Menu, X, FolderOpen, PenSquare } from 'lucide-react';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { SocketProvider } from './contexts/SocketContext';
 import { useEffect, useState } from 'react';
 import Intro from './pages/Intro';
 import NewBrief from './pages/NewBrief';
 import QuickPost from './pages/QuickPost';
 import ContentEditor from './pages/ContentEditor';
-import History from './pages/History';
+import Content from './pages/Content';
 import Platforms from './pages/Platforms';
 import Calendar from './pages/Calendar';
 import Settings from './pages/Settings';
@@ -57,11 +58,10 @@ function Navigation() {
     const isActive = (path) => location.pathname === path;
 
     const navItems = [
-        { path: '/quick-post', icon: Zap, label: 'Quick Post' },
-        { path: '/', icon: FileText, label: 'New Brief' },
-        { path: '/history', icon: Clock, label: 'History' },
+        { path: '/quick-post', icon: Zap, label: 'Quick' },
+        { path: '/', icon: PenSquare, label: 'Create' },
+        { path: '/content', icon: FolderOpen, label: 'Content' },
         { path: '/calendar', icon: CalendarDays, label: 'Calendar' },
-        { path: '/analytics', icon: BarChart2, label: 'Analytics' },
         { path: '/platforms', icon: SettingsIcon, label: 'Platforms' },
         { path: '/settings', icon: Sliders, label: 'Settings' },
     ];
@@ -224,14 +224,15 @@ export default function App() {
                         <Route path="/quick-post" element={<QuickPost />} />
                         <Route path="/new" element={<NewBrief />} />
                         <Route path="/brief/:briefId/edit" element={<ContentEditor />} />
+                        <Route path="/content" element={<Content />} />
                         <Route path="/calendar" element={<Calendar />} />
                         <Route path="/analytics" element={<Analytics />} />
-                        <Route path="/history" element={<History />} />
                         <Route path="/platforms" element={<Platforms />} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </BrowserRouter>
+                <SocketProvider />
             </NotificationProvider>
         </ThemeProvider>
     );

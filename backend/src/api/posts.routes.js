@@ -1,6 +1,7 @@
 import express from 'express';
 import { updatePostContent, approvePost } from '../services/content-generator.service.js';
 import { publishPost, updatePostStatus, schedulePost } from '../services/publisher.service.js';
+import { emitPostStatus, emitNotification } from '../services/socket.service.js';
 import db from '../database/db.js';
 
 const router = express.Router();
@@ -126,16 +127,37 @@ router.post('/:id/schedule', async (req, res) => {
 
 /**
  * POST /api/posts/:id/status - Update post status (Callback from Make.com)
+ * This endpoint is called by Make.com after publishing to social platforms
  */
 router.post('/:id/status', async (req, res) => {
     try {
-        const { status, link_url, error } = req.body;
+        const { status, link_url, error: errorMsg, platform } = req.body;
 
         if (!status) {
             return res.status(400).json({ error: 'Status is required' });
         }
 
-        const result = await updatePostStatus(req.params.id, status, link_url, error);
+        const result = await updatePostStatus(req.params.id, status, link_url, errorMsg);
+
+        // Emit WebSocket notification
+        emitPostStatus(req.params.id, status, {
+            platform,
+            link_url,
+            error: errorMsg
+        });
+
+        // Emit toast notification
+        if (status === 'published') {
+            emitNotification('success', `Post published to ${platform || 'platform'}`, {
+                postId: req.params.id,
+                link_url
+            });
+        } else if (status === 'failed') {
+            emitNotification('error', `Failed to publish: ${errorMsg || 'Unknown error'}`, {
+                postId: req.params.id
+            });
+        }
+
         res.json(result);
     } catch (error) {
         console.error('Error updating post status:', error);

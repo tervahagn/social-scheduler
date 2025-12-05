@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { mkdirSync } from 'fs';
+import { createServer } from 'http';
+import { initSocket } from './services/socket.service.js';
 
 // Routes
 import briefsRoutes from './api/briefs.routes.js';
@@ -15,6 +17,7 @@ import calendarRoutes from './api/calendar.routes.js';
 import settingsRoutes from './api/settings.routes.js';
 import quickPostRoutes from './api/quick-post.routes.js';
 import analyticsRoutes from './api/analytics.routes.js';
+import historyRoutes from './api/history.routes.js';
 
 dotenv.config();
 
@@ -22,7 +25,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 3001;
+
+// Initialize WebSocket
+initSocket(httpServer);
 
 // Create necessary directories
 const uploadsDir = process.env.UPLOADS_DIR || './uploads';
@@ -53,6 +60,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/quick-post', quickPostRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/content', contentRoutes);
+app.use('/api/history', historyRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -65,13 +73,14 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message || 'Internal server error' });
 });
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`
 ╔═══════════════════════════════════════╗
 ║   Social Scheduler Backend 🚀        ║
 ╚═══════════════════════════════════════╝
 
 Server running on: http://localhost:${PORT}
+WebSocket: ws://localhost:${PORT}
 Environment: ${process.env.NODE_ENV || 'development'}
 
 API Endpoints:
@@ -83,6 +92,7 @@ API Endpoints:
   PUT    /api/posts/:id           - Edit post
   POST   /api/posts/:id/approve   - Approve post
   POST   /api/posts/:id/publish   - Publish post
+  POST   /api/posts/:id/status    - Callback from Make.com
   
   POST   /api/publish/brief/:id   - Publish all posts
   
