@@ -32,6 +32,9 @@ export default function Settings() {
     const [showDeepGuide, setShowDeepGuide] = useState(false);
     const [showCloudinaryGuide, setShowCloudinaryGuide] = useState(false);
     const [showCloudinarySecret, setShowCloudinarySecret] = useState(false);
+    const [showScenarioImg, setShowScenarioImg] = useState(false);
+    const [showInstantImg, setShowInstantImg] = useState(false);
+    const [showScheduleImg, setShowScheduleImg] = useState(false);
 
     useEffect(() => {
         fetchSettings();
@@ -657,6 +660,30 @@ export default function Settings() {
                                 <li style={{ marginBottom: '8px' }}>You should now see the Webhook connected to a Router splitting into paths.</li>
                             </ol>
 
+                            <button
+                                onClick={() => setShowScenarioImg(!showScenarioImg)}
+                                style={{
+                                    background: 'rgba(99, 102, 241, 0.1)',
+                                    border: '1px solid rgba(99, 102, 241, 0.3)',
+                                    borderRadius: '8px',
+                                    padding: '10px 16px',
+                                    color: 'var(--accent)',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    fontSize: '14px',
+                                    marginBottom: '16px'
+                                }}
+                            >
+                                📷 {showScenarioImg ? 'Hide' : 'See'} Full Scenario Example
+                            </button>
+                            {showScenarioImg && (
+                                <div style={{ marginBottom: '24px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                                    <img src="/assets/make/scenarios.webp" alt="Make.com full scenario" style={{ width: '100%', display: 'block' }} />
+                                </div>
+                            )}
+
                             <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 3: The Destinations (Setting up Platforms)</h3>
 
                             <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
@@ -747,9 +774,33 @@ export default function Settings() {
     "scheduled_at": "2025-12-12T10:00:00Z"
   }'`}</pre>
                             </div>
-                            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+                            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
                                 In Make.com, click on Webhook module → <strong>Re-determine data structure</strong> → Send the curl command above.
                             </p>
+
+                            <button
+                                onClick={() => setShowInstantImg(!showInstantImg)}
+                                style={{
+                                    background: 'rgba(16, 185, 129, 0.1)',
+                                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                                    borderRadius: '8px',
+                                    padding: '10px 16px',
+                                    color: 'var(--success)',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    fontSize: '14px',
+                                    marginBottom: '16px'
+                                }}
+                            >
+                                📷 {showInstantImg ? 'Hide' : 'See'} Instant Publishing Example
+                            </button>
+                            {showInstantImg && (
+                                <div style={{ marginBottom: '24px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                                    <img src="/assets/make/instant.webp" alt="Instant publishing scenario" style={{ width: '100%', display: 'block' }} />
+                                </div>
+                            )}
 
                             <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 4.6: Scheduled Posts with Data Store</h3>
                             <p style={{ marginBottom: '16px' }}>To handle scheduled posts, use Make.com's Data Store:</p>
@@ -783,6 +834,30 @@ export default function Settings() {
                                     <li>Module: <strong>Data Store → Delete record</strong></li>
                                 </ol>
                             </div>
+
+                            <button
+                                onClick={() => setShowScheduleImg(!showScheduleImg)}
+                                style={{
+                                    background: 'rgba(168, 85, 247, 0.1)',
+                                    border: '1px solid rgba(168, 85, 247, 0.3)',
+                                    borderRadius: '8px',
+                                    padding: '10px 16px',
+                                    color: '#a855f7',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    fontSize: '14px',
+                                    marginBottom: '16px'
+                                }}
+                            >
+                                📷 {showScheduleImg ? 'Hide' : 'See'} Scheduled Posts Example
+                            </button>
+                            {showScheduleImg && (
+                                <div style={{ marginBottom: '24px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                                    <img src="/assets/make/schedule.webp" alt="Scheduled posts with Data Store" style={{ width: '100%', display: 'block' }} />
+                                </div>
+                            )}
 
                             <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 5: Turn it On!</h3>
                             <p>Click the <strong>Save</strong> icon and toggle the <strong>Scheduling</strong> switch to <strong>ON</strong>.</p>
