@@ -849,8 +849,8 @@ export default function Settings() {
                                 <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px' }}>⏰ Create Publisher Scenario:</h4>
                                 <p style={{ marginBottom: '8px' }}>Create a <strong>separate scenario</strong> that checks Data Store every 15 minutes:</p>
                                 <ol style={{ paddingLeft: '20px', marginBottom: '0' }}>
-                                    <li style={{ marginBottom: '4px' }}>First module: <strong>Data Store → Search records</strong> (NOT Webhook!)</li>
-                                    <li style={{ marginBottom: '4px' }}>Filter: <code>scheduled_at</code> ≤ <code>now</code></li>
+                                    <li style={{ marginBottom: '4px' }}>First module: <strong>Data Store → Search records</strong> (no filter inside!)</li>
+                                    <li style={{ marginBottom: '4px' }}>Add <strong>Filter on the line</strong> between Data Store and Router: <code>scheduled_at</code> ≤ <code>now</code></li>
                                     <li style={{ marginBottom: '4px' }}>Router → Platform modules (same as main scenario)</li>
                                     <li style={{ marginBottom: '4px' }}>After each platform: <strong>Data Store → Delete record</strong> (Key from Search)</li>
                                     <li>Set scenario schedule: <strong>Every 15 minutes</strong> (bottom left clock icon)</li>
@@ -858,12 +858,13 @@ export default function Settings() {
                             </div>
 
                             <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '16px', borderRadius: '8px', marginBottom: '24px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-                                <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '8px', color: '#f59e0b' }}>⚠️ Important: No Webhook in Publisher!</h4>
-                                <p style={{ fontSize: '14px', margin: 0 }}>
-                                    Publisher scenario starts with <strong>Data Store Search</strong>, not Webhook.
-                                    Schedule is set in <strong>scenario settings</strong> (clock icon), not as a module.
-                                    Delete record after publishing to prevent duplicate posts.
-                                </p>
+                                <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '8px', color: '#f59e0b' }}>⚠️ Important Notes:</h4>
+                                <ul style={{ fontSize: '14px', margin: 0, paddingLeft: '16px' }}>
+                                    <li style={{ marginBottom: '4px' }}>Publisher scenario starts with <strong>Data Store Search</strong>, not Webhook</li>
+                                    <li style={{ marginBottom: '4px' }}>Date filter must be <strong>on the line between modules</strong>, not inside Data Store Search (date comparison bug)</li>
+                                    <li style={{ marginBottom: '4px' }}>Schedule is set in <strong>scenario settings</strong> (clock icon), not as a module</li>
+                                    <li>Delete record after publishing to prevent duplicate posts</li>
+                                </ul>
                             </div>
 
                             <button
