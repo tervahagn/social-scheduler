@@ -813,17 +813,19 @@ export default function Settings() {
                                     <strong style={{ color: 'var(--success)' }}>Path 1: Instant Publishing → LinkedIn/Platform</strong>
                                     <ul style={{ paddingLeft: '20px', margin: '8px 0 0 0', fontSize: '13px' }}>
                                         <li><code>scheduled_at</code> <strong>Does not exist</strong></li>
-                                        <li>OR: <code>scheduled_at</code> <strong>Less than or equal to</strong> <code>now</code></li>
                                     </ul>
                                 </div>
 
-                                <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '6px' }}>
+                                <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '6px', marginBottom: '12px' }}>
                                     <strong style={{ color: '#a855f7' }}>Path 2: Scheduled → Data Store</strong>
                                     <ul style={{ paddingLeft: '20px', margin: '8px 0 0 0', fontSize: '13px' }}>
-                                        <li><code>scheduled_at</code> <strong>Exists</strong></li>
-                                        <li>AND: <code>scheduled_at</code> <strong>Greater than</strong> <code>now</code></li>
+                                        <li><code>scheduled_at</code> <strong>Exists</strong> (only this! no date comparison)</li>
                                     </ul>
                                 </div>
+
+                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, fontStyle: 'italic' }}>
+                                    ⚠️ Do NOT use "Greater than now" in filters — Make.com has bugs comparing dates with now.
+                                </p>
                             </div>
 
                             <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
@@ -831,7 +833,7 @@ export default function Settings() {
                                 <ol style={{ paddingLeft: '20px', marginBottom: '0' }}>
                                     <li style={{ marginBottom: '8px' }}>Go to <strong>Data Stores</strong> in Make.com sidebar</li>
                                     <li style={{ marginBottom: '8px' }}>Create new: "Scheduled Posts"</li>
-                                    <li style={{ marginBottom: '8px' }}>Add fields: <code>platform</code>, <code>content</code>, <code>brief_title</code>, <code>media_url</code>, <code>scheduled_at</code></li>
+                                    <li style={{ marginBottom: '8px' }}>Add fields: <code>platform</code>, <code>content</code>, <code>brief_title</code>, <code>media_url</code>, <code>scheduled_at</code> (type: Date)</li>
                                 </ol>
                             </div>
 
@@ -839,7 +841,7 @@ export default function Settings() {
                                 <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px' }}>🔀 Scheduled Path Setup:</h4>
                                 <p style={{ marginBottom: '8px' }}>Add Router path for posts scheduled for the future:</p>
                                 <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                                    <li style={{ marginBottom: '4px' }}>Filter: <code>scheduled_at</code> <strong>exists</strong> AND <strong>greater than</strong> <code>now</code></li>
+                                    <li style={{ marginBottom: '4px' }}>Filter: <code>scheduled_at</code> <strong>Exists</strong></li>
                                     <li style={{ marginBottom: '4px' }}>Module: <strong>Data Store → Add a record</strong></li>
                                     <li>Map all fields from webhook to Data Store</li>
                                 </ul>
