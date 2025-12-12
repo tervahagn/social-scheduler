@@ -30,33 +30,60 @@ export default function Intro() {
                     <h2>How It Works</h2>
                 </div>
 
-                <div className="steps-container">
-                    <div className="step-item">
-                        <div className="step-number">01</div>
-                        <div className="step-content">
-                            <h3>Create Brief</h3>
-                            <p>Write content idea, attach files/images, select target platforms.</p>
+                <div className="workflow-blocks">
+                    {/* Quick Post */}
+                    <div className="workflow-block">
+                        <div className="workflow-header">
+                            <Zap size={20} />
+                            <h3>Quick Post</h3>
+                        </div>
+                        <div className="workflow-steps">
+                            <div className="step-item compact">
+                                <div className="step-number">1</div>
+                                <div className="step-content">
+                                    <p>Write text, attach media, select platforms</p>
+                                </div>
+                            </div>
+                            <div className="step-item compact">
+                                <div className="step-number">2</div>
+                                <div className="step-content">
+                                    <p>Publish now or schedule</p>
+                                </div>
+                            </div>
+                            <div className="step-item compact">
+                                <div className="step-number">3</div>
+                                <div className="step-content">
+                                    <p>Webhook sends to Make.com → platforms</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div className="step-item">
-                        <div className="step-number">02</div>
-                        <div className="step-content">
-                            <h3>AI Generates Posts</h3>
-                            <p>OpenRouter AI creates platform-optimized versions (LinkedIn, Twitter, Instagram, etc.).</p>
+
+                    {/* Brief */}
+                    <div className="workflow-block">
+                        <div className="workflow-header">
+                            <FileText size={20} />
+                            <h3>Brief</h3>
                         </div>
-                    </div>
-                    <div className="step-item">
-                        <div className="step-number">03</div>
-                        <div className="step-content">
-                            <h3>Review & Edit</h3>
-                            <p>Approve or edit each post. Reject and regenerate if needed.</p>
-                        </div>
-                    </div>
-                    <div className="step-item">
-                        <div className="step-number">04</div>
-                        <div className="step-content">
-                            <h3>Publish or Schedule</h3>
-                            <p>Send immediately via Make.com or schedule for later. Images uploaded to Cloudinary.</p>
+                        <div className="workflow-steps">
+                            <div className="step-item compact">
+                                <div className="step-number">1</div>
+                                <div className="step-content">
+                                    <p>Write content idea, attach files, select platforms</p>
+                                </div>
+                            </div>
+                            <div className="step-item compact">
+                                <div className="step-number">2</div>
+                                <div className="step-content">
+                                    <p>AI generates post per platform</p>
+                                </div>
+                            </div>
+                            <div className="step-item compact">
+                                <div className="step-number">3</div>
+                                <div className="step-content">
+                                    <p>Edit, approve, publish or schedule</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -180,6 +207,63 @@ export default function Intro() {
                     margin: 20px 0;
                 }
 
+                .workflow-blocks {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 24px;
+                }
+
+                .workflow-block {
+                    background: var(--bg-tertiary);
+                    border-radius: 12px;
+                    padding: 24px;
+                    border: 1px solid var(--border-color);
+                }
+
+                .workflow-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 20px;
+                    color: var(--accent);
+                }
+
+                .workflow-header h3 {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0;
+                    color: var(--text-primary);
+                }
+
+                .workflow-steps {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+
+                .step-item.compact {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 12px;
+                    text-align: left;
+                }
+
+                .step-item.compact .step-number {
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: var(--accent);
+                    opacity: 0.6;
+                    min-width: 20px;
+                    margin: 0;
+                }
+
+                .step-item.compact .step-content p {
+                    margin: 0;
+                    color: var(--text-secondary);
+                    font-size: 14px;
+                    line-height: 1.4;
+                }
+
                 .steps-container {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -291,6 +375,10 @@ export default function Intro() {
 
                     .hero-actions {
                         flex-direction: column;
+                    }
+
+                    .workflow-blocks {
+                        grid-template-columns: 1fr;
                     }
 
                     .steps-container {
