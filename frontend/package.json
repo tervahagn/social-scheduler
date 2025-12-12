@@ -5,7 +5,7 @@
     "scripts": {
         "dev": "vite",
         "build": "npm run build:backend && vite build",
-        "build:backend": "cd ../backend && npm install && npx esbuild src/index.js --bundle --platform=node --target=node20 --format=cjs --outfile=dist/backend.cjs && mkdir -p \"../frontend/src-tauri/resources/backend\" && cp dist/backend.cjs \"../frontend/src-tauri/resources/backend/backend.cjs\"",
+        "build:backend": "node scripts/build-backend.mjs",
         "preview": "vite preview",
         "tauri": "tauri",
         "tauri:dev": "tauri dev",
