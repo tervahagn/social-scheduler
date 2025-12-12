@@ -489,18 +489,22 @@
             logoIcons[currentIconIndex].classList.add('active');
         }, 3000);
 
-        // Version Badge - fetch from version.json
-        fetch('version.json')
+        // Version Badge - fetch from main Social Scheduler repo via GitHub API
+        fetch('https://api.github.com/repos/tervahagn/social-scheduler/commits?per_page=1')
             .then(response => response.json())
-            .then(version => {
-                const badge = document.getElementById('version-badge');
-                const date = new Date(version.date + 'T00:00:00');
-                const formattedDate = date.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                });
-                badge.innerHTML = `Build #${version.build} · ${formattedDate} · <code>${version.commit}</code>`;
+            .then(commits => {
+                if (commits && commits.length > 0) {
+                    const commit = commits[0];
+                    const badge = document.getElementById('version-badge');
+                    const date = new Date(commit.commit.author.date);
+                    const formattedDate = date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                    const shortSha = commit.sha.substring(0, 7);
+                    badge.innerHTML = `Latest: ${formattedDate} · <code>${shortSha}</code>`;
+                }
             })
             .catch(() => {
                 document.getElementById('version-badge').innerHTML = '';
