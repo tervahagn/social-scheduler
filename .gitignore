@@ -33,3 +33,9 @@ uploads/
 # Data
 data/
 !data/.gitkeep
+
+# Internal Documentation (not for public)
+docs/
+ARCHITECTURE.md
+FIXES_SUMMARY.md
+.mcp.json
