@@ -1,13 +1,11 @@
 import express from 'express';
 import multer from 'multer';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { join } from 'path';
 import db from '../database/db.js';
 import { generatePostsForBrief, getPostsForBrief } from '../services/content-generator.service.js';
 
 const router = express.Router();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+
 
 // Multer configuration for file uploads
 const storage = multer.diskStorage({

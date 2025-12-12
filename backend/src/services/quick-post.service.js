@@ -1,11 +1,8 @@
-import Database from 'better-sqlite3';
+import db from '../database/db.js';
 import path from 'path';
 import fs from 'fs';
 import { publishToWebhook } from './publisher.service.js';
 import { uploadToCloudinary } from './cloudinary.service.js';
-
-const dbPath = process.env.DATABASE_PATH || './data/scheduler.db';
-const db = new Database(dbPath);
 
 // Character limits for validation
 const CHAR_LIMITS = {
@@ -23,33 +20,27 @@ export const quickPostService = {
      * Create a new quick post with items
      * @param {Object} data { title, items: [{ platform_id, content }] }
      */
-    create: (data) => {
+    create: async (data) => {
         const { title, items } = data;
 
-        const transaction = db.transaction(() => {
-            // Create main record
-            const result = db.prepare('INSERT INTO quick_posts (title) VALUES (?)').run(title || 'Quick Post');
-            const quickPostId = result.lastInsertRowid;
+        // Create main record
+        const result = await db.prepare('INSERT INTO quick_posts (title) VALUES (?)').run(title || 'Quick Post');
+        const quickPostId = result.lastInsertRowid;
 
-            // Create items
-            const insertItem = db.prepare(`
+        // Create items
+        const createdItems = [];
+        for (const item of items) {
+            const itemResult = await db.prepare(`
                 INSERT INTO quick_post_items (quick_post_id, platform_id, content, title, status)
                 VALUES (?, ?, ?, ?, 'pending')
-            `);
+            `).run(quickPostId, item.platform_id, item.content, item.title || null);
+            createdItems.push({
+                id: itemResult.lastInsertRowid,
+                ...item
+            });
+        }
 
-            const createdItems = [];
-            for (const item of items) {
-                const itemResult = insertItem.run(quickPostId, item.platform_id, item.content, item.title || null);
-                createdItems.push({
-                    id: itemResult.lastInsertRowid,
-                    ...item
-                });
-            }
-
-            return { id: quickPostId, items: createdItems };
-        });
-
-        return transaction();
+        return { id: quickPostId, items: createdItems };
     },
 
     /**
@@ -57,7 +48,7 @@ export const quickPostService = {
      */
     publish: async (quickPostId) => {
         // Get all pending items
-        const items = db.prepare(`
+        const items = await db.prepare(`
             SELECT qpi.*, qpi.title, p.name as platform_name, p.display_name
             FROM quick_post_items qpi
             JOIN platforms p ON qpi.platform_id = p.id
@@ -69,7 +60,7 @@ export const quickPostService = {
         for (const item of items) {
             try {
                 // Get attachments if any
-                const files = db.prepare('SELECT * FROM quick_post_files WHERE quick_post_item_id = ?').all(item.id);
+                const files = await db.prepare('SELECT * FROM quick_post_files WHERE quick_post_item_id = ?').all(item.id);
 
                 // Upload files to Cloudinary and get URLs
                 const mediaWithUrls = [];
@@ -104,7 +95,7 @@ export const quickPostService = {
                 await publishToWebhook(payload);
 
                 // Update status to 'sent' (not 'published' - awaiting confirmation)
-                db.prepare(`
+                await db.prepare(`
                     UPDATE quick_post_items 
                     SET status = 'sent' 
                     WHERE id = ?
@@ -115,7 +106,7 @@ export const quickPostService = {
             } catch (error) {
                 console.error(`Failed to publish quick post item ${item.id}:`, error);
 
-                db.prepare(`
+                await db.prepare(`
                     UPDATE quick_post_items 
                     SET status = 'failed', error_message = ? 
                     WHERE id = ?
@@ -126,7 +117,7 @@ export const quickPostService = {
         }
 
         // Update main record status if all done
-        db.prepare('UPDATE quick_posts SET published_at = CURRENT_TIMESTAMP WHERE id = ?').run(quickPostId);
+        await db.prepare('UPDATE quick_posts SET published_at = CURRENT_TIMESTAMP WHERE id = ?').run(quickPostId);
 
         return results;
     },
@@ -138,7 +129,7 @@ export const quickPostService = {
      */
     schedule: async (quickPostId, scheduledAt) => {
         // Get all pending items
-        const items = db.prepare(`
+        const items = await db.prepare(`
             SELECT qpi.*, qpi.title, p.name as platform_name, p.display_name
             FROM quick_post_items qpi
             JOIN platforms p ON qpi.platform_id = p.id
@@ -150,7 +141,7 @@ export const quickPostService = {
         for (const item of items) {
             try {
                 // Get attachments if any
-                const files = db.prepare('SELECT * FROM quick_post_files WHERE quick_post_item_id = ?').all(item.id);
+                const files = await db.prepare('SELECT * FROM quick_post_files WHERE quick_post_item_id = ?').all(item.id);
 
                 // Upload files to Cloudinary and get URLs
                 const mediaWithUrls = [];
@@ -186,7 +177,7 @@ export const quickPostService = {
                 await publishToWebhook(payload);
 
                 // Update status
-                db.prepare(`
+                await db.prepare(`
                     UPDATE quick_post_items 
                     SET status = 'scheduled', scheduled_at = ? 
                     WHERE id = ?
@@ -197,7 +188,7 @@ export const quickPostService = {
             } catch (error) {
                 console.error(`Failed to schedule quick post item ${item.id}:`, error);
 
-                db.prepare(`
+                await db.prepare(`
                     UPDATE quick_post_items 
                     SET status = 'failed', error_message = ? 
                     WHERE id = ?
@@ -208,7 +199,7 @@ export const quickPostService = {
         }
 
         // Update main record with scheduled time
-        db.prepare('UPDATE quick_posts SET scheduled_at = ? WHERE id = ?').run(scheduledAt, quickPostId);
+        await db.prepare('UPDATE quick_posts SET scheduled_at = ? WHERE id = ?').run(scheduledAt, quickPostId);
 
         return results;
     },
@@ -216,28 +207,31 @@ export const quickPostService = {
     /**
      * Get history of quick posts
      */
-    getHistory: () => {
-        const posts = db.prepare(`
+    getHistory: async () => {
+        const posts = await db.prepare(`
             SELECT * FROM quick_posts ORDER BY created_at DESC LIMIT 50
         `).all();
 
-        return posts.map(post => {
-            const items = db.prepare(`
+        const result = [];
+        for (const post of posts) {
+            const items = await db.prepare(`
                 SELECT qpi.*, p.name as platform_name, p.display_name
                 FROM quick_post_items qpi
                 JOIN platforms p ON qpi.platform_id = p.id
                 WHERE qpi.quick_post_id = ?
             `).all(post.id);
 
-            return { ...post, items };
-        });
+            result.push({ ...post, items });
+        }
+
+        return result;
     },
 
     /**
      * Upload file for a quick post item
      */
-    uploadFile: (itemId, file) => {
-        return db.prepare(`
+    uploadFile: async (itemId, file) => {
+        return await db.prepare(`
             INSERT INTO quick_post_files (quick_post_item_id, file_path, original_name, mime_type)
             VALUES (?, ?, ?, ?)
         `).run(itemId, file.path, file.originalname, file.mimetype);

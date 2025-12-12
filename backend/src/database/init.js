@@ -1,5 +1,5 @@
-import sqlite3 from 'sqlite3';
-import { readFileSync, mkdirSync } from 'fs';
+import db from './db.js';
+import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import dotenv from 'dotenv';
@@ -9,33 +9,35 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const dbPath = process.env.DATABASE_PATH || './data/scheduler.db';
 const schemaPath = join(__dirname, 'schema.sql');
 
-console.log('Initializing database...');
-console.log('Database path:', dbPath);
+async function initDatabase() {
+    console.log('Initializing database...');
+    console.log('Database path:', process.env.DATABASE_PATH || './data/scheduler.db');
 
-// Create data directory if it doesn't exist
-mkdirSync(dirname(dbPath), { recursive: true });
+    try {
+        // Read and execute schema
+        const schema = readFileSync(schemaPath, 'utf8');
+        await db.exec(schema);
 
-const db = new sqlite3.Database(dbPath);
+        console.log('✅ Database initialized successfully!');
 
-// Read and execute schema
-const schema = readFileSync(schemaPath, 'utf8');
+        // List tables
+        const database = await db.getDatabase();
+        const result = database.exec("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
 
-db.exec(schema, (err) => {
-    if (err) {
+        if (result.length > 0) {
+            console.log('Tables created:');
+            result[0].values.forEach(row => console.log(`  - ${row[0]}`));
+        }
+
+        db.save();
+        process.exit(0);
+    } catch (err) {
         console.error('Error initializing database:', err);
         process.exit(1);
     }
+}
 
-    console.log('✅ Database initialized successfully!');
+initDatabase();
 
-    db.all("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name", (err, tables) => {
-        if (!err) {
-            console.log('Tables created:');
-            tables.forEach(table => console.log(`  - ${table.name}`));
-        }
-        db.close();
-    });
-});

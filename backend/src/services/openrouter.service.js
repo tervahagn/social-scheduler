@@ -1,13 +1,20 @@
 import OpenAI from 'openai';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Get prompts directory - works in both dev and bundled mode
+const getPromptsDir = () => {
+    // In bundled Tauri app, prompts are in resources directory
+    const resourcesPrompts = join(process.cwd(), 'prompts');
+    if (existsSync(resourcesPrompts)) {
+        return resourcesPrompts;
+    }
+    // In development, relative to backend folder
+    return join(process.cwd(), 'prompts');
+};
 
 // OpenRouter configuration helper
 async function getOpenRouterConfig() {
@@ -77,7 +84,7 @@ async function loadPrompt(platformId, promptFile) {
     }
 
     // Fallback: load from file
-    const promptPath = join(__dirname, '../../prompts', promptFile);
+    const promptPath = join(getPromptsDir(), promptFile);
     return readFileSync(promptPath, 'utf8');
 }
 

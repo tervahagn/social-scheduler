@@ -1,11 +1,24 @@
 import axios from 'axios';
 
+// Use absolute URL for Tauri production, relative for dev with Vite proxy
+const API_BASE = import.meta.env.DEV ? '' : 'http://localhost:3001';
+
+// Configure axios interceptor to handle /api URLs in production
+axios.interceptors.request.use((config) => {
+    if (!import.meta.env.DEV && config.url?.startsWith('/api')) {
+        config.url = API_BASE + config.url;
+    }
+    return config;
+});
+
 const api = axios.create({
-    baseURL: '/api',
+    baseURL: import.meta.env.DEV ? '/api' : 'http://localhost:3001/api',
     headers: {
         'Content-Type': 'application/json'
     }
 });
+
+
 
 // Briefs
 export const createBrief = async (formData) => {
