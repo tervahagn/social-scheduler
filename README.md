@@ -1,6 +1,6 @@
 # Social Scheduler
 
-Open-source tool for managing social media content. Post to 9 platforms from one place.
+**[🌐 Website](https://social-scheduler.tervahagn.com/)** · Open-source tool for managing social media content. Post to 9 platforms from one place.
 
 ## Features
 
