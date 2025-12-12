@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Social Scheduler — open-source tool for managing social media. Quick Post to 9 platforms, schedule content, use any LLM. Self-hosted, free, no monthly fees.">
-    <meta name="keywords" content="social media scheduler, open source, self-hosted, content management, AI content generation, Make.com integration">
+    <meta name="description"
+        content="Social Scheduler — open-source tool for managing social media. Quick Post to 9 platforms, schedule content, use any LLM. Self-hosted, free, no monthly fees.">
+    <meta name="keywords"
+        content="social media scheduler, open source, self-hosted, content management, AI content generation, Make.com integration">
     <meta name="author" content="Vahagn Ter-Sarkisyan">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://tervahagn.github.io/social-scheduler/">
     <title>Social Scheduler | Open-Source Social Media Tool</title>
-    
+
     <!-- Open Graph -->
     <meta property="og:title" content="Social Scheduler — Open-Source Social Media Tool">
-    <meta property="og:description" content="Manage 9 social platforms from one place. Quick Post, scheduling, AI content generation. Self-hosted and free.">
+    <meta property="og:description"
+        content="Manage 9 social platforms from one place. Quick Post, scheduling, AI content generation. Self-hosted and free.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://tervahagn.github.io/social-scheduler/">
-    
+
     <!-- JSON-LD: Software Application -->
     <script type="application/ld+json">
     {
@@ -48,7 +52,7 @@
         ]
     }
     </script>
-    
+
     <!-- JSON-LD: FAQ Schema -->
     <script type="application/ld+json">
     {
@@ -106,12 +110,15 @@
         ]
     }
     </script>
-    
+
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
     <div class="noise-overlay"></div>
     <div class="gradient-orb orb-1"></div>
@@ -122,13 +129,35 @@
             <div class="logo-container">
                 <div class="logo-icon-box">
                     <!-- Zap Icon -->
-                    <svg class="logo-icon-svg active" data-index="0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    <svg class="logo-icon-svg active" data-index="0" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
                     <!-- Calendar Icon -->
-                    <svg class="logo-icon-svg" data-index="1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <svg class="logo-icon-svg" data-index="1" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
                     <!-- Share Icon -->
-                    <svg class="logo-icon-svg" data-index="2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                    <svg class="logo-icon-svg" data-index="2" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
                     <!-- Message Icon -->
-                    <svg class="logo-icon-svg" data-index="3" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                    <svg class="logo-icon-svg" data-index="3" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z">
+                        </path>
+                    </svg>
                 </div>
                 <span class="brand-name">Social Scheduler</span>
             </div>
@@ -139,7 +168,10 @@
             <a href="#brief" class="nav-link">Brief</a>
             <a href="#faq" class="nav-link">FAQ</a>
             <a href="https://github.com/tervahagn/social-scheduler" class="btn btn-glow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;">
+                    <path
+                        d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                </svg>
                 GitHub
             </a>
         </div>
@@ -158,23 +190,28 @@
                     from <span class="text-gradient">One Place</span>
                 </h1>
                 <p class="hero-sub">
-                    Open-source tool for social media. Write once, generate for all platforms with AI, schedule or publish instantly. Runs on your machine. Free.
+                    Open-source tool for social media. Write once, generate for all platforms with AI, schedule or
+                    publish instantly. Runs on your machine. Free.
                 </p>
                 <div class="cta-group">
                     <a href="https://github.com/tervahagn/social-scheduler" class="btn btn-primary btn-lg">
                         Get Started
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 8px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" style="margin-left: 8px;">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
                     </a>
                 </div>
             </div>
-            
+
             <div class="hero-ui-preview glass">
                 <div class="ui-header">
                     <div class="ui-dots"><span></span><span></span><span></span></div>
                     <div class="ui-bar">localhost:3000</div>
                 </div>
                 <div class="video-container">
-                    <img src="assets/demo.webp" alt="Social Scheduler interface showing content editor" class="demo-video">
+                    <img src="assets/demo.webp" alt="Social Scheduler interface showing content editor"
+                        class="demo-video">
                 </div>
             </div>
         </section>
@@ -187,19 +224,29 @@
                         <span class="feature-label">FAST MODE</span>
                         <h2 class="feature-title">Quick Post.<br>No Brief Needed.</h2>
                         <p class="feature-desc">
-                            Sometimes you just want to post. Write your content, pick platforms, hit publish. Character counters show limits in real-time. Attach images. Schedule for later or send now.
+                            Sometimes you just want to post. Write your content, pick platforms, hit publish. Character
+                            counters show limits in real-time. Attach images. Schedule for later or send now.
                         </p>
                         <ul class="feature-list">
                             <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
                                 Write once, post everywhere
                             </li>
                             <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
                                 Live character limits per platform
                             </li>
                             <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
                                 Schedule or publish instantly
                             </li>
                         </ul>
@@ -226,19 +273,29 @@
                         <span class="feature-label">SCHEDULING</span>
                         <h2 class="feature-title">Calendar View.<br>See Everything.</h2>
                         <p class="feature-desc">
-                            All your scheduled and published posts on one screen. Month, week, or day view. Color-coded by status: purple for scheduled, green for published. Click any post to edit it.
+                            All your scheduled and published posts on one screen. Month, week, or day view. Color-coded
+                            by status: purple for scheduled, green for published. Click any post to edit it.
                         </p>
                         <ul class="feature-list">
                             <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
                                 Visual timeline of all content
                             </li>
                             <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
                                 Pick date and time when scheduling
                             </li>
                             <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
                                 Status colors: scheduled, published
                             </li>
                         </ul>
@@ -255,26 +312,38 @@
                         <span class="feature-label">CAMPAIGN MODE</span>
                         <h2 class="feature-title">Brief → AI → Posts.<br>For Each Platform.</h2>
                         <p class="feature-desc">
-                            Write one brief with your main idea. Select platforms. AI generates a separate post for each one — LinkedIn gets professional tone, Twitter gets short punchy text, Instagram gets hashtags. Edit any of them, approve, publish.
+                            Write one brief with your main idea. Select platforms. AI generates a separate post for each
+                            one — LinkedIn gets professional tone, Twitter gets short punchy text, Instagram gets
+                            hashtags. Edit any of them, approve, publish.
                         </p>
                         <ul class="feature-list">
                             <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
                                 One idea → 9 platform-native posts
                             </li>
                             <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
                                 Attach images, links, files
                             </li>
                             <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
                                 Edit and request AI corrections
                             </li>
                         </ul>
                     </div>
                     <div class="feature-visual">
                         <div class="screenshot-card glass">
-                            <img src="assets/editor.png" alt="Content editor with generated posts" class="screenshot-img">
+                            <img src="assets/editor.png" alt="Content editor with generated posts"
+                                class="screenshot-img">
                         </div>
                     </div>
                 </div>
@@ -287,11 +356,16 @@
                 <div class="section-label">PLATFORMS & INTEGRATIONS</div>
                 <h2 class="section-heading">9 Platforms. Any LLM.</h2>
                 <p class="hero-sub">Bring your own API key. Route to any automation.</p>
-                
+
                 <div class="integration-grid">
                     <div class="integration-card glass">
                         <div class="integration-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                                <path d="M2 12h20"></path>
+                            </svg>
                         </div>
                         <h3>OpenRouter</h3>
                         <p>GPT-4, Claude, Llama, Gemini. Pick any model. Your API key, your choice.</p>
@@ -299,7 +373,10 @@
 
                     <div class="integration-card glass">
                         <div class="integration-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                            </svg>
                         </div>
                         <h3>Make.com / Zapier</h3>
                         <p>We send to webhook. You route to LinkedIn, Facebook, wherever. Simple.</p>
@@ -307,7 +384,11 @@
 
                     <div class="integration-card glass">
                         <div class="integration-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
                         </div>
                         <h3>Self-Hosted</h3>
                         <p>Runs on your machine. SQLite database. No cloud required. Your data stays yours.</p>
@@ -315,7 +396,12 @@
 
                     <div class="integration-card glass">
                         <div class="integration-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                                </path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
                         </div>
                         <h3>9 Platforms</h3>
                         <p>LinkedIn, Facebook, Instagram, X, YouTube, Reddit, Google Business, Blog.</p>
@@ -329,36 +415,43 @@
             <div class="container">
                 <div class="section-label">QUESTIONS</div>
                 <h2 class="section-heading">FAQ</h2>
-                
+
                 <div class="faq-grid">
                     <div class="faq-item glass">
                         <h3>Is it really free?</h3>
-                        <p>Yes. MIT license. You pay only for the LLM API (like OpenRouter credits) and optional hosting if you want cloud deployment.</p>
+                        <p>Yes. MIT license. You pay only for the LLM API (like OpenRouter credits) and optional hosting
+                            if you want cloud deployment.</p>
                     </div>
 
                     <div class="faq-item glass">
                         <h3>What platforms are supported?</h3>
-                        <p>9 platforms: LinkedIn (company + personal), Facebook, Instagram, X (Twitter), YouTube Community, Reddit, Google Business, Blog.</p>
+                        <p>9 platforms: LinkedIn (company + personal), Facebook, Instagram, X (Twitter), YouTube
+                            Community, Reddit, Google Business, Blog.</p>
                     </div>
 
                     <div class="faq-item glass">
                         <h3>How does publishing work?</h3>
-                        <p>Social Scheduler sends content to a Make.com webhook. You set up the actual posting in Make.com using their integrations. This avoids dealing with constantly changing social media APIs.</p>
+                        <p>Social Scheduler sends content to a Make.com webhook. You set up the actual posting in
+                            Make.com using their integrations. This avoids dealing with constantly changing social media
+                            APIs.</p>
                     </div>
 
                     <div class="faq-item glass">
                         <h3>Can I use my own AI model?</h3>
-                        <p>Yes. OpenRouter lets you pick from GPT-4, Claude, Llama, Gemini, and others. Bring your API key and choose your model in settings.</p>
+                        <p>Yes. OpenRouter lets you pick from GPT-4, Claude, Llama, Gemini, and others. Bring your API
+                            key and choose your model in settings.</p>
                     </div>
 
                     <div class="faq-item glass">
                         <h3>Where is data stored?</h3>
-                        <p>On your machine in a SQLite file. No cloud sync. Back it up by copying one file. Your content never leaves your computer unless you publish it.</p>
+                        <p>On your machine in a SQLite file. No cloud sync. Back it up by copying one file. Your content
+                            never leaves your computer unless you publish it.</p>
                     </div>
 
                     <div class="faq-item glass">
                         <h3>Do I need technical skills?</h3>
-                        <p>You should be comfortable with Node.js and npm. It's a developer tool. If you can follow a README and run terminal commands, you're good.</p>
+                        <p>You should be comfortable with Node.js and npm. It's a developer tool. If you can follow a
+                            README and run terminal commands, you're good.</p>
                     </div>
                 </div>
             </div>
@@ -369,7 +462,11 @@
         <div class="container">
             <div class="footer-content">
                 <p class="vibe-code">
-                    Built in Pasadena, CA by <a href="https://tervahagn.com" target="_blank" class="author-link">Vahagn Ter-Sarkisyan</a>. Free to use.
+                    Built in Pasadena, CA by <a href="https://tervahagn.com" target="_blank" class="author-link">Vahagn
+                        Ter-Sarkisyan</a>. Free to use.
+                </p>
+                <p class="version-info" id="version-badge">
+                    <span class="version-loading">Loading version...</span>
                 </p>
             </div>
         </div>
@@ -384,13 +481,31 @@
         setInterval(() => {
             // Hide current
             logoIcons[currentIconIndex].classList.remove('active');
-            
+
             // Move to next
             currentIconIndex = (currentIconIndex + 1) % logoIcons.length;
-            
+
             // Show next
             logoIcons[currentIconIndex].classList.add('active');
         }, 3000);
+
+        // Version Badge - fetch from version.json
+        fetch('version.json')
+            .then(response => response.json())
+            .then(version => {
+                const badge = document.getElementById('version-badge');
+                const date = new Date(version.date + 'T00:00:00');
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                badge.innerHTML = `Build #${version.build} · ${formattedDate} · <code>${version.commit}</code>`;
+            })
+            .catch(() => {
+                document.getElementById('version-badge').innerHTML = '';
+            });
     </script>
 </body>
+
 </html>

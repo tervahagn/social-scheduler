@@ -525,6 +525,28 @@ h3,
     border-bottom-style: solid;
 }
 
+.version-info {
+    margin-top: 1rem;
+    font-family: 'Space Grotesk', monospace;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0.7;
+    letter-spacing: 0.05em;
+}
+
+.version-info code {
+    background: rgba(139, 92, 246, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: #c4b5fd;
+}
+
+.version-loading {
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+
 /* Animations */
 @keyframes float {
 
