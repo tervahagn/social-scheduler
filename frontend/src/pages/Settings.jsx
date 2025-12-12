@@ -805,6 +805,27 @@ export default function Settings() {
                             <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 4.6: Scheduled Posts with Data Store</h3>
                             <p style={{ marginBottom: '16px' }}>To handle scheduled posts, use Make.com's Data Store:</p>
 
+                            <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '16px', borderRadius: '8px', marginBottom: '16px', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
+                                <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px', color: 'var(--accent)' }}>⚠️ Important: Router Filter Setup</h4>
+                                <p style={{ marginBottom: '12px', fontSize: '14px' }}>Your Router needs TWO paths with different filters:</p>
+                                
+                                <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '6px', marginBottom: '12px' }}>
+                                    <strong style={{ color: 'var(--success)' }}>Path 1: Instant Publishing → LinkedIn/Platform</strong>
+                                    <ul style={{ paddingLeft: '20px', margin: '8px 0 0 0', fontSize: '13px' }}>
+                                        <li><code>scheduled_at</code> <strong>Does not exist</strong></li>
+                                        <li>OR: <code>scheduled_at</code> <strong>Less than or equal to</strong> <code>now</code></li>
+                                    </ul>
+                                </div>
+                                
+                                <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '6px' }}>
+                                    <strong style={{ color: '#a855f7' }}>Path 2: Scheduled → Data Store</strong>
+                                    <ul style={{ paddingLeft: '20px', margin: '8px 0 0 0', fontSize: '13px' }}>
+                                        <li><code>scheduled_at</code> <strong>Exists</strong></li>
+                                        <li>AND: <code>scheduled_at</code> <strong>Greater than</strong> <code>now</code></li>
+                                    </ul>
+                                </div>
+                            </div>
+
                             <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
                                 <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px' }}>📦 Setup Data Store:</h4>
                                 <ol style={{ paddingLeft: '20px', marginBottom: '0' }}>
@@ -815,10 +836,10 @@ export default function Settings() {
                             </div>
 
                             <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-                                <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px' }}>🔀 Modify Webhook Scenario:</h4>
-                                <p style={{ marginBottom: '8px' }}>Add a new Router path for scheduled posts:</p>
+                                <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px' }}>🔀 Scheduled Path Setup:</h4>
+                                <p style={{ marginBottom: '8px' }}>Add Router path for posts scheduled for the future:</p>
                                 <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                                    <li style={{ marginBottom: '4px' }}>Filter: <code>scheduled_at</code> <strong>exists</strong></li>
+                                    <li style={{ marginBottom: '4px' }}>Filter: <code>scheduled_at</code> <strong>exists</strong> AND <strong>greater than</strong> <code>now</code></li>
                                     <li style={{ marginBottom: '4px' }}>Module: <strong>Data Store → Add a record</strong></li>
                                     <li>Map all fields from webhook to Data Store</li>
                                 </ul>

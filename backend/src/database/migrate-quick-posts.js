@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS quick_posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    published_at DATETIME
+    published_at DATETIME,
+    scheduled_at DATETIME
 );
 
 -- Platform-specific content
@@ -26,8 +27,9 @@ CREATE TABLE IF NOT EXISTS quick_post_items (
     quick_post_id INTEGER NOT NULL,
     platform_id INTEGER NOT NULL,
     content TEXT,
-    status TEXT DEFAULT 'pending', -- pending, published, failed
+    status TEXT DEFAULT 'pending', -- pending, published, failed, scheduled
     published_at DATETIME,
+    scheduled_at DATETIME,
     error_message TEXT,
     FOREIGN KEY (quick_post_id) REFERENCES quick_posts(id) ON DELETE CASCADE,
     FOREIGN KEY (platform_id) REFERENCES platforms(id) ON DELETE CASCADE
