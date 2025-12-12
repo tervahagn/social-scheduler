@@ -808,7 +808,7 @@ export default function Settings() {
                             <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '16px', borderRadius: '8px', marginBottom: '16px', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
                                 <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px', color: 'var(--accent)' }}>⚠️ Important: Router Filter Setup</h4>
                                 <p style={{ marginBottom: '12px', fontSize: '14px' }}>Your Router needs TWO paths with different filters:</p>
-                                
+
                                 <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '6px', marginBottom: '12px' }}>
                                     <strong style={{ color: 'var(--success)' }}>Path 1: Instant Publishing → LinkedIn/Platform</strong>
                                     <ul style={{ paddingLeft: '20px', margin: '8px 0 0 0', fontSize: '13px' }}>
@@ -816,7 +816,7 @@ export default function Settings() {
                                         <li>OR: <code>scheduled_at</code> <strong>Less than or equal to</strong> <code>now</code></li>
                                     </ul>
                                 </div>
-                                
+
                                 <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '6px' }}>
                                     <strong style={{ color: '#a855f7' }}>Path 2: Scheduled → Data Store</strong>
                                     <ul style={{ paddingLeft: '20px', margin: '8px 0 0 0', fontSize: '13px' }}>
@@ -845,15 +845,25 @@ export default function Settings() {
                                 </ul>
                             </div>
 
-                            <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '24px' }}>
+                            <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
                                 <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px' }}>⏰ Create Publisher Scenario:</h4>
-                                <p style={{ marginBottom: '8px' }}>Create a second scenario that runs every 15 minutes:</p>
+                                <p style={{ marginBottom: '8px' }}>Create a <strong>separate scenario</strong> that checks Data Store every 15 minutes:</p>
                                 <ol style={{ paddingLeft: '20px', marginBottom: '0' }}>
-                                    <li style={{ marginBottom: '4px' }}>Trigger: <strong>Schedule</strong> (every 15 min)</li>
-                                    <li style={{ marginBottom: '4px' }}>Module: <strong>Data Store → Search</strong> (where scheduled_at ≤ now)</li>
+                                    <li style={{ marginBottom: '4px' }}>First module: <strong>Data Store → Search records</strong> (NOT Webhook!)</li>
+                                    <li style={{ marginBottom: '4px' }}>Filter: <code>scheduled_at</code> ≤ <code>now</code></li>
                                     <li style={{ marginBottom: '4px' }}>Router → Platform modules (same as main scenario)</li>
-                                    <li>Module: <strong>Data Store → Delete record</strong></li>
+                                    <li style={{ marginBottom: '4px' }}>After each platform: <strong>Data Store → Delete record</strong> (Key from Search)</li>
+                                    <li>Set scenario schedule: <strong>Every 15 minutes</strong> (bottom left clock icon)</li>
                                 </ol>
+                            </div>
+
+                            <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '16px', borderRadius: '8px', marginBottom: '24px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                                <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '8px', color: '#f59e0b' }}>⚠️ Important: No Webhook in Publisher!</h4>
+                                <p style={{ fontSize: '14px', margin: 0 }}>
+                                    Publisher scenario starts with <strong>Data Store Search</strong>, not Webhook.
+                                    Schedule is set in <strong>scenario settings</strong> (clock icon), not as a module.
+                                    Delete record after publishing to prevent duplicate posts.
+                                </p>
                             </div>
 
                             <button
