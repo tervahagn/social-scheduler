@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Clock, Send, FileText, Zap, Filter, ArrowLeft,
-    LayoutGrid, List, Trash2, Copy, Calendar, ChevronRight
+    LayoutGrid, List, Trash2, Copy, Calendar, ChevronRight, X
 } from 'lucide-react';
 import axios from 'axios';
 import { getBriefs, deleteBrief } from '../services/api';
@@ -11,6 +11,7 @@ import { useNotification } from '../contexts/NotificationContext';
 const STATUS_CONFIG = {
     draft: { label: 'Draft', color: '#6b7280', bg: 'rgba(107, 114, 128, 0.1)' },
     approved: { label: 'Approved', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
+    sent: { label: 'Sent', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' },
     scheduled: { label: 'Scheduled', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
     published: { label: 'Published', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
     failed: { label: 'Failed', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' }
@@ -27,6 +28,7 @@ export default function Content() {
     const [sourceFilter, setSourceFilter] = useState('all');
     const [statusCounts, setStatusCounts] = useState({});
     const [viewMode, setViewMode] = useState('grid');
+    const [selectedPost, setSelectedPost] = useState(null); // For quick post detail modal
 
     const navigate = useNavigate();
     const { showSuccess, showError } = useNotification();
@@ -190,7 +192,7 @@ export default function Content() {
 
                         {/* Status Filter */}
                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                            {['all', 'draft', 'approved', 'scheduled', 'published'].map(status => (
+                            {['all', 'draft', 'approved', 'sent', 'scheduled', 'published'].map(status => (
                                 <button key={status} onClick={() => setStatusFilter(status)}
                                     style={{
                                         padding: '5px 10px', borderRadius: '14px', border: '1px solid',
@@ -247,7 +249,7 @@ export default function Content() {
                         {posts.map(post => (
                             <div key={`${post.source}-${post.id}`} className="card"
                                 style={{ padding: '16px', cursor: 'pointer', transition: 'all 0.2s', borderLeft: '3px solid transparent' }}
-                                onClick={() => post.source === 'brief' && navigate(`/brief/${post.brief_id}/edit`)}
+                                onClick={() => post.source === 'brief' ? navigate(`/brief/${post.brief_id}/edit`) : setSelectedPost(post)}
                                 onMouseEnter={(e) => { e.currentTarget.style.borderLeftColor = 'var(--accent)'; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.borderLeftColor = 'transparent'; }}>
 
@@ -344,6 +346,62 @@ export default function Content() {
                         ))}
                     </div>
                 )
+            )}
+
+            {/* Quick Post Detail Modal */}
+            {selectedPost && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 1000, padding: '20px'
+                }} onClick={() => setSelectedPost(null)}>
+                    <div className="card" style={{
+                        maxWidth: '600px', width: '100%', maxHeight: '80vh', overflow: 'auto',
+                        padding: '24px', position: 'relative'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        {/* Close button */}
+                        <button onClick={() => setSelectedPost(null)} style={{
+                            position: 'absolute', top: '12px', right: '12px', background: 'none',
+                            border: 'none', cursor: 'pointer', color: 'var(--text-secondary)'
+                        }}>
+                            <X size={20} />
+                        </button>
+
+                        {/* Header */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                            <StatusBadge status={selectedPost.status} />
+                            <SourceBadge source={selectedPost.source} />
+                            <span style={{ fontSize: '13px', padding: '4px 8px', borderRadius: '6px', background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
+                                {selectedPost.platform_display_name}
+                            </span>
+                        </div>
+
+                        {/* Title */}
+                        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+                            {selectedPost.brief_title || 'Quick Post'}
+                        </h2>
+
+                        {/* Full Content */}
+                        <div style={{
+                            background: 'var(--bg-secondary)', padding: '16px', borderRadius: '8px',
+                            whiteSpace: 'pre-wrap', lineHeight: '1.6', fontSize: '14px',
+                            maxHeight: '400px', overflow: 'auto'
+                        }}>
+                            {selectedPost.edited_content || selectedPost.content}
+                        </div>
+
+                        {/* Footer */}
+                        <div style={{ marginTop: '16px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                            {selectedPost.published_at ? (
+                                <span>Published {new Date(selectedPost.published_at).toLocaleString()}</span>
+                            ) : selectedPost.scheduled_at ? (
+                                <span>Scheduled for {new Date(selectedPost.scheduled_at).toLocaleString()}</span>
+                            ) : (
+                                <span>Created {new Date(selectedPost.created_at).toLocaleString()}</span>
+                            )}
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

@@ -40,6 +40,21 @@ router.post('/:id/publish', async (req, res) => {
     }
 });
 
+// Schedule quick post
+router.post('/:id/schedule', async (req, res) => {
+    try {
+        const { scheduled_at } = req.body;
+        if (!scheduled_at) {
+            return res.status(400).json({ error: 'scheduled_at is required' });
+        }
+        const results = await quickPostService.schedule(req.params.id, scheduled_at);
+        res.json({ results });
+    } catch (error) {
+        console.error('Error scheduling quick post:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Get history
 router.get('/history', (req, res) => {
     try {

@@ -661,23 +661,7 @@ export default function Settings() {
 
                             <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
                                 <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    📝 Path A: The Blog (HubSpot CMS)
-                                </h4>
-                                <ol style={{ paddingLeft: '20px', marginBottom: '0' }}>
-                                    <li style={{ marginBottom: '8px' }}>Add a <strong>HubSpot CRM</strong> module (Create a Blog Post).</li>
-                                    <li style={{ marginBottom: '8px' }}>Map <strong>Name</strong> to <code>brief.title</code> and <strong>Post Body</strong> to <code>content</code>.</li>
-                                    <li style={{ marginBottom: '8px' }}>Set up the <strong>Filter</strong> on the line between Router and HubSpot:
-                                        <ul style={{ marginTop: '4px' }}>
-                                            <li>Label: "Is Blog"</li>
-                                            <li>Condition: <code>platform</code> Equal to <code>blog</code></li>
-                                        </ul>
-                                    </li>
-                                </ol>
-                            </div>
-
-                            <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-                                <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    💼 Path B: LinkedIn / Socials
+                                    � Example: LinkedIn Setup
                                 </h4>
                                 <ol style={{ paddingLeft: '20px', marginBottom: '0' }}>
                                     <li style={{ marginBottom: '8px' }}>Add a <strong>LinkedIn</strong> module (Create a Text/Image Post).</li>
@@ -732,6 +716,72 @@ export default function Settings() {
                                     <li><strong>Path 4:</strong> Filter: <code>platform</code> = <code>instagram</code> → Instagram module</li>
                                     <li>...and so on for each platform you use</li>
                                 </ul>
+                            </div>
+
+                            <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 4.5: Quick Post Payload</h3>
+                            <p style={{ marginBottom: '16px' }}>Quick Posts send a slightly different JSON format with scheduling support:</p>
+
+                            <div style={{ background: '#1e1e1e', padding: '16px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', fontFamily: 'monospace', color: '#d4d4d4', overflow: 'auto' }}>
+                                <pre style={{ margin: 0 }}>{`{
+  "platform": "linkedin-personal",
+  "content": "Your post text...",
+  "brief_title": "For Reddit title",
+  "media": [{ "url": "...", "mimeType": "..." }],
+  "media_url": "https://cloudinary.com/...",
+  "isQuickPost": true,
+  "scheduled_at": "2025-12-12T10:00:00Z"  // null if immediate
+}`}</pre>
+                            </div>
+
+                            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>🔄 Re-determine Data Structure:</h4>
+                            <p style={{ marginBottom: '12px' }}>If Make.com doesn't recognize new fields, send a test JSON to refresh the structure:</p>
+                            <div style={{ background: '#1e1e1e', padding: '16px', borderRadius: '8px', marginBottom: '16px', fontSize: '12px', fontFamily: 'monospace', color: '#d4d4d4', overflow: 'auto' }}>
+                                <pre style={{ margin: 0 }}>{`curl -X POST "YOUR_WEBHOOK_URL" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "platform": "test",
+    "content": "Test content",
+    "brief_title": "Test title",
+    "media_url": null,
+    "isQuickPost": true,
+    "scheduled_at": "2025-12-12T10:00:00Z"
+  }'`}</pre>
+                            </div>
+                            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+                                In Make.com, click on Webhook module → <strong>Re-determine data structure</strong> → Send the curl command above.
+                            </p>
+
+                            <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 4.6: Scheduled Posts with Data Store</h3>
+                            <p style={{ marginBottom: '16px' }}>To handle scheduled posts, use Make.com's Data Store:</p>
+
+                            <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                                <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px' }}>📦 Setup Data Store:</h4>
+                                <ol style={{ paddingLeft: '20px', marginBottom: '0' }}>
+                                    <li style={{ marginBottom: '8px' }}>Go to <strong>Data Stores</strong> in Make.com sidebar</li>
+                                    <li style={{ marginBottom: '8px' }}>Create new: "Scheduled Posts"</li>
+                                    <li style={{ marginBottom: '8px' }}>Add fields: <code>platform</code>, <code>content</code>, <code>brief_title</code>, <code>media_url</code>, <code>scheduled_at</code></li>
+                                </ol>
+                            </div>
+
+                            <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                                <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px' }}>🔀 Modify Webhook Scenario:</h4>
+                                <p style={{ marginBottom: '8px' }}>Add a new Router path for scheduled posts:</p>
+                                <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                                    <li style={{ marginBottom: '4px' }}>Filter: <code>scheduled_at</code> <strong>exists</strong></li>
+                                    <li style={{ marginBottom: '4px' }}>Module: <strong>Data Store → Add a record</strong></li>
+                                    <li>Map all fields from webhook to Data Store</li>
+                                </ul>
+                            </div>
+
+                            <div style={{ background: 'var(--bg-tertiary)', padding: '16px', borderRadius: '8px', marginBottom: '24px' }}>
+                                <h4 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '12px' }}>⏰ Create Publisher Scenario:</h4>
+                                <p style={{ marginBottom: '8px' }}>Create a second scenario that runs every 15 minutes:</p>
+                                <ol style={{ paddingLeft: '20px', marginBottom: '0' }}>
+                                    <li style={{ marginBottom: '4px' }}>Trigger: <strong>Schedule</strong> (every 15 min)</li>
+                                    <li style={{ marginBottom: '4px' }}>Module: <strong>Data Store → Search</strong> (where scheduled_at ≤ now)</li>
+                                    <li style={{ marginBottom: '4px' }}>Router → Platform modules (same as main scenario)</li>
+                                    <li>Module: <strong>Data Store → Delete record</strong></li>
+                                </ol>
                             </div>
 
                             <h3 style={{ fontSize: '18px', fontWeight: '600', marginTop: '24px', marginBottom: '16px', color: 'var(--text-primary)' }}>Phase 5: Turn it On!</h3>

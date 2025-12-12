@@ -178,12 +178,19 @@ export async function publishAllPosts(briefId, scheduledAt = null) {
                         mediaUrl = await uploadToCloudinary(mediaUrl);
                     }
 
+                    // Format content for Reddit (double newlines for paragraphs)
+                    let formattedContent = post.edited_content || post.content;
+                    if (platform?.name === 'reddit') {
+                        formattedContent = formattedContent.replace(/\n/g, '\n\n');
+                    }
+
                     // Send webhook
                     await axios.post(webhookUrl, {
                         post_id: post.id,
                         platform: platform?.name,
                         platform_name: platform?.display_name,
-                        content: post.edited_content || post.content,
+                        content: formattedContent,
+                        brief_title: brief?.title || null, // For Reddit - top level
                         media_url: mediaUrl || null,
                         media_type: brief?.media_type || null,
                         brief: {
@@ -296,12 +303,19 @@ export async function schedulePost(postId, scheduledAt) {
                 mediaUrl = await uploadToCloudinary(mediaUrl);
             }
 
+            // Format content for Reddit (double newlines for paragraphs)
+            let formattedContent = post.edited_content || post.content;
+            if (post.platform_name === 'reddit') {
+                formattedContent = formattedContent.replace(/\n/g, '\n\n');
+            }
+
             // Send webhook
             await axios.post(webhookUrl, {
                 post_id: post.id,
                 platform: post.platform_name,
                 platform_name: post.display_name,
-                content: post.edited_content || post.content,
+                content: formattedContent,
+                brief_title: post.brief_title || null, // For Reddit - top level
                 media_url: mediaUrl || null,
                 media_type: post.media_type || null,
                 brief: {

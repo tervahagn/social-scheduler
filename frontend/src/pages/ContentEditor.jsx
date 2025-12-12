@@ -418,14 +418,6 @@ export default function ContentEditor() {
             />
             {/* Header */}
             <div style={{ marginBottom: '32px' }}>
-                <button
-                    onClick={() => navigate('/history')}
-                    className="button button-secondary"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}
-                >
-                    <ArrowLeft size={16} />
-                    Back to History
-                </button>
 
                 {posts.length === 0 ? (
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>

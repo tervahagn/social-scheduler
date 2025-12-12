@@ -66,12 +66,15 @@ export default function QuickPost() {
     const [platforms, setPlatforms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [publishing, setPublishing] = useState(false);
+    const [publishingPlatform, setPublishingPlatform] = useState(null); // For individual platform publishing
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
     const [showScheduleModal, setShowScheduleModal] = useState(false);
+    const [schedulePlatform, setSchedulePlatform] = useState(null); // null = all, platform object = single
 
     // State for form data
     const [selectedPlatforms, setSelectedPlatforms] = useState({});
     const [content, setContent] = useState({});
+    const [titles, setTitles] = useState({}); // { platformName: title } - for Reddit
     const [files, setFiles] = useState({}); // { platformName: File[] }
 
     useEffect(() => {
@@ -133,7 +136,10 @@ export default function QuickPost() {
     };
 
     const handleSchedule = async (scheduledAt) => {
-        const platformsToPublish = platforms.filter(p => selectedPlatforms[p.name] && content[p.name]?.trim());
+        // Check if scheduling single platform or all selected
+        const platformsToPublish = schedulePlatform
+            ? [schedulePlatform]
+            : platforms.filter(p => selectedPlatforms[p.name] && content[p.name]?.trim());
 
         if (platformsToPublish.length === 0) {
             showError('Please select platforms and enter content');
@@ -141,6 +147,7 @@ export default function QuickPost() {
         }
 
         setPublishing(true);
+        if (schedulePlatform) setPublishingPlatform(schedulePlatform.name);
 
         try {
             // 1. Create Quick Post container
@@ -148,7 +155,8 @@ export default function QuickPost() {
                 title: `Quick Post - ${new Date().toLocaleString()}`,
                 items: platformsToPublish.map(p => ({
                     platform_id: p.id,
-                    content: content[p.name]
+                    content: content[p.name],
+                    title: titles[p.name] || null // For Reddit
                 }))
             });
 
@@ -181,19 +189,26 @@ export default function QuickPost() {
                 scheduled_at: scheduledAt
             });
 
-            showSuccess('Scheduled successfully!');
+            showSuccess(schedulePlatform ? `${schedulePlatform.display_name} scheduled!` : 'Scheduled successfully!');
             setShowScheduleModal(false);
+            setSchedulePlatform(null);
 
-            // Reset form
-            setContent({});
-            setFiles({});
-            setSelectedPlatforms({});
+            // Reset form (only for the scheduled platform if single, or all if bulk)
+            if (schedulePlatform) {
+                setContent(prev => ({ ...prev, [schedulePlatform.name]: '' }));
+                setFiles(prev => ({ ...prev, [schedulePlatform.name]: [] }));
+            } else {
+                setContent({});
+                setFiles({});
+                setSelectedPlatforms({});
+            }
 
         } catch (err) {
             console.error('Schedule error:', err);
             showError('Failed to schedule');
         } finally {
             setPublishing(false);
+            setPublishingPlatform(null);
         }
     };
 
@@ -222,7 +237,8 @@ export default function QuickPost() {
                 title: `Quick Post - ${new Date().toLocaleString()}`,
                 items: platformsToPublish.map(p => ({
                     platform_id: p.id,
-                    content: content[p.name]
+                    content: content[p.name],
+                    title: titles[p.name] || null // For Reddit
                 }))
             });
 
@@ -269,16 +285,82 @@ export default function QuickPost() {
         }
     };
 
+    // Publish single platform
+    const handlePublishSingle = async (platform) => {
+        const text = content[platform.name]?.trim();
+        if (!text) {
+            showError('Please enter content first');
+            return;
+        }
+
+        const limit = CHAR_LIMITS[platform.name] || 2000;
+        if (text.length > limit) {
+            showError(`Content exceeds limit (${limit} chars)`);
+            return;
+        }
+
+        setPublishing(true);
+        setPublishingPlatform(platform.name);
+
+        try {
+            // 1. Create Quick Post for single platform
+            const createRes = await axios.post('/api/quick-post', {
+                title: `Quick Post - ${platform.display_name} - ${new Date().toLocaleString()}`,
+                items: [{
+                    platform_id: platform.id,
+                    content: text,
+                    title: titles[platform.name] || null // For Reddit
+                }]
+            });
+
+            const quickPostId = createRes.data.id;
+            const item = createRes.data.items[0];
+
+            // 2. Upload files and attach
+            const pFiles = files[platform.name] || [];
+            for (const file of pFiles) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const uploadRes = await axios.post('/api/quick-post/upload', formData);
+                await axios.post(`/api/quick-post/item/${item.id}/attach`, {
+                    path: uploadRes.data.path,
+                    originalName: uploadRes.data.originalName,
+                    mimeType: uploadRes.data.mimeType
+                });
+            }
+
+            // 3. Publish
+            await axios.post(`/api/quick-post/${quickPostId}/publish`);
+
+            showSuccess(`${platform.display_name} published!`);
+
+            // Reset only this platform
+            setContent(prev => ({ ...prev, [platform.name]: '' }));
+            setFiles(prev => ({ ...prev, [platform.name]: [] }));
+
+        } catch (err) {
+            console.error('Publish error:', err);
+            showError(`Failed to publish to ${platform.display_name}`);
+        } finally {
+            setPublishing(false);
+            setPublishingPlatform(null);
+        }
+    };
+
     if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}><Loader className="spin" /></div>;
 
     return (
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
             <ScheduleModal
                 isOpen={showScheduleModal}
-                onClose={() => setShowScheduleModal(false)}
+                onClose={() => {
+                    setShowScheduleModal(false);
+                    setSchedulePlatform(null);
+                }}
                 onConfirm={handleSchedule}
                 loading={publishing}
-                title="Schedule Quick Post"
+                title={schedulePlatform ? `Schedule ${schedulePlatform.display_name}` : "Schedule All Quick Posts"}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                 <div>
@@ -327,8 +409,12 @@ export default function QuickPost() {
                         </button>
                     </div>
 
+                    {/* Schedule All */}
                     <button
-                        onClick={() => setShowScheduleModal(true)}
+                        onClick={() => {
+                            setSchedulePlatform(null);
+                            setShowScheduleModal(true);
+                        }}
                         disabled={publishing}
                         className="button button-secondary"
                         style={{
@@ -346,6 +432,29 @@ export default function QuickPost() {
                     >
                         <Calendar size={18} />
                         Schedule All
+                    </button>
+
+                    {/* Publish All */}
+                    <button
+                        onClick={handlePublishAll}
+                        disabled={publishing}
+                        className="button"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '10px 20px',
+                            fontSize: '14px',
+                            background: 'var(--accent)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: publishing ? 'not-allowed' : 'pointer',
+                            opacity: publishing ? 0.7 : 1
+                        }}
+                    >
+                        {publishing && !publishingPlatform ? <Loader className="spin" size={18} /> : <Send size={18} />}
+                        {publishing && !publishingPlatform ? 'Publishing...' : 'Publish All'}
                     </button>
                 </div>
             </div>
@@ -399,7 +508,28 @@ export default function QuickPost() {
                             {/* Content Area */}
                             {isSelected && (
                                 <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                    {/* Reddit Title Input */}
+                                    {platform.name === 'reddit' && (
+                                        <input
+                                            type="text"
+                                            value={titles[platform.name] || ''}
+                                            onChange={(e) => setTitles(prev => ({ ...prev, [platform.name]: e.target.value }))}
+                                            placeholder="Post title (required for Reddit)"
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px 12px',
+                                                borderRadius: '8px',
+                                                border: '1px solid var(--border-color)',
+                                                background: 'var(--bg-primary)',
+                                                color: 'var(--text-primary)',
+                                                fontSize: '14px',
+                                                fontWeight: '600',
+                                                marginBottom: '8px'
+                                            }}
+                                        />
+                                    )}
                                     <textarea
+                                        className="textarea"
                                         value={text}
                                         onChange={(e) => handleContentChange(platform.name, e.target.value)}
                                         placeholder={`Write your post for ${platform.display_name}...`}
@@ -412,14 +542,13 @@ export default function QuickPost() {
                                             background: 'var(--bg-primary)',
                                             color: 'var(--text-primary)',
                                             fontSize: '14px',
-                                            resize: 'vertical',
-                                            marginBottom: '12px',
-                                            flex: 1
+                                            marginBottom: '12px'
                                         }}
                                     />
 
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', gap: '12px' }}>
+                                        {/* Left side: Add Media + File List */}
+                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
                                             {/* File Upload */}
                                             <label style={{
                                                 cursor: 'pointer',
@@ -454,16 +583,71 @@ export default function QuickPost() {
                                             ))}
                                         </div>
 
-                                        {/* Char Counter */}
-                                        <div style={{
-                                            fontSize: '12px',
-                                            color: isOverLimit ? 'var(--error)' : 'var(--text-secondary)',
-                                            fontWeight: isOverLimit ? 'bold' : 'normal',
-                                            background: 'var(--bg-tertiary)',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px'
-                                        }}>
-                                            {text.length} / {limit}
+                                        {/* Right side: Schedule, Publish, Char Counter */}
+                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                            {/* Schedule Button */}
+                                            <button
+                                                onClick={() => {
+                                                    setSchedulePlatform(platform);
+                                                    setShowScheduleModal(true);
+                                                }}
+                                                disabled={publishing || !text.trim()}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px',
+                                                    padding: '6px 10px',
+                                                    fontSize: '13px',
+                                                    background: 'var(--bg-tertiary)',
+                                                    color: 'var(--text-primary)',
+                                                    border: '1px solid var(--border-color)',
+                                                    borderRadius: '6px',
+                                                    cursor: (!text.trim() || publishing) ? 'not-allowed' : 'pointer',
+                                                    opacity: (!text.trim() || publishing) ? 0.5 : 1
+                                                }}
+                                            >
+                                                <Calendar size={14} />
+                                                Schedule
+                                            </button>
+
+                                            {/* Publish Button */}
+                                            <button
+                                                onClick={() => handlePublishSingle(platform)}
+                                                disabled={publishing || !text.trim() || isOverLimit}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px',
+                                                    padding: '6px 10px',
+                                                    fontSize: '13px',
+                                                    background: (!text.trim() || isOverLimit) ? 'var(--bg-tertiary)' : getPlatformColor(platform.name),
+                                                    color: (!text.trim() || isOverLimit) ? 'var(--text-secondary)' : 'white',
+                                                    border: 'none',
+                                                    borderRadius: '6px',
+                                                    cursor: (!text.trim() || publishing || isOverLimit) ? 'not-allowed' : 'pointer',
+                                                    opacity: (!text.trim() || publishing || isOverLimit) ? 0.5 : 1
+                                                }}
+                                            >
+                                                {publishingPlatform === platform.name ? (
+                                                    <Loader className="spin" size={14} />
+                                                ) : (
+                                                    <Send size={14} />
+                                                )}
+                                                {publishingPlatform === platform.name ? 'Publishing...' : 'Publish'}
+                                            </button>
+
+                                            {/* Char Counter */}
+                                            <div style={{
+                                                fontSize: '12px',
+                                                color: isOverLimit ? 'var(--error)' : 'var(--text-secondary)',
+                                                fontWeight: isOverLimit ? 'bold' : 'normal',
+                                                background: 'var(--bg-tertiary)',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                whiteSpace: 'nowrap'
+                                            }}>
+                                                {text.length} / {limit}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -471,46 +655,6 @@ export default function QuickPost() {
                         </div>
                     );
                 })}
-            </div>
-
-            {/* Sticky Footer */}
-            <div style={{
-                position: 'sticky',
-                bottom: '24px',
-                marginTop: '32px',
-                background: 'var(--bg-secondary)',
-                padding: '16px',
-                borderRadius: '16px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                border: '1px solid var(--border-color)'
-            }}>
-                <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                    {Object.values(selectedPlatforms).filter(Boolean).length} platforms selected
-                </div>
-
-                <button
-                    onClick={handlePublishAll}
-                    disabled={publishing}
-                    style={{
-                        background: 'var(--accent)',
-                        color: 'white',
-                        border: 'none',
-                        padding: '12px 32px',
-                        borderRadius: '100px',
-                        fontWeight: '600',
-                        cursor: publishing ? 'not-allowed' : 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        opacity: publishing ? 0.7 : 1
-                    }}
-                >
-                    {publishing ? <Loader className="spin" size={18} /> : <Send size={18} />}
-                    {publishing ? 'Publishing...' : 'Publish All'}
-                </button>
             </div>
         </div>
     );

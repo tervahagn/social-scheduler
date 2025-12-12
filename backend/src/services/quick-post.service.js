@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { publishToWebhook } from './publisher.service.js';
+import { uploadToCloudinary } from './cloudinary.service.js';
 
 const dbPath = process.env.DATABASE_PATH || './data/scheduler.db';
 const db = new Database(dbPath);
@@ -32,13 +33,13 @@ export const quickPostService = {
 
             // Create items
             const insertItem = db.prepare(`
-                INSERT INTO quick_post_items (quick_post_id, platform_id, content, status)
-                VALUES (?, ?, ?, 'pending')
+                INSERT INTO quick_post_items (quick_post_id, platform_id, content, title, status)
+                VALUES (?, ?, ?, ?, 'pending')
             `);
 
             const createdItems = [];
             for (const item of items) {
-                const itemResult = insertItem.run(quickPostId, item.platform_id, item.content);
+                const itemResult = insertItem.run(quickPostId, item.platform_id, item.content, item.title || null);
                 createdItems.push({
                     id: itemResult.lastInsertRowid,
                     ...item
@@ -57,7 +58,7 @@ export const quickPostService = {
     publish: async (quickPostId) => {
         // Get all pending items
         const items = db.prepare(`
-            SELECT qpi.*, p.name as platform_name, p.display_name
+            SELECT qpi.*, qpi.title, p.name as platform_name, p.display_name
             FROM quick_post_items qpi
             JOIN platforms p ON qpi.platform_id = p.id
             WHERE qpi.quick_post_id = ?
@@ -70,29 +71,46 @@ export const quickPostService = {
                 // Get attachments if any
                 const files = db.prepare('SELECT * FROM quick_post_files WHERE quick_post_item_id = ?').all(item.id);
 
-                // Prepare payload
-                const payload = {
-                    platform: item.platform_name,
-                    content: item.content,
-                    media: files.map(f => ({
-                        path: f.file_path,
+                // Upload files to Cloudinary and get URLs
+                const mediaWithUrls = [];
+                for (const f of files) {
+                    console.log(`📤 Uploading media to Cloudinary: ${f.file_path}`);
+                    const cloudinaryUrl = await uploadToCloudinary(f.file_path);
+                    mediaWithUrls.push({
+                        url: cloudinaryUrl,
                         mimeType: f.mime_type,
                         originalName: f.original_name
-                    })),
+                    });
+                    console.log(`✅ Cloudinary URL: ${cloudinaryUrl}`);
+                }
+
+                // Format content for Reddit (double newlines for paragraphs)
+                let formattedContent = item.content;
+                if (item.platform_name === 'reddit') {
+                    formattedContent = item.content.replace(/\n/g, '\n\n');
+                }
+
+                // Prepare payload with Cloudinary URLs
+                const payload = {
+                    platform: item.platform_name,
+                    content: formattedContent,
+                    brief_title: item.title || null, // For Reddit
+                    media: mediaWithUrls,
+                    media_url: mediaWithUrls.length > 0 ? mediaWithUrls[0].url : null,
                     isQuickPost: true
                 };
 
                 // Send to webhook
                 await publishToWebhook(payload);
 
-                // Update status
+                // Update status to 'sent' (not 'published' - awaiting confirmation)
                 db.prepare(`
                     UPDATE quick_post_items 
-                    SET status = 'published', published_at = CURRENT_TIMESTAMP 
+                    SET status = 'sent' 
                     WHERE id = ?
                 `).run(item.id);
 
-                results.push({ id: item.id, status: 'published', platform: item.platform_name });
+                results.push({ id: item.id, status: 'sent', platform: item.platform_name });
 
             } catch (error) {
                 console.error(`Failed to publish quick post item ${item.id}:`, error);
@@ -109,6 +127,88 @@ export const quickPostService = {
 
         // Update main record status if all done
         db.prepare('UPDATE quick_posts SET published_at = CURRENT_TIMESTAMP WHERE id = ?').run(quickPostId);
+
+        return results;
+    },
+
+    /**
+     * Schedule all items in a quick post for future publishing
+     * @param {number} quickPostId - ID of the quick post
+     * @param {string} scheduledAt - ISO date string for when to publish
+     */
+    schedule: async (quickPostId, scheduledAt) => {
+        // Get all pending items
+        const items = db.prepare(`
+            SELECT qpi.*, qpi.title, p.name as platform_name, p.display_name
+            FROM quick_post_items qpi
+            JOIN platforms p ON qpi.platform_id = p.id
+            WHERE qpi.quick_post_id = ?
+        `).all(quickPostId);
+
+        const results = [];
+
+        for (const item of items) {
+            try {
+                // Get attachments if any
+                const files = db.prepare('SELECT * FROM quick_post_files WHERE quick_post_item_id = ?').all(item.id);
+
+                // Upload files to Cloudinary and get URLs
+                const mediaWithUrls = [];
+                for (const f of files) {
+                    console.log(`📤 Uploading media to Cloudinary for scheduled post: ${f.file_path}`);
+                    const cloudinaryUrl = await uploadToCloudinary(f.file_path);
+                    mediaWithUrls.push({
+                        url: cloudinaryUrl,
+                        mimeType: f.mime_type,
+                        originalName: f.original_name
+                    });
+                    console.log(`✅ Cloudinary URL: ${cloudinaryUrl}`);
+                }
+
+                // Format content for Reddit (double newlines for paragraphs)
+                let formattedContent = item.content;
+                if (item.platform_name === 'reddit') {
+                    formattedContent = item.content.replace(/\n/g, '\n\n');
+                }
+
+                // Prepare payload with scheduled_at for Make.com to handle timing
+                const payload = {
+                    platform: item.platform_name,
+                    content: formattedContent,
+                    brief_title: item.title || null, // For Reddit
+                    media: mediaWithUrls,
+                    media_url: mediaWithUrls.length > 0 ? mediaWithUrls[0].url : null,
+                    isQuickPost: true,
+                    scheduled_at: scheduledAt // Make.com will use this to schedule the post
+                };
+
+                // Send to webhook (Make.com will handle the scheduling)
+                await publishToWebhook(payload);
+
+                // Update status
+                db.prepare(`
+                    UPDATE quick_post_items 
+                    SET status = 'scheduled', scheduled_at = ? 
+                    WHERE id = ?
+                `).run(scheduledAt, item.id);
+
+                results.push({ id: item.id, status: 'scheduled', platform: item.platform_name, scheduled_at: scheduledAt });
+
+            } catch (error) {
+                console.error(`Failed to schedule quick post item ${item.id}:`, error);
+
+                db.prepare(`
+                    UPDATE quick_post_items 
+                    SET status = 'failed', error_message = ? 
+                    WHERE id = ?
+                `).run(error.message, item.id);
+
+                results.push({ id: item.id, status: 'failed', error: error.message, platform: item.platform_name });
+            }
+        }
+
+        // Update main record with scheduled time
+        db.prepare('UPDATE quick_posts SET scheduled_at = ? WHERE id = ?').run(scheduledAt, quickPostId);
 
         return results;
     },
