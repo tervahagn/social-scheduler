@@ -382,8 +382,8 @@
                 <div class="integration-grid">
                     <div class="integration-card glass">
                         <div class="integration-icon">
-                            <lord-icon id="icon-openrouter" src="https://cdn.lordicon.com/kkvxgpti.json" trigger="morph"
-                                colors="primary:#a855f7,secondary:#06b6d4" style="width:48px;height:48px">
+                            <lord-icon id="icon-openrouter" src="https://cdn.lordicon.com/kkvxgpti.json" trigger="in"
+                                delay="0" colors="primary:#a855f7,secondary:#06b6d4" style="width:48px;height:48px">
                             </lord-icon>
                         </div>
                         <h3>OpenRouter</h3>
@@ -392,8 +392,8 @@
 
                     <div class="integration-card glass">
                         <div class="integration-icon">
-                            <lord-icon id="icon-makecom" src="https://cdn.lordicon.com/whtfgdfm.json" trigger="morph"
-                                colors="primary:#a855f7,secondary:#06b6d4" style="width:48px;height:48px">
+                            <lord-icon id="icon-makecom" src="https://cdn.lordicon.com/whtfgdfm.json" trigger="in"
+                                delay="2000" colors="primary:#a855f7,secondary:#06b6d4" style="width:48px;height:48px">
                             </lord-icon>
                         </div>
                         <h3>Make.com / Zapier</h3>
@@ -402,8 +402,8 @@
 
                     <div class="integration-card glass">
                         <div class="integration-icon">
-                            <lord-icon id="icon-selfhosted" src="https://cdn.lordicon.com/puvaffet.json" trigger="morph"
-                                colors="primary:#a855f7,secondary:#06b6d4" style="width:48px;height:48px">
+                            <lord-icon id="icon-selfhosted" src="https://cdn.lordicon.com/puvaffet.json" trigger="in"
+                                delay="4000" colors="primary:#a855f7,secondary:#06b6d4" style="width:48px;height:48px">
                             </lord-icon>
                         </div>
                         <h3>Self-Hosted</h3>
@@ -412,8 +412,8 @@
 
                     <div class="integration-card glass">
                         <div class="integration-icon">
-                            <lord-icon id="icon-platforms" src="https://cdn.lordicon.com/uukerzzv.json" trigger="morph"
-                                colors="primary:#a855f7,secondary:#06b6d4" style="width:48px;height:48px">
+                            <lord-icon id="icon-platforms" src="https://cdn.lordicon.com/uukerzzv.json" trigger="in"
+                                delay="6000" colors="primary:#a855f7,secondary:#06b6d4" style="width:48px;height:48px">
                             </lord-icon>
                         </div>
                         <h3>9 Platforms</h3>
@@ -502,30 +502,40 @@
         // =====================================================
         // Sequential Lordicon Animation (one at a time, looping)
         // =====================================================
-        const lordIcons = [
-            document.getElementById('icon-openrouter'),
-            document.getElementById('icon-makecom'),
-            document.getElementById('icon-selfhosted'),
-            document.getElementById('icon-platforms')
-        ].filter(Boolean);
-
+        const iconIds = ['icon-openrouter', 'icon-makecom', 'icon-selfhosted', 'icon-platforms'];
         let currentLordIconIndex = 0;
-        const ICON_ANIMATION_DURATION = 2000; // ms per icon
+        const ICON_ANIMATION_DURATION = 2000; // 2 seconds per icon
+        const TOTAL_CYCLE = iconIds.length * ICON_ANIMATION_DURATION; // 8 seconds full cycle
 
-        function playNextLordIcon() {
-            if (lordIcons.length === 0) return;
+        function playLordIconSequence() {
+            const iconId = iconIds[currentLordIconIndex];
+            const icon = document.getElementById(iconId);
 
-            const icon = lordIcons[currentLordIconIndex];
-            if (icon && typeof icon.play === 'function') {
-                icon.play();
+            if (icon) {
+                // Reset all icons first (stop any playing)
+                iconIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && el.playerInstance) {
+                        el.playerInstance.goToFirstFrame();
+                    }
+                });
+
+                // Play current icon
+                if (icon.playerInstance) {
+                    icon.playerInstance.playFromBeginning();
+                } else if (typeof icon.play === 'function') {
+                    icon.play();
+                }
             }
 
-            currentLordIconIndex = (currentLordIconIndex + 1) % lordIcons.length;
-            setTimeout(playNextLordIcon, ICON_ANIMATION_DURATION);
+            currentLordIconIndex = (currentLordIconIndex + 1) % iconIds.length;
+            setTimeout(playLordIconSequence, ICON_ANIMATION_DURATION);
         }
 
-        // Wait for Lordicon to be ready, then start animation
-        setTimeout(playNextLordIcon, 1000);
+        // Start animation after icons are loaded
+        window.addEventListener('load', () => {
+            setTimeout(playLordIconSequence, 1500);
+        });
 
         // =====================================================
         // Download Button - OS Detection & GitHub API
