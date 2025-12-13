@@ -2,6 +2,12 @@
 
 **[🌐 Website](https://social-scheduler.tervahagn.com/)** · Open-source tool for managing social media content. Post to 9 platforms from one place.
 
+<p align="center">
+  <a href="https://github.com/tervahagn/social-scheduler/releases/latest"><img src="https://img.shields.io/github/v/release/tervahagn/social-scheduler?label=Download&style=for-the-badge" alt="Download"></a>
+</p>
+
+> **macOS users:** If you see "damaged" warning, run: `xattr -cr "/Applications/Social Scheduler.app"`
+
 ## Features
 
 - ⚡ **Quick Post** — write once, publish to multiple platforms instantly
