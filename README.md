@@ -2,6 +2,25 @@
 
 **[🌐 Website](https://social-scheduler.tervahagn.com/)** · Open-source tool for managing social media content. Post to 9 platforms from one place.
 
+---
+
+## 📥 Download Desktop App
+
+| Platform | Download |
+|----------|----------|
+| 🍎 **macOS** (Apple Silicon) | [Social.Scheduler_1.0.0_aarch64.dmg](https://github.com/tervahagn/social-scheduler/releases/latest/download/Social.Scheduler_1.0.0_aarch64.dmg) |
+| 🍎 **macOS** (Intel) | [Social.Scheduler_1.0.0_x64.dmg](https://github.com/tervahagn/social-scheduler/releases/latest/download/Social.Scheduler_1.0.0_x64.dmg) |
+| 🪟 **Windows** | [Social.Scheduler_1.0.0_x64-setup.exe](https://github.com/tervahagn/social-scheduler/releases/latest/download/Social.Scheduler_1.0.0_x64-setup.exe) |
+| 🐧 **Linux** (Debian/Ubuntu) | [social-scheduler_1.0.0_amd64.deb](https://github.com/tervahagn/social-scheduler/releases/latest/download/social-scheduler_1.0.0_amd64.deb) |
+| 🐧 **Linux** (AppImage) | [social-scheduler_1.0.0_amd64.AppImage](https://github.com/tervahagn/social-scheduler/releases/latest/download/social-scheduler_1.0.0_amd64.AppImage) |
+
+> **Note for macOS users:** If you see "damaged" warning, run: `xattr -cr "/Applications/Social Scheduler.app"`
+
+📦 [All releases](https://github.com/tervahagn/social-scheduler/releases)
+
+---
+
+
 ## Features
 
 - ⚡ **Quick Post** — write once, publish to multiple platforms instantly
