@@ -766,6 +766,11 @@ h3,
     }
 }
 
+/* Burger Menu - Hidden by default (desktop) */
+.burger-menu {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .nav-links {
         display: none;
@@ -834,9 +839,8 @@ h3,
     .section-heading {
         font-size: 2rem;
     }
-}
 
-/* Hide burger on desktop */
-.burger-menu {
-    display: none;
+    .burger-menu {
+        display: flex;
+    }
 }
