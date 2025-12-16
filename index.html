@@ -207,7 +207,7 @@
                 <div class="hero-content">
                     <div class="pill-badge">
                         <span class="pulse"></span>
-                        v2.0 — Quick Post & Scheduling
+                        <span id="pill-version">v2.0</span> — Quick Post & Scheduling
                     </div>
                     <h1 class="display-text">
                         Post to 9 Platforms<br>
@@ -218,18 +218,8 @@
                         publish instantly. Runs on your machine. Free.
                     </p>
                     <div class="cta-group">
-                        <!-- Primary: Download for detected OS -->
-                        <a href="#" id="download-btn" class="btn btn-primary btn-lg" rel="noopener">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" style="margin-right: 8px;">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                <polyline points="7 10 12 15 17 10" />
-                                <line x1="12" y1="15" x2="12" y2="3" />
-                            </svg>
-                            <span id="download-text">Download</span>
-                        </a>
-                        <!-- Secondary: View Source -->
-                        <a href="https://github.com/tervahagn/social-scheduler" class="btn btn-secondary btn-lg"
+                        <!-- Primary: View Source -->
+                        <a href="https://github.com/tervahagn/social-scheduler" class="btn btn-primary btn-lg"
                             target="_blank">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"
                                 style="margin-right: 8px;">
@@ -239,11 +229,10 @@
                             View Source
                         </a>
                     </div>
-                    <!-- Download info -->
+                    <!-- Download links -->
                     <div class="download-info">
-                        <span class="early-release-badge">⚠️ Early Release — testing welcome</span>
                         <div class="other-platforms" id="other-platforms">
-                            <!-- Populated by JS -->
+                            <!-- Populated by JS: macOS · Windows · Linux links -->
                         </div>
                     </div>
                 </div>
@@ -632,14 +621,8 @@
             return null;
         }
 
-        async function initDownloadButton() {
-            const downloadBtn = document.getElementById('download-btn');
-            const downloadText = document.getElementById('download-text');
+        async function initDownloadLinks() {
             const otherPlatforms = document.getElementById('other-platforms');
-            const userOS = detectOS();
-
-            // Set initial text
-            downloadText.textContent = `Download for ${getOSLabel(userOS)}`;
 
             try {
                 const response = await fetch(GITHUB_API_URL);
@@ -647,25 +630,12 @@
 
                 const data = await response.json();
                 const assets = data.assets || [];
-                const version = data.tag_name || '';
 
-                // Find asset for user's OS
-                const primaryAsset = findAssetForOS(assets, userOS);
-
-                if (primaryAsset) {
-                    downloadBtn.href = primaryAsset.browser_download_url;
-                    downloadText.textContent = `${getOSIcon(userOS)} Download for ${getOSLabel(userOS)}`;
-                } else {
-                    downloadBtn.href = FALLBACK_URL;
-                    downloadText.textContent = '⬇️ Download';
-                }
-
-                // Build other platforms links
+                // Build all platform links
                 const allPlatforms = ['macos', 'windows', 'linux'];
-                const otherOS = allPlatforms.filter(os => os !== userOS);
-
                 const platformLinks = [];
-                for (const os of otherOS) {
+
+                for (const os of allPlatforms) {
                     const asset = findAssetForOS(assets, os);
                     if (asset) {
                         platformLinks.push(`<a href="${asset.browser_download_url}">${getOSIcon(os)} ${getOSLabel(os)}</a>`);
@@ -673,19 +643,19 @@
                 }
 
                 if (platformLinks.length > 0) {
-                    otherPlatforms.innerHTML = 'Also available: ' + platformLinks.join(' <span class="separator">·</span> ');
+                    otherPlatforms.innerHTML = 'Download: ' + platformLinks.join(' <span class="separator">·</span> ');
+                } else {
+                    otherPlatforms.innerHTML = `<a href="${FALLBACK_URL}">View all downloads</a>`;
                 }
 
             } catch (error) {
                 console.log('Could not fetch releases, using fallback URL');
-                downloadBtn.href = FALLBACK_URL;
-                downloadText.textContent = '⬇️ Download';
-                otherPlatforms.innerHTML = '<a href="' + FALLBACK_URL + '">View all downloads</a>';
+                otherPlatforms.innerHTML = `<a href="${FALLBACK_URL}">View all downloads</a>`;
             }
         }
 
-        // Initialize download button
-        initDownloadButton();
+        // Initialize download links
+        initDownloadLinks();
 
         // =====================================================
         // Version Badge - fetch from main Social Scheduler repo
@@ -694,6 +664,13 @@
             .then(response => response.json())
             .then(data => {
                 if (data && data.tag_name) {
+                    // Update pill badge version
+                    const pillVersion = document.getElementById('pill-version');
+                    if (pillVersion) {
+                        pillVersion.textContent = data.tag_name;
+                    }
+
+                    // Update footer version badge
                     const badge = document.getElementById('version-badge');
                     const date = new Date(data.published_at);
                     const formattedDate = date.toLocaleDateString('en-US', {
