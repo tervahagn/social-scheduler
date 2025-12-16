@@ -299,6 +299,7 @@
             <a href="#quick-post">Quick Post</a>
             <a href="#calendar">Calendar</a>
             <a href="#brief-mode">Brief Mode</a>
+            <a href="#prompts">Prompts</a>
             <a href="#make-setup">Make.com Setup</a>
             <a href="#openrouter">OpenRouter & AI</a>
             <a href="#troubleshooting">Troubleshooting</a>
@@ -321,7 +322,9 @@
             </ol>
 
             <div class="warning">
-                <p><strong>macOS users:</strong> Apps downloaded outside the App Store get flagged with a quarantine attribute (<code>com.apple.Quarantine</code>), which triggers the "damaged and can't be opened" message. Simply remove this attribute to launch the app:</p>
+                <p><strong>macOS users:</strong> Apps downloaded outside the App Store get flagged with a quarantine
+                    attribute (<code>com.apple.Quarantine</code>), which triggers the "damaged and can't be opened"
+                    message. Simply remove this attribute to launch the app:</p>
                 <pre><code>xattr -c "/Applications/Social Scheduler.app"</code></pre>
                 <p>After running this command, the app will open normally. 🎉</p>
             </div>
@@ -384,6 +387,51 @@ cp .env.example .env
             </ol>
             <p>Each platform gets content optimized for its format: LinkedIn gets professional tone, Twitter gets short
                 punchy text, Instagram gets hashtags, etc.</p>
+
+            <!-- Prompts & Brand Voice -->
+            <h2 id="prompts">Prompts & Brand Voice</h2>
+            <p>Social Scheduler uses a three-tier prompt system to generate content that sounds like you, optimized for
+                each platform.</p>
+
+            <h3>🎯 Master Prompt (Brand Voice)</h3>
+            <p>This is your brand's personality — how you sound across all content. It's written once and applied to
+                everything you generate.</p>
+            <p>Define things like:</p>
+            <ul>
+                <li>Tone: professional, casual, witty, authoritative</li>
+                <li>Style: use of emojis, sentence length, vocabulary level</li>
+                <li>Perspective: first person ("I/we") or third person</li>
+                <li>Values: what your brand stands for</li>
+            </ul>
+            <div class="tip">
+                <p><strong>Example:</strong> "Write in a confident, friendly tone. Use short sentences. Avoid jargon.
+                    Address the reader as 'you'. Include one relevant emoji per post."</p>
+            </div>
+
+            <h3>📱 Platform Prompts (Channel Customization)</h3>
+            <p>Each platform has its own prompt that adapts content to the channel's unique format and audience
+                expectations:</p>
+            <ul>
+                <li><strong>LinkedIn</strong> — Professional tone, structured paragraphs, thought leadership angle</li>
+                <li><strong>Twitter/X</strong> — Punchy hooks, concise points, thread-friendly</li>
+                <li><strong>Instagram</strong> — Visual context, storytelling, hashtag strategy</li>
+                <li><strong>Reddit</strong> — Authentic, conversational, no marketing-speak</li>
+                <li><strong>Facebook</strong> — Community-focused, shareable, engaging questions</li>
+                <li><strong>YouTube</strong> — Descriptive, keyword-rich, call-to-action</li>
+            </ul>
+            <p>You can customize these in Settings → Platform Prompts.</p>
+
+            <h3>📝 Brief Input (Content Prompt)</h3>
+            <p>This is what you write when creating a new brief — your idea, article, announcement, or any source
+                material. The AI combines:</p>
+            <pre><code>Your Brief Input (the idea)
+        ↓
+    Master Prompt (brand voice)
+        ↓
+    Platform Prompt (channel rules)
+        ↓
+    Final post for each platform</code></pre>
+            <p>This layered approach ensures every post sounds like your brand while being native to each platform.</p>
 
             <!-- Make.com Setup -->
             <h2 id="make-setup">Make.com Integration</h2>
@@ -468,7 +516,10 @@ cp .env.example .env
             <h2 id="troubleshooting">Troubleshooting</h2>
 
             <h3>"App is damaged" on macOS</h3>
-            <p>When you download an app from anywhere other than the Mac App Store, macOS adds an extended attribute called <code>com.apple.Quarantine</code>. This is Gatekeeper's way of protecting you — but for apps like Social Scheduler that aren't notarized by Apple, it shows the frustrating "damaged and can't be opened" error.</p>
+            <p>When you download an app from anywhere other than the Mac App Store, macOS adds an extended attribute
+                called <code>com.apple.Quarantine</code>. This is Gatekeeper's way of protecting you — but for apps like
+                Social Scheduler that aren't notarized by Apple, it shows the frustrating "damaged and can't be opened"
+                error.</p>
             <p>The fix is simple — remove the quarantine attribute:</p>
             <pre><code>xattr -c "/Applications/Social Scheduler.app"</code></pre>
             <p>That's it! Launch the app and enjoy. 🚀</p>
