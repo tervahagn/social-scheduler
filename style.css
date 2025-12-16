@@ -657,6 +657,28 @@ h3,
     opacity: 0.5;
 }
 
+.contact-email {
+    margin-top: 0.75rem;
+}
+
+.email-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+
+.email-link:hover {
+    color: var(--accent-primary);
+}
+
+.email-link svg {
+    opacity: 0.7;
+}
+
 /* Animations */
 @keyframes float {
 
