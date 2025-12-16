@@ -286,7 +286,15 @@
                 <span class="brand-name">Social Scheduler</span>
             </div>
         </a>
-        <div class="nav-links">
+
+        <!-- Burger Menu Button (Mobile) -->
+        <button class="burger-menu" id="burger-menu" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <div class="nav-links" id="nav-links">
             <a href="index.html#quickpost" class="nav-link">Quick Post</a>
             <a href="index.html#calendar" class="nav-link">Calendar</a>
             <a href="index.html#brief" class="nav-link">Brief</a>
@@ -582,6 +590,17 @@ kill -9 [PID]</code></pre>
                     Built in Pasadena, CA by <a href="https://tervahagn.com" target="_blank" class="author-link">Vahagn
                         Ter-Sarkisyan</a>. Free to use.
                 </p>
+                <p class="contact-email">
+                    <a href="mailto:ask@tervahagn.com?subject=SocialSchedulerApp%20-%20Question" class="email-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                            </path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        Get in touch
+                    </a>
+                </p>
                 <p class="version-info" id="version-badge">
                     <span class="version-loading">Loading version...</span>
                 </p>
@@ -643,6 +662,25 @@ kill -9 [PID]</code></pre>
                 }
             });
         });
+
+        // Burger Menu Toggle
+        const burgerMenu = document.getElementById('burger-menu');
+        const navLinksEl = document.getElementById('nav-links');
+
+        if (burgerMenu && navLinksEl) {
+            burgerMenu.addEventListener('click', () => {
+                burgerMenu.classList.toggle('open');
+                navLinksEl.classList.toggle('open');
+            });
+
+            // Close menu when clicking a link
+            navLinksEl.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    burgerMenu.classList.remove('open');
+                    navLinksEl.classList.remove('open');
+                });
+            });
+        }
     </script>
 </body>
 

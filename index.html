@@ -176,7 +176,15 @@
                 <span class="brand-name">Social Scheduler</span>
             </div>
         </a>
-        <div class="nav-links">
+
+        <!-- Burger Menu Button (Mobile) -->
+        <button class="burger-menu" id="burger-menu" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <div class="nav-links" id="nav-links">
             <a href="#quickpost" class="nav-link">Quick Post</a>
             <a href="#calendar" class="nav-link">Calendar</a>
             <a href="#brief" class="nav-link">Brief</a>
@@ -211,7 +219,7 @@
                     </p>
                     <div class="cta-group">
                         <!-- Primary: Download for detected OS -->
-                        <a href="#" id="download-btn" class="btn btn-primary btn-lg" download>
+                        <a href="#" id="download-btn" class="btn btn-primary btn-lg" rel="noopener">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" style="margin-right: 8px;">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -660,7 +668,7 @@
                 for (const os of otherOS) {
                     const asset = findAssetForOS(assets, os);
                     if (asset) {
-                        platformLinks.push(`<a href="${asset.browser_download_url}" download>${getOSIcon(os)} ${getOSLabel(os)}</a>`);
+                        platformLinks.push(`<a href="${asset.browser_download_url}">${getOSIcon(os)} ${getOSLabel(os)}</a>`);
                     }
                 }
 
@@ -699,6 +707,27 @@
             .catch(() => {
                 document.getElementById('version-badge').innerHTML = '';
             });
+
+        // =====================================================
+        // Burger Menu Toggle
+        // =====================================================
+        const burgerMenu = document.getElementById('burger-menu');
+        const navLinks = document.getElementById('nav-links');
+
+        if (burgerMenu && navLinks) {
+            burgerMenu.addEventListener('click', () => {
+                burgerMenu.classList.toggle('open');
+                navLinks.classList.toggle('open');
+            });
+
+            // Close menu when clicking a link
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    burgerMenu.classList.remove('open');
+                    navLinks.classList.remove('open');
+                });
+            });
+        }
     </script>
 </body>
 
