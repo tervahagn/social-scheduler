@@ -321,8 +321,9 @@
             </ol>
 
             <div class="warning">
-                <p><strong>macOS users:</strong> If you see "damaged" warning, run:
-                    <code>xattr -cr "/Applications/Social Scheduler.app"</code></p>
+                <p><strong>macOS users:</strong> Apps downloaded outside the App Store get flagged with a quarantine attribute (<code>com.apple.Quarantine</code>), which triggers the "damaged and can't be opened" message. Simply remove this attribute to launch the app:</p>
+                <pre><code>xattr -c "/Applications/Social Scheduler.app"</code></pre>
+                <p>After running this command, the app will open normally. 🎉</p>
             </div>
 
             <h3>Option 2: Run from Source</h3>
@@ -467,8 +468,10 @@ cp .env.example .env
             <h2 id="troubleshooting">Troubleshooting</h2>
 
             <h3>"App is damaged" on macOS</h3>
-            <p>This is macOS Gatekeeper blocking unsigned apps. Fix it:</p>
-            <pre><code>xattr -cr "/Applications/Social Scheduler.app"</code></pre>
+            <p>When you download an app from anywhere other than the Mac App Store, macOS adds an extended attribute called <code>com.apple.Quarantine</code>. This is Gatekeeper's way of protecting you — but for apps like Social Scheduler that aren't notarized by Apple, it shows the frustrating "damaged and can't be opened" error.</p>
+            <p>The fix is simple — remove the quarantine attribute:</p>
+            <pre><code>xattr -c "/Applications/Social Scheduler.app"</code></pre>
+            <p>That's it! Launch the app and enjoy. 🚀</p>
 
             <h3>Backend not starting</h3>
             <p>Check if port 3001 is already in use:</p>
