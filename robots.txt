@@ -1,0 +1,7 @@
+# Social Scheduler Landing Page
+# https://social-scheduler.tervahagn.com
+
+User-agent: *
+Allow: /
+
+Sitemap: https://social-scheduler.tervahagn.com/sitemap.xml
