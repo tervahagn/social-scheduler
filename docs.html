@@ -238,6 +238,15 @@
             margin: 0;
         }
 
+        .docs-screenshot {
+            width: 100%;
+            max-width: 700px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
+            margin: 1.5rem 0;
+        }
+
         @media (max-width: 900px) {
             .docs-container {
                 flex-direction: column;
@@ -362,6 +371,8 @@ cp .env.example .env
                     over the limit for each one.</p>
             </div>
 
+            <img src="assets/brief.png" alt="Quick Post interface" class="docs-screenshot">
+
             <!-- Calendar -->
             <h2 id="calendar">Calendar & Scheduling</h2>
             <p>The Calendar shows all your scheduled and published posts in one view.</p>
@@ -373,6 +384,8 @@ cp .env.example .env
             </ul>
             <p>When you schedule a post, Social Scheduler sends it to your Make.com Data Store. The Publisher scenario
                 (running on a schedule) picks it up and posts it at the right time.</p>
+
+            <img src="assets/results.png" alt="Calendar view with scheduled posts" class="docs-screenshot">
 
             <!-- Brief Mode -->
             <h2 id="brief-mode">Brief Mode</h2>
@@ -387,6 +400,9 @@ cp .env.example .env
             </ol>
             <p>Each platform gets content optimized for its format: LinkedIn gets professional tone, Twitter gets short
                 punchy text, Instagram gets hashtags, etc.</p>
+
+            <img src="assets/editor.png" alt="Brief mode with generated posts for each platform"
+                class="docs-screenshot">
 
             <!-- Prompts & Brand Voice -->
             <h2 id="prompts">Prompts & Brand Voice</h2>
@@ -447,6 +463,8 @@ cp .env.example .env
                 </li>
             </ol>
 
+            <img src="assets/make/scenarios.webp" alt="Make.com scenarios overview" class="docs-screenshot">
+
             <h3>Step 1: Create Data Store</h3>
             <ol>
                 <li>In Make.com, go to Data Stores → Create a new one</li>
@@ -473,6 +491,8 @@ cp .env.example .env
                 <li>Turn ON the scenario</li>
             </ol>
 
+            <img src="assets/make/instant.webp" alt="Receiver scenario in Make.com" class="docs-screenshot">
+
             <h3>Step 3: Create Publisher Scenario</h3>
             <ol>
                 <li>Create new scenario</li>
@@ -484,6 +504,8 @@ cp .env.example .env
                 <li>After each platform, add: <strong>Data Store → Delete a Record</strong></li>
                 <li>Turn ON the scenario</li>
             </ol>
+
+            <img src="assets/make/schedule.webp" alt="Publisher scenario in Make.com" class="docs-screenshot">
 
             <div class="tip">
                 <p><strong>Important:</strong> Always add "Delete Record" after each platform to avoid duplicate posts.
@@ -511,6 +533,8 @@ cp .env.example .env
                 <li><strong>llama-3.1-70b</strong> — Good free option</li>
                 <li><strong>gemini-pro</strong> — Fast and capable</li>
             </ul>
+
+            <img src="assets/settings.png" alt="Settings page with OpenRouter configuration" class="docs-screenshot">
 
             <!-- Troubleshooting -->
             <h2 id="troubleshooting">Troubleshooting</h2>
