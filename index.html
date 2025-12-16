@@ -211,7 +211,7 @@
                     </p>
                     <div class="cta-group">
                         <!-- Primary: Download for detected OS -->
-                        <a href="#" id="download-btn" class="btn btn-primary btn-lg" target="_blank">
+                        <a href="#" id="download-btn" class="btn btn-primary btn-lg" download>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" style="margin-right: 8px;">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -660,7 +660,7 @@
                 for (const os of otherOS) {
                     const asset = findAssetForOS(assets, os);
                     if (asset) {
-                        platformLinks.push(`<a href="${asset.browser_download_url}" target="_blank">${getOSIcon(os)} ${getOSLabel(os)}</a>`);
+                        platformLinks.push(`<a href="${asset.browser_download_url}" download>${getOSIcon(os)} ${getOSLabel(os)}</a>`);
                     }
                 }
 
