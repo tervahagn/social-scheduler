@@ -86,21 +86,51 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { display_name, webhook_url, is_active, prompt_content } = req.body;
+        const platformId = req.params.id;
 
-        await db.prepare(`
-      UPDATE platforms 
-      SET display_name = COALESCE(?, display_name),
-          webhook_url = COALESCE(?, webhook_url),
-          is_active = COALESCE(?, is_active),
-          prompt_content = COALESCE(?, prompt_content)
-      WHERE id = ?
-    `).run(display_name, webhook_url, is_active, prompt_content, req.params.id);
+        // Build dynamic update query with only defined fields
+        const updates = [];
+        const values = [];
 
-        const platform = await db.prepare('SELECT * FROM platforms WHERE id = ?').get(req.params.id);
+        if (display_name !== undefined) {
+            updates.push('display_name = ?');
+            values.push(display_name);
+        }
+        if (webhook_url !== undefined) {
+            updates.push('webhook_url = ?');
+            values.push(webhook_url);
+        }
+        if (is_active !== undefined) {
+            updates.push('is_active = ?');
+            values.push(is_active ? 1 : 0);
+        }
+        if (prompt_content !== undefined) {
+            updates.push('prompt_content = ?');
+            values.push(prompt_content);
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({ error: 'No fields to update' });
+        }
+
+        values.push(platformId);
+
+        const sql = `UPDATE platforms SET ${updates.join(', ')} WHERE id = ?`;
+        console.log(`[PUT /platforms/${platformId}] SQL:`, sql, 'Values:', values);
+
+        await db.prepare(sql).run(...values);
+
+        const platform = await db.prepare('SELECT * FROM platforms WHERE id = ?').get(platformId);
+
+        if (!platform) {
+            return res.status(404).json({ error: 'Platform not found' });
+        }
+
+        console.log(`[PUT /platforms/${platformId}] Success: is_active=${platform.is_active}`);
         res.json(platform);
     } catch (error) {
         console.error('Error updating platform:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error?.message || String(error) || 'Unknown error' });
     }
 });
 
