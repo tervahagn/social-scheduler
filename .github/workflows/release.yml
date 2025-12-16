@@ -83,6 +83,30 @@ jobs:
         run: npm install
         working-directory: frontend
 
+      - name: Sync version from git tag
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            # Extract version from tag: v1.0.1 -> 1.0.1
+            VERSION="${GITHUB_REF_NAME#v}"
+            echo "Setting version to $VERSION (from tag)"
+            
+            # Update tauri.conf.json with the tag version
+            cd frontend/src-tauri
+            if command -v jq &> /dev/null; then
+              jq --arg v "$VERSION" '.version = $v' tauri.conf.json > tmp.json && mv tmp.json tauri.conf.json
+            else
+              # Fallback for Windows without jq: use node
+              node -e "const fs=require('fs'); const c=JSON.parse(fs.readFileSync('tauri.conf.json')); c.version='$VERSION'; fs.writeFileSync('tauri.conf.json', JSON.stringify(c,null,2));"
+            fi
+            
+            echo "Updated tauri.conf.json version to: $VERSION"
+            cat tauri.conf.json | head -5
+          else
+            echo "Not a tag build, keeping existing version in tauri.conf.json"
+          fi
+
+
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
