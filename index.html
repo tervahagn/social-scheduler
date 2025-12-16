@@ -660,7 +660,7 @@
                 for (const os of otherOS) {
                     const asset = findAssetForOS(assets, os);
                     if (asset) {
-                        platformLinks.push(`<a href="${asset.browser_download_url}">${getOSIcon(os)} ${getOSLabel(os)}</a>`);
+                        platformLinks.push(`<a href="${asset.browser_download_url}" target="_blank">${getOSIcon(os)} ${getOSLabel(os)}</a>`);
                     }
                 }
 
